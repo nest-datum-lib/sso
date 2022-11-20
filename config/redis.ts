@@ -4,7 +4,7 @@ const configArr: Array<any> = findEnvPropertiesByTwoOccurrences('REDIS_', '_NAME
 	namespace: process.env[`REDIS_${index}_NAMESPACE`],
 	host: process.env[`REDIS_${index}_HOST`],
 	port: Number(process.env[`REDIS_${index}_PORT`]),
-	password: process.env[`REDIS_${index}_USER_PASSWORD`],
+	password: process.env[`REDIS_${index}_PASSWORD`],
 	db: Number(process.env[`REDIS_${index}_DB`]),
 }));
 
