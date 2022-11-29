@@ -22,9 +22,10 @@ export class RoleStatusSeeder {
 			// new transaction
 			await queryRunner.startTransaction();
 			await Bluebird.each([{
-				id: 'role-status-active',
+				id: 'sso-role-status-active',
 				name: 'Active',
 				description: 'Role is active',
+				userId: 'sso-user-admin',
 			}], async (data) => {
 				try {
 					await this.roleStatusRepository.insert(data);

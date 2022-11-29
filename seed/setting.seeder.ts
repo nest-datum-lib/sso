@@ -21,15 +21,70 @@ export class SettingSeeder {
 		try {
 			// new transaction
 			await queryRunner.startTransaction();
-			await Bluebird.each([/*{
-				id: 'example',
-				name: 'Example',
-				description: 'Example description',
-				dataTypeId: 'text',
-				defaultValue: '',
-				value: '',
+			await Bluebird.each([{
+				id: 'sso-setting-service-id',
+				name: 'Service id',
+				description: 'Service id in redis.',
+				dataTypeId: 'data-type-type-text',
+				value: process.env.SERVICE_ID || 'files1',
 				isNotDelete: true,
-			}*/], async (data) => {
+			}, {
+				id: 'sso-setting-transport-provider',
+				name: 'Transport provider',
+				description: 'The name of the protocol for transporting data between services.',
+				dataTypeId: 'data-type-type-text',
+				value: process.env.TRANSPORT_PROVIDER,
+				isNotDelete: true,
+			}, {
+				id: 'sso-setting-transport-host',
+				name: 'Service host',
+				description: 'Service IP address.',
+				dataTypeId: 'data-type-type-text',
+				value: process.env.TRANSPORT_HOST,
+				isNotDelete: true,
+			}, {
+				id: 'sso-setting-transport-port',
+				name: 'Service port',
+				description: 'Service port.',
+				dataTypeId: 'data-type-type-integer',
+				value: process.env.TRANSPORT_PORT,
+				isNotDelete: true,
+			}, {
+				id: 'sso-setting-cache-namespace',
+				name: 'Cache namespace',
+				description: 'Cache namespace.',
+				dataTypeId: 'data-type-type-text',
+				value: process.env.REDIS_CACHE_NAMESPACE,
+				isNotDelete: true,
+			}, {
+				id: 'sso-setting-cache-host',
+				name: 'Cache host',
+				description: 'Cache IP address.',
+				dataTypeId: 'data-type-type-text',
+				value: process.env.REDIS_CACHE_HOST,
+				isNotDelete: true,
+			}, {
+				id: 'sso-setting-cache-port',
+				name: 'Cache port',
+				description: 'Cache port.',
+				dataTypeId: 'data-type-type-integer',
+				value: process.env.REDIS_CACHE_PORT,
+				isNotDelete: true,
+			}, {
+				id: 'sso-setting-cache-db',
+				name: 'Cache db',
+				description: 'Redis database number.',
+				dataTypeId: 'data-type-type-integer',
+				value: process.env.REDIS_CACHE_DB,
+				isNotDelete: true,
+			}, {
+				id: 'sso-setting-cache-db',
+				name: 'Cache db',
+				description: 'Redis database number.',
+				dataTypeId: 'data-type-type-text',
+				value: process.env.REDIS_CACHE_PASSWORD,
+				isNotDelete: true,
+			}], async (data) => {
 				try {
 					await this.settingRepository.insert(data);
 				}

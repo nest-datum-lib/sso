@@ -24,9 +24,9 @@ export class UserSeeder {
 			// new transaction
 			await queryRunner.startTransaction();
 			await Bluebird.each([{
-				id: 'user-admin',
-				roleId: 'role-admin',
-				userStatusId: 'user-status-active',
+				id: 'sso-user-admin',
+				roleId: 'sso-role-admin',
+				userStatusId: 'sso-user-status-active',
 				email: 'ihor.bielchenko@gmail.com',
 				login: 'admin',
 				password: await encryptPassword('XIUnv@#jgfo_r-32i0e(@12oj-f34!'),

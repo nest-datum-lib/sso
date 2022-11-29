@@ -22,16 +22,16 @@ export class UserOptionSeeder {
 			// new transaction
 			await queryRunner.startTransaction();
 			await Bluebird.each([{
-				id: 'user-option-firstname',
+				id: 'sso-user-option-firstname',
 				name: 'Firstname',
 				description: 'User firstname.',
-				dataTypeId: 'text',
+				dataTypeId: 'data-type-type-text',
 				isRequired: true,			
 			}, {
-				id: 'user-option-lastname',
+				id: 'sso-user-option-lastname',
 				name: 'Lastname',
 				description: 'User lastname.',
-				dataTypeId: 'text',
+				dataTypeId: 'data-type-type-text',
 				isRequired: true,			
 			}], async (data) => {
 				try {

@@ -22,9 +22,10 @@ export class AccessStatusSeeder {
 			// new transaction
 			await queryRunner.startTransaction();
 			await Bluebird.each([{
-				id: 'access-status-active',
+				id: 'sso-access-status-active',
 				name: 'Active',
 				description: 'Access is active',
+				userId: 'sso-user-admin',
 			}], async (data) => {
 				try {
 					await this.accessStatusRepository.insert(data);

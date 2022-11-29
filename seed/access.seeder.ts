@@ -24,12 +24,12 @@ export class AccessSeeder {
 			// new transaction
 			await queryRunner.startTransaction();
 			await Bluebird.each([{
-				id: 'access-admin-panel',
+				id: 'sso-access-admin-panel',
 				name: 'Admin panel',
 				description: 'Allow to use the admin panel.',
-				accessStatusId: 'access-status-active',
+				accessStatusId: 'sso-access-status-active',
 				isNotDelete: true,
-				userId: 'admin',
+				userId: 'sso-user-admin',
 			}], async (data) => {
 				try {
 					await this.accessRepository.insert(data);

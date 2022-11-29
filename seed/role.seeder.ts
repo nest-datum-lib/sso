@@ -26,19 +26,19 @@ export class RoleSeeder {
 			// new transaction
 			await queryRunner.startTransaction();
 			await Bluebird.each([{
-				id: 'role-admin',
+				id: 'sso-role-admin',
 				name: 'Admin',
 				description: 'Full access to all services.',
-				roleStatusId: 'role-status-active',
+				roleStatusId: 'sso-role-status-active',
 				isNotDelete: true,
-				userId: 'admin',
+				userId: 'sso-user-admin',
 			}, {
-				id: 'role-preload',
+				id: 'sso-role-preload',
 				name: 'Preload',
 				description: 'User waiting for account validation after registration.',
-				roleStatusId: 'role-status-active',
+				roleStatusId: 'sso-role-status-active',
 				isNotDelete: true,
-				userId: 'admin',
+				userId: 'sso-user-admin',
 			}], async (data) => {
 				try {
 					await this.roleRepository.insert(data);
