@@ -23,6 +23,8 @@ import { UserOptionModule } from './api/user-option/user-option.module';
 import { UserUserOptionModule } from './api/user-user-option/user-user-option.module';
 import { UserModule } from './api/user/user.module';
 
+console.log('typeormConfig', typeormConfig);
+
 @Module({
 	imports: [
 		TypeOrmModule.forRoot(typeormConfig),
