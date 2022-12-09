@@ -4,7 +4,7 @@ import {
 	Injectable,
 	Logger,
 } from '@nestjs/common';
-import { CacheService } from '@nest-datum/services';
+import { CacheService } from 'nest-datum/cache/src';
 import { AccessStatusSeeder } from './access-status.seeder';
 import { AccessOptionSeeder } from './access-option.seeder';
 import { AccessAccessOptionSeeder } from './access-access-option.seeder';
@@ -60,26 +60,26 @@ export class SeedService {
 
 	async send() {
 		try {
-			await this.cacheService.clear(`${process.env.APP_ID}.accessStatus.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.accessStatus.one`);
-			await this.cacheService.clear(`${process.env.APP_ID}.accessOption.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.accessOption.one`);
-			await this.cacheService.clear(`${process.env.APP_ID}.access.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.access.one`);
-			await this.cacheService.clear(`${process.env.APP_ID}.roleStatus.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.roleStatus.one`);
-			await this.cacheService.clear(`${process.env.APP_ID}.roleOption.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.roleOption.one`);
-			await this.cacheService.clear(`${process.env.APP_ID}.role.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.role.one`);
-			await this.cacheService.clear(`${process.env.APP_ID}.userStatus.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.userStatus.one`);
-			await this.cacheService.clear(`${process.env.APP_ID}.userOption.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.userOption.one`);
-			await this.cacheService.clear(`${process.env.APP_ID}.user.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.user.one`);
-			await this.cacheService.clear(`${process.env.APP_ID}.setting.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.setting.one`);
+			await this.cacheService.clear([ 'access', 'status', 'many' ]);
+			await this.cacheService.clear([ 'access', 'status', 'one' ]);
+			await this.cacheService.clear([ 'access', 'option', 'many' ]);
+			await this.cacheService.clear([ 'access', 'option', 'one' ]);
+			await this.cacheService.clear([ 'access', 'many' ]);
+			await this.cacheService.clear([ 'access', 'one' ]);
+			await this.cacheService.clear([ 'role', 'status', 'many' ]);
+			await this.cacheService.clear([ 'role', 'status', 'one' ]);
+			await this.cacheService.clear([ 'role', 'option', 'many' ]);
+			await this.cacheService.clear([ 'role', 'option', 'one' ]);
+			await this.cacheService.clear([ 'role', 'many' ]);
+			await this.cacheService.clear([ 'role', 'one' ]);
+			await this.cacheService.clear([ 'user', 'status', 'many' ]);
+			await this.cacheService.clear([ 'user', 'status', 'one' ]);
+			await this.cacheService.clear([ 'user', 'option', 'many' ]);
+			await this.cacheService.clear([ 'user', 'option', 'one' ]);
+			await this.cacheService.clear([ 'user', 'many' ]);
+			await this.cacheService.clear([ 'user', 'one' ]);
+			await this.cacheService.clear([ 'setting', 'many' ]);
+			await this.cacheService.clear([ 'setting', 'one' ]);
 
 			await Bluebird.each(this.seeders, async (seeder) => {
 				this.logger.log(`Seeding ${seeder.constructor.name}`);

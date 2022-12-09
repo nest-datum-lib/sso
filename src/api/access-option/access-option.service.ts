@@ -11,24 +11,21 @@ import {
 	Repository,
 	Connection, 
 } from 'typeorm';
+import { SqlService } from 'nest-datum/sql/src';
+import { CacheService } from 'nest-datum/cache/src';
 import { 
-	MysqlService,
-	RegistryService,
-	LogsService,
-	CacheService, 
-} from '@nest-datum/services';
-import { ErrorException } from '@nest-datum/exceptions';
+	ErrorException,
+	NotFoundException, 
+} from 'nest-datum/exceptions/src';
 import { AccessOption } from './access-option.entity';
 import { AccessAccessOption } from '../access-access-option/access-access-option.entity';
 
 @Injectable()
-export class AccessOptionService extends MysqlService {
+export class AccessOptionService extends SqlService {
 	constructor(
 		@InjectRepository(AccessOption) private readonly accessOptionRepository: Repository<AccessOption>,
 		@InjectRepository(AccessAccessOption) private readonly accessAccessOptionRepository: Repository<AccessAccessOption>,
 		private readonly connection: Connection,
-		private readonly registryService: RegistryService,
-		private readonly logsService: LogsService,
 		private readonly cacheService: CacheService,
 	) {
 		super();
@@ -56,50 +53,54 @@ export class AccessOptionService extends MysqlService {
 		regex: true,
 	};
 
-	async many(payload): Promise<any> {
+	async many({ user, ...payload }): Promise<any> {
 		try {
-			const cachedData = await this.cacheService.get(`${process.env.APP_ID}.accessOption.many`, payload);
+			const cachedData = await this.cacheService.get([ 'access', 'option', 'many', payload ]);
 
 			if (cachedData) {
 				return cachedData;
 			}
 			const output = await this.accessOptionRepository.findAndCount(await this.findMany(payload));
 
-			await this.cacheService.set(`${process.env.APP_ID}.accessOption.many`, payload, output);
+			await this.cacheService.set([ 'access', 'option', 'many', payload ], output);
 			
 			return output;
 		}
 		catch (err) {
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 		return [ [], 0 ];
 	}
 
-	async one(payload): Promise<any> {
+	async one({ user, ...payload }): Promise<any> {
 		try {
-			const cachedData = await this.cacheService.get(`${process.env.APP_ID}.accessOption.one`, payload);
+			const cachedData = await this.cacheService.get([ 'access', 'option', 'one', payload ]);
 
 			if (cachedData) {
 				return cachedData;
 			}
 			const output = await this.accessOptionRepository.findOne(await this.findOne(payload));
 		
-			await this.cacheService.set(`${process.env.APP_ID}.accessOption.one`, payload, output);
-
+			if (output) {
+				await this.cacheService.set([ 'access', 'option', 'one', payload ], output);
+			}
+			if (!output) {
+				return new NotFoundException('Entity is undefined', getCurrentLine(), { user, ...payload });
+			}
 			return output;
 		}
 		catch (err) {
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 	}
 
-	async drop(payload): Promise<any> {
+	async drop({ user, ...payload }): Promise<any> {
 		const queryRunner = await this.connection.createQueryRunner(); 
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.accessOption.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.accessOption.one`, payload);
+			await this.cacheService.clear([ 'access', 'option', 'many' ]);
+			await this.cacheService.clear([ 'access', 'option', 'one', payload ]);
 
 			await this.accessAccessOptionRepository.delete({ accessOptionId: payload['id'] });
 			await this.dropByIsDeleted(this.accessOptionRepository, payload['id']);
@@ -112,20 +113,20 @@ export class AccessOptionService extends MysqlService {
 			await queryRunner.rollbackTransaction();
 			await queryRunner.release();
 
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 		finally {
 			await queryRunner.release();
 		}
 	}
 
-	async dropMany(payload): Promise<any> {
+	async dropMany({ user, ...payload }): Promise<any> {
 		const queryRunner = await this.connection.createQueryRunner(); 
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.accessOption.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.accessOption.one`, payload);
+			await this.cacheService.clear([ 'access', 'option', 'many' ]);
+			await this.cacheService.clear([ 'access', 'option', 'one', payload ]);
 
 			let i = 0;
 
@@ -142,7 +143,7 @@ export class AccessOptionService extends MysqlService {
 			await queryRunner.rollbackTransaction();
 			await queryRunner.release();
 
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 		finally {
 			await queryRunner.release();
@@ -154,7 +155,7 @@ export class AccessOptionService extends MysqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.accessOption.many`);
+			await this.cacheService.clear([ 'access', 'option', 'many' ]);
 
 			const output = await this.accessOptionRepository.save({
 				...payload,
@@ -181,13 +182,10 @@ export class AccessOptionService extends MysqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.accessOption.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.accessOption.one`);
+			await this.cacheService.clear([ 'access', 'option', 'many' ]);
+			await this.cacheService.clear([ 'access', 'option', 'one' ]);
 			
-			await this.updateWithId(this.accessOptionRepository, {
-				...payload,
-				userId: payload['userId'] || user['id'] || '',
-			});
+			await this.updateWithId(this.accessOptionRepository, payload);
 			
 			await queryRunner.commitTransaction();
 			

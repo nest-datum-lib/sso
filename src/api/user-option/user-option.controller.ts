@@ -1,19 +1,18 @@
 import getCurrentLine from 'get-current-line';
-import * as Validators from '@nest-datum/validators';
 import { Controller } from '@nestjs/common';
-import { MessagePattern } from '@nestjs/microservices';
 import { 
-	RegistryService,
-	LogsService, 
-} from '@nest-datum/services';
+	MessagePattern,
+	EventPattern, 
+} from '@nestjs/microservices';
+import { BalancerService } from 'nest-datum/balancer/src';
+import * as Validators from 'nest-datum/validators/src';
 import { UserOptionService } from './user-option.service';
 
 @Controller()
 export class UserOptionController {
 	constructor(
-		private readonly registryService: RegistryService,
-		private readonly logsService: LogsService,
 		private readonly userOptionService: UserOptionService,
+		private readonly balancerService: BalancerService,
 	) {
 	}
 
@@ -22,12 +21,8 @@ export class UserOptionController {
 		try {
 			const many = await this.userOptionService.many({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					secret: process.env.JWT_SECRET_ACCESS_KEY,
-					timeout: process.env.JWT_ACCESS_TIMEOUT,
+					accesses: [ process['ACCESS_SSO_USER_OPTION_MANY'] ],
 					isRequired: true,
-					role: {
-						name: [ 'Admin' ],
-					},
 				}),
 				relations: Validators.obj('relations', payload['relations']),
 				select: Validators.obj('select', payload['select']),
@@ -47,13 +42,16 @@ export class UserOptionController {
 				}),
 			});
 
+			this.balancerService.decrementServiceResponseLoadingIndicator();
+
 			return {
 				total: many[1],
 				rows: many[0],
 			};
 		}
 		catch (err) {
-			this.logsService.emit(err);
+			this.balancerService.log(err);
+			this.balancerService.decrementServiceResponseLoadingIndicator();
 
 			return err;
 		}
@@ -62,14 +60,10 @@ export class UserOptionController {
 	@MessagePattern({ cmd: 'userOption.one' })
 	async one(payload) {
 		try {
-			return await this.userOptionService.one({
+			const output = await this.userOptionService.one({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					secret: process.env.JWT_SECRET_ACCESS_KEY,
-					timeout: process.env.JWT_ACCESS_TIMEOUT,
+					accesses: [ process['ACCESS_SSO_USER_OPTION_ONE'] ],
 					isRequired: true,
-					role: {
-						name: [ 'Admin' ],
-					},
 				}),
 				relations: Validators.obj('relations', payload['relations']),
 				select: Validators.obj('select', payload['select']),
@@ -77,51 +71,51 @@ export class UserOptionController {
 					isRequired: true,
 				}),
 			});
+
+			this.balancerService.decrementServiceResponseLoadingIndicator();
+
+			return output;
 		}
 		catch (err) {
-			this.logsService.emit(err);
+			this.balancerService.log(err);
+			this.balancerService.decrementServiceResponseLoadingIndicator();
 
 			return err;
 		}
 	}
 
-	@MessagePattern({ cmd: 'userOption.drop' })
+	@EventPattern('userOption.drop')
 	async drop(payload) {
 		try {
 			await this.userOptionService.drop({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					secret: process.env.JWT_SECRET_ACCESS_KEY,
-					timeout: process.env.JWT_ACCESS_TIMEOUT,
+					accesses: [ process['ACCESS_SSO_USER_OPTION_DROP'] ],
 					isRequired: true,
-					role: {
-						name: [ 'Admin' ],
-					},
 				}),
 				id: Validators.id('id', payload['id'], {
 					isRequired: true,
 				}),
 			});
 
+			this.balancerService.decrementServiceResponseLoadingIndicator();
+
 			return true;
 		}
 		catch (err) {
-			this.logsService.emit(err);
+			this.balancerService.log(err);
+			this.balancerService.decrementServiceResponseLoadingIndicator();
 
 			return err;
 		}
 	}
 
-	@MessagePattern({ cmd: 'userOption.dropMany' })
+	@EventPattern('userOption.dropMany')
 	async dropMany(payload) {
 		try {
 			await this.userOptionService.dropMany({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					secret: process.env.JWT_SECRET_ACCESS_KEY,
-					timeout: process.env.JWT_ACCESS_TIMEOUT,
+					accesses: [ process['ACCESS_SSO_USER_OPTION_DROP_MANY'] ],
 					isRequired: true,
-					role: {
-						name: [ 'Admin' ],
-					},
 				}),
 				ids: Validators.arr('ids', payload['ids'], {
 					isRequired: true,
@@ -129,26 +123,25 @@ export class UserOptionController {
 				}),
 			});
 
+			this.balancerService.decrementServiceResponseLoadingIndicator();
+
 			return true;
 		}
 		catch (err) {
-			this.logsService.emit(err);
+			this.balancerService.log(err);
+			this.balancerService.decrementServiceResponseLoadingIndicator();
 
 			return err;
 		}
 	}
 
-	@MessagePattern({ cmd: 'userOption.create' })
+	@EventPattern('userOption.create')
 	async create(payload) {
 		try {
-			return await this.userOptionService.create({
+			const output = await this.userOptionService.create({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					secret: process.env.JWT_SECRET_ACCESS_KEY,
-					timeout: process.env.JWT_ACCESS_TIMEOUT,
+					accesses: [ process['ACCESS_SSO_USER_OPTION_CREATE'] ],
 					isRequired: true,
-					role: {
-						name: [ 'Admin' ],
-					},
 				}),
 				id: Validators.id('id', payload['id']),
 				userId: Validators.id('userId', payload['userId']),
@@ -174,23 +167,20 @@ export class UserOptionController {
 			});
 		}
 		catch (err) {
-			this.logsService.emit(err);
+			this.balancerService.log(err);
+			this.balancerService.decrementServiceResponseLoadingIndicator();
 
 			return err;
 		}
 	}
 
-	@MessagePattern({ cmd: 'userOption.update' })
+	@EventPattern('userOption.update')
 	async update(payload) {
 		try {
 			await this.userOptionService.update({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					secret: process.env.JWT_SECRET_ACCESS_KEY,
-					timeout: process.env.JWT_ACCESS_TIMEOUT,
+					accesses: [ process['ACCESS_SSO_USER_OPTION_UPDATE'] ],
 					isRequired: true,
-					role: {
-						name: [ 'Admin' ],
-					},
 				}),
 				id: Validators.id('id', payload['id']),
 				newId: Validators.id('newId', payload['newId']),
@@ -215,10 +205,13 @@ export class UserOptionController {
 				createdAt: Validators.date('createdAt', payload['createdAt']),
 			});
 
+			this.balancerService.decrementServiceResponseLoadingIndicator();
+
 			return true;
 		}
 		catch (err) {
-			this.logsService.emit(err);
+			this.balancerService.log(err);
+			this.balancerService.decrementServiceResponseLoadingIndicator();
 
 			return err;
 		}

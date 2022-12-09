@@ -11,26 +11,23 @@ import {
 	Repository,
 	Connection, 
 } from 'typeorm';
+import { SqlService } from 'nest-datum/sql/src';
+import { CacheService } from 'nest-datum/cache/src';
 import { 
-	MysqlService,
-	RegistryService,
-	LogsService,
-	CacheService, 
-} from '@nest-datum/services';
-import { ErrorException } from '@nest-datum/exceptions';
+	ErrorException,
+	NotFoundException, 
+} from 'nest-datum/exceptions/src';
 import { Access } from './access.entity';
 import { AccessAccessOption } from '../access-access-option/access-access-option.entity';
 import { AccessAccessAccessOption } from '../access-access-access-option/access-access-access-option.entity';
 
 @Injectable()
-export class AccessService extends MysqlService {
+export class AccessService extends SqlService {
 	constructor(
 		@InjectRepository(Access) private readonly accessRepository: Repository<Access>,
 		@InjectRepository(AccessAccessOption) private readonly accessAccessOptionRepository: Repository<AccessAccessOption>,
 		@InjectRepository(AccessAccessAccessOption) private readonly accessAccessAccessOptionRepository: Repository<AccessAccessAccessOption>,
 		private readonly connection: Connection,
-		private readonly registryService: RegistryService,
-		private readonly logsService: LogsService,
 		private readonly cacheService: CacheService,
 	) {
 		super();
@@ -54,49 +51,51 @@ export class AccessService extends MysqlService {
 		description: true,
 	};
 
-	async many(payload): Promise<any> {
+	async many({ user, ...payload }): Promise<any> {
 		try {
-			const cachedData = await this.cacheService.get(`${process.env.APP_ID}.access.many`, payload);
+			const cachedData = await this.cacheService.get([ 'access', 'many', payload ]);
 
 			if (cachedData) {
 				return cachedData;
 			}
 			const output = await this.accessRepository.findAndCount(await this.findMany(payload));
 
-			await this.cacheService.set(`${process.env.APP_ID}.access.many`, payload, output);
+			await this.cacheService.set([ 'access', 'many', payload ], output);
 			
 			return output;
 		}
 		catch (err) {
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
-		await this.registryService.clearResources();
-
 		return [ [], 0 ];
 	}
 
-	async one(payload): Promise<any> {
+	async one({ user, ...payload }): Promise<any> {
 		try {
-			const cachedData = await this.cacheService.get(`${process.env.APP_ID}.access.one`, payload);
+			const cachedData = await this.cacheService.get([ 'access', 'one', payload ]);
 
 			if (cachedData) {
 				return cachedData;
 			}
 			const output = await this.accessRepository.findOne(await this.findOne(payload));
 		
-			await this.cacheService.set(`${process.env.APP_ID}.access.one`, payload, output);
-
+			if (output) {
+				await this.cacheService.set([ 'access', 'one', payload ], output);
+			}
+			if (!output) {
+				return new NotFoundException('Entity is undefined', getCurrentLine(), { user, ...payload });
+			}
 			return output;
 		}
 		catch (err) {
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 	}
 
-	async drop(payload): Promise<any> {
+	async drop({ user, ...payload }): Promise<any> {
 		try {
-			await this.cacheService.clear(`${process.env.APP_ID}.access.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.access.one`, payload);
+			await this.cacheService.clear([ 'access', 'many' ]);
+			await this.cacheService.clear([ 'access', 'one', payload ]);
 
 			await this.accessAccessAccessOptionRepository.delete({ accessId: payload['id'] });
 			await this.accessAccessOptionRepository.delete({ accessId: payload['id'] });
@@ -105,17 +104,17 @@ export class AccessService extends MysqlService {
 			return true;
 		}
 		catch (err) {
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 	}
 
-	async dropMany(payload): Promise<any> {
+	async dropMany({ user, ...payload }): Promise<any> {
 		const queryRunner = await this.connection.createQueryRunner(); 
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.access.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.access.one`, payload);
+			await this.cacheService.clear([ 'access', 'many' ]);
+			await this.cacheService.clear([ 'access', 'one', payload ]);
 
 			let i = 0;
 
@@ -133,21 +132,21 @@ export class AccessService extends MysqlService {
 			await queryRunner.rollbackTransaction();
 			await queryRunner.release();
 
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 		finally {
 			await queryRunner.release();
 		}
 	}
 
-	async dropOption(payload): Promise<any> {
+	async dropOption({ user, ...payload }): Promise<any> {
 		const queryRunner = await this.connection.createQueryRunner(); 
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.access.one`);
-			await this.cacheService.clear(`${process.env.APP_ID}.access.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.accessOption.many`);
+			await this.cacheService.clear([ 'access', 'one' ]);
+			await this.cacheService.clear([ 'access', 'many' ]);
+			await this.cacheService.clear([ 'access', 'option', 'many' ]);
 
 			await this.accessAccessAccessOptionRepository.delete({ accessAccessOptionId: payload['id'] });
 			await this.accessAccessOptionRepository.delete({ id: payload['id'] });
@@ -160,7 +159,7 @@ export class AccessService extends MysqlService {
 			await queryRunner.rollbackTransaction();
 			await queryRunner.release();
 
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 		finally {
 			await queryRunner.release();
@@ -172,7 +171,7 @@ export class AccessService extends MysqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.access.many`);
+			await this.cacheService.clear([ 'access', 'many' ]);
 
 			const output = await this.accessRepository.save({
 				...payload,
@@ -204,9 +203,9 @@ export class AccessService extends MysqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.access.one`);
-			await this.cacheService.clear(`${process.env.APP_ID}.access.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.accessOption.many`);
+			await this.cacheService.clear([ 'access', 'one' ]);
+			await this.cacheService.clear([ 'access', 'many' ]);
+			await this.cacheService.clear([ 'access', 'option', 'many' ]);
 
 			const accessAccessOption = await this.accessAccessOptionRepository.save({
 				accessId: id,
@@ -241,7 +240,7 @@ export class AccessService extends MysqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.access.many`);
+			await this.cacheService.clear([ 'access', 'many' ]);
 
 			await this.accessAccessAccessOptionRepository.delete({
 				accessId: id,
@@ -293,13 +292,10 @@ export class AccessService extends MysqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.access.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.access.one`);
+			await this.cacheService.clear([ 'access', 'many' ]);
+			await this.cacheService.clear([ 'access', 'one' ]);
 			
-			await this.updateWithId(this.accessRepository, {
-				...payload,
-				userId: payload['userId'] || user['id'] || '',
-			});
+			await this.updateWithId(this.accessRepository, payload);
 			
 			await queryRunner.commitTransaction();
 			

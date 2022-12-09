@@ -11,28 +11,25 @@ import {
 	Repository,
 	Connection, 
 } from 'typeorm';
+import { SqlService } from 'nest-datum/sql/src';
+import { CacheService } from 'nest-datum/cache/src';
 import { 
-	MysqlService,
-	RegistryService,
-	LogsService,
-	CacheService, 
-} from '@nest-datum/services';
-import { ErrorException } from '@nest-datum/exceptions';
+	ErrorException,
+	NotFoundException, 
+} from 'nest-datum/exceptions/src';
 import { Role } from './role.entity';
 import { RoleRoleRoleOption } from '../role-role-role-option/role-role-role-option.entity';
 import { RoleRoleOption } from '../role-role-option/role-role-option.entity';
 import { RoleAccess } from '../role-access/role-access.entity';
 
 @Injectable()
-export class RoleService extends MysqlService {
+export class RoleService extends SqlService {
 	constructor(
 		@InjectRepository(Role) private readonly roleRepository: Repository<Role>,
 		@InjectRepository(RoleRoleRoleOption) private readonly roleRoleRoleOptionRepository: Repository<RoleRoleRoleOption>,
 		@InjectRepository(RoleRoleOption) private readonly roleRoleOptionRepository: Repository<RoleRoleOption>,
 		@InjectRepository(RoleAccess) private readonly roleAccessRepository: Repository<RoleAccess>,
 		private readonly connection: Connection,
-		private readonly registryService: RegistryService,
-		private readonly logsService: LogsService,
 		private readonly cacheService: CacheService,
 	) {
 		super();
@@ -56,51 +53,55 @@ export class RoleService extends MysqlService {
 		description: true,
 	};
 
-	async many(payload): Promise<any> {
+	async many({ user, ...payload }): Promise<any> {
 		try {
-			const cachedData = await this.cacheService.get(`${process.env.APP_ID}.role.many`, payload);
+			const cachedData = await this.cacheService.get([ 'role', 'many', payload ]);
 
 			if (cachedData) {
 				return cachedData;
 			}
 			const output = await this.roleRepository.findAndCount(await this.findMany(payload));
 
-			await this.cacheService.set(`${process.env.APP_ID}.role.many`, payload, output);
+			await this.cacheService.set([ 'role', 'many', payload ], output);
 			
 			return output;
 		}
 		catch (err) {
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 
 		return [ [], 0 ];
 	}
 
-	async one(payload): Promise<any> {
+	async one({ user, ...payload }): Promise<any> {
 		try {
-			const cachedData = await this.cacheService.get(`${process.env.APP_ID}.role.one`, payload);
+			const cachedData = await this.cacheService.get([ 'role', 'one', payload ]);
 
 			if (cachedData) {
 				return cachedData;
 			}
 			const output = await this.roleRepository.findOne(await this.findOne(payload));
-		
-			await this.cacheService.set(`${process.env.APP_ID}.role.one`, payload, output);
-
+			
+			if (output) {
+				await this.cacheService.set([ 'role', 'one', payload ], output);
+			}
+			if (!output) {
+				return new NotFoundException('Entity is undefined', getCurrentLine(), { user, ...payload });
+			}
 			return output;
 		}
 		catch (err) {
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 	}
 
-	async drop(payload): Promise<any> {
+	async drop({ user, ...payload }): Promise<any> {
 		const queryRunner = await this.connection.createQueryRunner(); 
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.role.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.role.one`, payload);
+			await this.cacheService.clear([ 'role', 'many' ]);
+			await this.cacheService.clear([ 'role', 'one', payload ]);
 
 			await this.roleRoleRoleOptionRepository.delete({ roleId: payload['id'] });
 			await this.roleRoleOptionRepository.delete({ roleId: payload['id'] });
@@ -114,20 +115,20 @@ export class RoleService extends MysqlService {
 			await queryRunner.rollbackTransaction();
 			await queryRunner.release();
 
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 		finally {
 			await queryRunner.release();
 		}
 	}
 
-	async dropMany(payload): Promise<any> {
+	async dropMany({ user, ...payload }): Promise<any> {
 		const queryRunner = await this.connection.createQueryRunner(); 
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.role.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.role.one`, payload);
+			await this.cacheService.clear([ 'role', 'many' ]);
+			await this.cacheService.clear([ 'role', 'one', payload ]);
 
 			let i = 0;
 
@@ -145,21 +146,21 @@ export class RoleService extends MysqlService {
 			await queryRunner.rollbackTransaction();
 			await queryRunner.release();
 
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 		finally {
 			await queryRunner.release();
 		}
 	}
 
-	async dropOption(payload): Promise<any> {
+	async dropOption({ user, ...payload }): Promise<any> {
 		const queryRunner = await this.connection.createQueryRunner(); 
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.role.one`);
-			await this.cacheService.clear(`${process.env.APP_ID}.role.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.roleOption.many`);
+			await this.cacheService.clear([ 'role', 'one' ]);
+			await this.cacheService.clear([ 'role', 'many' ]);
+			await this.cacheService.clear([ 'role', 'option', 'many' ]);
 
 			await this.roleRoleRoleOptionRepository.delete({ roleRoleOptionId: payload['id'] });
 			await this.roleRoleOptionRepository.delete({ id: payload['id'] });
@@ -172,7 +173,7 @@ export class RoleService extends MysqlService {
 			await queryRunner.rollbackTransaction();
 			await queryRunner.release();
 
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 		finally {
 			await queryRunner.release();
@@ -184,7 +185,7 @@ export class RoleService extends MysqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.role.many`);
+			await this.cacheService.clear([ 'role', 'many' ]);
 
 			const output = await this.roleRepository.save({
 				...payload,
@@ -216,9 +217,9 @@ export class RoleService extends MysqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.role.one`);
-			await this.cacheService.clear(`${process.env.APP_ID}.role.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.roleOption.many`);
+			await this.cacheService.clear([ 'role', 'one' ]);
+			await this.cacheService.clear([ 'role', 'many' ]);
+			await this.cacheService.clear([ 'role', 'option', 'many' ]);
 
 			const roleRoleOption = await this.roleRoleOptionRepository.save({
 				roleId: id,
@@ -253,7 +254,7 @@ export class RoleService extends MysqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.role.many`);
+			await this.cacheService.clear([ 'role', 'many' ]);
 
 			await this.roleRoleRoleOptionRepository.delete({
 				roleId: id,
@@ -305,8 +306,8 @@ export class RoleService extends MysqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.role.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.access.many`)
+			await this.cacheService.clear([ 'role', 'many' ]);
+			await this.cacheService.clear([ 'access', 'many' ]);
 
 			await this.roleAccessRepository.delete({
 				roleId: id,
@@ -350,13 +351,10 @@ export class RoleService extends MysqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.role.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.role.one`);
+			await this.cacheService.clear([ 'role', 'many' ]);
+			await this.cacheService.clear([ 'role', 'one' ]);
 			
-			await this.updateWithId(this.roleRepository, {
-				...payload,
-				userId: payload['userId'] || user['id'] || '',
-			});
+			await this.updateWithId(this.roleRepository, payload);
 			
 			await queryRunner.commitTransaction();
 			

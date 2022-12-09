@@ -11,22 +11,19 @@ import {
 	Repository,
 	Connection, 
 } from 'typeorm';
+import { SqlService } from 'nest-datum/sql/src';
+import { CacheService } from 'nest-datum/cache/src';
 import { 
-	MysqlService,
-	RegistryService,
-	LogsService,
-	CacheService, 
-} from '@nest-datum/services';
-import { ErrorException } from '@nest-datum/exceptions';
+	ErrorException,
+	NotFoundException, 
+} from 'nest-datum/exceptions/src';
 import { UserStatus } from './user-status.entity';
 
 @Injectable()
-export class UserStatusService extends MysqlService {
+export class UserStatusService extends SqlService {
 	constructor(
 		@InjectRepository(UserStatus) private readonly userStatusRepository: Repository<UserStatus>,
 		private readonly connection: Connection,
-		private readonly registryService: RegistryService,
-		private readonly logsService: LogsService,
 		private readonly cacheService: CacheService,
 	) {
 		super();
@@ -49,72 +46,69 @@ export class UserStatusService extends MysqlService {
 		description: true,
 	};
 
-	async many(payload): Promise<any> {
+	async many({ user, ...payload }): Promise<any> {
 		try {
-			const cachedData = await this.cacheService.get(`${process.env.APP_ID}.userStatus.many`, payload);
+			const cachedData = await this.cacheService.get([ 'user', 'status', 'many', payload ]);
 
 			if (cachedData) {
 				return cachedData;
 			}
 			const output = await this.userStatusRepository.findAndCount(await this.findMany(payload));
 
-			await this.cacheService.set(`${process.env.APP_ID}.userStatus.many`, payload, output);
+			await this.cacheService.set([ 'user', 'status', 'many', payload ], output);
 			
 			return output;
 		}
 		catch (err) {
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
-		await this.registryService.clearResources();
 
 		return [ [], 0 ];
 	}
 
-	async one(payload): Promise<any> {
+	async one({ user, ...payload }): Promise<any> {
 		try {
-			const cachedData = await this.cacheService.get(`${process.env.APP_ID}.userStatus.one`, payload);
+			const cachedData = await this.cacheService.get([ 'user', 'status', 'one', payload ]);
 
 			if (cachedData) {
 				return cachedData;
 			}
 			const output = await this.userStatusRepository.findOne(await this.findOne(payload));
 		
-			await this.cacheService.set(`${process.env.APP_ID}.userStatus.one`, payload, output);
-			await this.registryService.clearResources();
-
+			if (output) {
+				await this.cacheService.set([ 'user', 'status', 'one', payload ], output);
+			}
+			if (!output) {
+				return new NotFoundException('Entity is undefined', getCurrentLine(), { user, ...payload });
+			}
 			return output;
 		}
 		catch (err) {
-			await this.registryService.clearResources();
-
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 	}
 
-	async drop(payload): Promise<any> {
+	async drop({ user, ...payload }): Promise<any> {
 		try {
-			await this.cacheService.clear(`${process.env.APP_ID}.userStatus.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.userStatus.one`, payload);
+			await this.cacheService.clear([ 'user', 'status', 'many' ]);
+			await this.cacheService.clear([ 'user', 'status', 'one', payload ]);
 
 			await this.dropByIsDeleted(this.userStatusRepository, payload['id']);
-			await this.registryService.clearResources();
-
+			
 			return true;
 		}
 		catch (err) {
-			await this.registryService.clearResources();
-
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 	}
 
-	async dropMany(payload): Promise<any> {
+	async dropMany({ user, ...payload }): Promise<any> {
 		const queryRunner = await this.connection.createQueryRunner(); 
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.userStatus.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.userStatus.one`, payload);
+			await this.cacheService.clear([ 'user', 'status', 'many' ]);
+			await this.cacheService.clear([ 'user', 'status', 'one', payload ]);
 
 			let i = 0;
 
@@ -123,20 +117,17 @@ export class UserStatusService extends MysqlService {
 				i++;
 			}
 			await queryRunner.commitTransaction();
-			await this.registryService.clearResources();
 
 			return true;
 		}
 		catch (err) {
 			await queryRunner.rollbackTransaction();
 			await queryRunner.release();
-			await this.registryService.clearResources();
 
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 		finally {
 			await queryRunner.release();
-			await this.registryService.clearResources();
 		}
 	}
 
@@ -145,7 +136,7 @@ export class UserStatusService extends MysqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.userStatus.many`);
+			await this.cacheService.clear([ 'user', 'status', 'many' ]);
 
 			const output = await this.userStatusRepository.save({
 				...payload,
@@ -153,20 +144,17 @@ export class UserStatusService extends MysqlService {
 			});
 
 			await queryRunner.commitTransaction();
-			await this.registryService.clearResources();
 
 			return output;
 		}
 		catch (err) {
 			await queryRunner.rollbackTransaction();
 			await queryRunner.release();
-			await this.registryService.clearResources();
 
 			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 		finally {
 			await queryRunner.release();
-			await this.registryService.clearResources();
 		}
 	}
 
@@ -175,29 +163,23 @@ export class UserStatusService extends MysqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear(`${process.env.APP_ID}.userStatus.many`);
-			await this.cacheService.clear(`${process.env.APP_ID}.userStatus.one`);
+			await this.cacheService.clear([ 'user', 'status', 'many' ]);
+			await this.cacheService.clear([ 'user', 'status', 'one' ]);
 			
-			await this.updateWithId(this.userStatusRepository, {
-				...payload,
-				userId: payload['userId'] || user['id'] || '',
-			});
+			await this.updateWithId(this.userStatusRepository, payload);
 			
 			await queryRunner.commitTransaction();
-			await this.registryService.clearResources();
 			
 			return true;
 		}
 		catch (err) {
 			await queryRunner.rollbackTransaction();
 			await queryRunner.release();
-			await this.registryService.clearResources();
 
 			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
 		}
 		finally {
 			await queryRunner.release();
-			await this.registryService.clearResources();
 		}
 	}
 }

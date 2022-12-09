@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { 
-	RegistryService,
-	LogsService,
-	CacheService, 
-} from '@nest-datum/services';
+	BalancerRepository,
+	BalancerService, 
+} from 'nest-datum/balancer/src';
+import { CacheService } from 'nest-datum/cache/src';
 import { UserStatus } from '../user-status/user-status.entity';
 import { UserUserOption } from '../user-user-option/user-user-option.entity';
 import { User } from './user.entity';
@@ -14,14 +14,16 @@ import { UserController } from './user.controller';
 @Module({
 	controllers: [ UserController ],
 	imports: [
-		TypeOrmModule.forFeature([ User ]),
-		TypeOrmModule.forFeature([ UserStatus ]),
-		TypeOrmModule.forFeature([ UserUserOption ]),
-		TypeOrmModule.forFeature([ User ]),
+		TypeOrmModule.forFeature([ 
+			User,
+			UserStatus,
+			UserUserOption,
+			User, 
+		]),
 	],
 	providers: [
-		RegistryService, 
-		LogsService,
+		BalancerRepository, 
+		BalancerService,
 		CacheService,
 		UserService, 
 	],

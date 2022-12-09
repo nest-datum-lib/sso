@@ -7,7 +7,7 @@ import {
 import { Promise as Bluebird } from 'bluebird';
 import { User } from 'src/api/user/user.entity';
 import { UserStatus } from 'src/api/user-status/user-status.entity';
-import { encryptPassword } from '@nest-datum/jwt';
+import { encryptPassword } from 'nest-datum/jwt/src';
 
 export class UserSeeder {
 	constructor(

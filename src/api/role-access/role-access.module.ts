@@ -6,9 +6,11 @@ import { Access } from '../access/access.entity';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([ RoleAccess ]),
-		TypeOrmModule.forFeature([ Role ]),
-		TypeOrmModule.forFeature([ Access ]),
+		TypeOrmModule.forFeature([ 
+			RoleAccess,
+			Role,
+			Access, 
+		]),
 	],
 })
 export class RoleAccessModule {

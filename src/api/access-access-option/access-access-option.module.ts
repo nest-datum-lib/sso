@@ -6,9 +6,11 @@ import { Access } from '../access/access.entity';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([ AccessAccessOption ]),
-		TypeOrmModule.forFeature([ AccessOption ]),
-		TypeOrmModule.forFeature([ Access ]),
+		TypeOrmModule.forFeature([ 
+			AccessAccessOption,
+			AccessOption,
+			Access, 
+		]),
 	],
 })
 export class AccessAccessOptionModule {

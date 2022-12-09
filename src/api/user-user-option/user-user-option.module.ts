@@ -5,8 +5,10 @@ import { User } from '../user/user.entity';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([ UserOption ]),
-		TypeOrmModule.forFeature([ User ]),
+		TypeOrmModule.forFeature([ 
+			UserOption,
+			User, 
+		]),
 	],
 })
 export class UserUserOptionModule {

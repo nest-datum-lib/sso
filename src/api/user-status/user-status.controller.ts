@@ -1,19 +1,18 @@
 import getCurrentLine from 'get-current-line';
-import * as Validators from '@nest-datum/validators';
 import { Controller } from '@nestjs/common';
-import { MessagePattern } from '@nestjs/microservices';
 import { 
-	RegistryService,
-	LogsService, 
-} from '@nest-datum/services';
+	MessagePattern,
+	EventPattern, 
+} from '@nestjs/microservices';
+import { BalancerService } from 'nest-datum/balancer/src';
+import * as Validators from 'nest-datum/validators/src';
 import { UserStatusService } from './user-status.service';
 
 @Controller()
 export class UserStatusController {
 	constructor(
-		private readonly registryService: RegistryService,
-		private readonly logsService: LogsService,
 		private readonly userStatusService: UserStatusService,
+		private readonly balancerService: BalancerService,
 	) {
 	}
 
@@ -22,12 +21,8 @@ export class UserStatusController {
 		try {
 			const many = await this.userStatusService.many({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					secret: process.env.JWT_SECRET_ACCESS_KEY,
-					timeout: process.env.JWT_ACCESS_TIMEOUT,
+					accesses: [ process['ACCESS_SSO_USER_STATUS_MANY'] ],
 					isRequired: true,
-					role: {
-						name: [ 'Admin' ],
-					},
 				}),
 				relations: Validators.obj('relations', payload['relations']),
 				select: Validators.obj('select', payload['select']),
@@ -47,13 +42,16 @@ export class UserStatusController {
 				}),
 			});
 
+			this.balancerService.decrementServiceResponseLoadingIndicator();
+
 			return {
 				total: many[1],
 				rows: many[0],
 			};
 		}
 		catch (err) {
-			this.logsService.emit(err);
+			this.balancerService.log(err);
+			this.balancerService.decrementServiceResponseLoadingIndicator();
 
 			return err;
 		}
@@ -62,14 +60,10 @@ export class UserStatusController {
 	@MessagePattern({ cmd: 'userStatus.one' })
 	async one(payload) {
 		try {
-			return await this.userStatusService.one({
+			const output = await this.userStatusService.one({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					secret: process.env.JWT_SECRET_ACCESS_KEY,
-					timeout: process.env.JWT_ACCESS_TIMEOUT,
+					accesses: [ process['ACCESS_SSO_USER_STATUS_ONE'] ],
 					isRequired: true,
-					role: {
-						name: [ 'Admin' ],
-					},
 				}),
 				relations: Validators.obj('relations', payload['relations']),
 				select: Validators.obj('select', payload['select']),
@@ -77,51 +71,51 @@ export class UserStatusController {
 					isRequired: true,
 				}),
 			});
+
+			this.balancerService.decrementServiceResponseLoadingIndicator();
+
+			return output;
 		}
 		catch (err) {
-			this.logsService.emit(err);
+			this.balancerService.log(err);
+			this.balancerService.decrementServiceResponseLoadingIndicator();
 
 			return err;
 		}
 	}
 
-	@MessagePattern({ cmd: 'userStatus.drop' })
+	@EventPattern('userStatus.drop')
 	async drop(payload) {
 		try {
 			await this.userStatusService.drop({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					secret: process.env.JWT_SECRET_ACCESS_KEY,
-					timeout: process.env.JWT_ACCESS_TIMEOUT,
+					accesses: [ process['ACCESS_SSO_USER_STATUS_DROP'] ],
 					isRequired: true,
-					role: {
-						name: [ 'Admin' ],
-					},
 				}),
 				id: Validators.id('id', payload['id'], {
 					isRequired: true,
 				}),
 			});
 
+			this.balancerService.decrementServiceResponseLoadingIndicator();
+
 			return true;
 		}
 		catch (err) {
-			this.logsService.emit(err);
+			this.balancerService.log(err);
+			this.balancerService.decrementServiceResponseLoadingIndicator();
 
 			return err;
 		}
 	}
 
-	@MessagePattern({ cmd: 'userStatus.dropMany' })
+	@EventPattern('userStatus.dropMany')
 	async dropMany(payload) {
 		try {
 			await this.userStatusService.dropMany({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					secret: process.env.JWT_SECRET_ACCESS_KEY,
-					timeout: process.env.JWT_ACCESS_TIMEOUT,
+					accesses: [ process['ACCESS_SSO_USER_STATUS_DROP_MANY'] ],
 					isRequired: true,
-					role: {
-						name: [ 'Admin' ],
-					},
 				}),
 				ids: Validators.arr('ids', payload['ids'], {
 					isRequired: true,
@@ -129,26 +123,25 @@ export class UserStatusController {
 				}),
 			});
 
+			this.balancerService.decrementServiceResponseLoadingIndicator();
+
 			return true;
 		}
 		catch (err) {
-			this.logsService.emit(err);
+			this.balancerService.log(err);
+			this.balancerService.decrementServiceResponseLoadingIndicator();
 
 			return err;
 		}
 	}
 
-	@MessagePattern({ cmd: 'userStatus.create' })
+	@EventPattern('userStatus.create')
 	async create(payload) {
 		try {
-			return await this.userStatusService.create({
+			const output = await this.userStatusService.create({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					secret: process.env.JWT_SECRET_ACCESS_KEY,
-					timeout: process.env.JWT_ACCESS_TIMEOUT,
+					accesses: [ process['ACCESS_SSO_USER_STATUS_CREATE'] ],
 					isRequired: true,
-					role: {
-						name: [ 'Admin' ],
-					},
 				}),
 				id: Validators.id('id', payload['id']),
 				userId: Validators.id('userId', payload['userId']),
@@ -163,25 +156,26 @@ export class UserStatusController {
 				}),
 				isNotDelete: Validators.bool('isNotDelete', payload['isNotDelete']),
 			});
+
+			this.balancerService.decrementServiceResponseLoadingIndicator();
+
+			return output;
 		}
 		catch (err) {
-			this.logsService.emit(err);
+			this.balancerService.log(err);
+			this.balancerService.decrementServiceResponseLoadingIndicator();
 
 			return err;
 		}
 	}
 
-	@MessagePattern({ cmd: 'userStatus.update' })
+	@EventPattern('userStatus.update')
 	async update(payload) {
 		try {
 			await this.userStatusService.update({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					secret: process.env.JWT_SECRET_ACCESS_KEY,
-					timeout: process.env.JWT_ACCESS_TIMEOUT,
+					accesses: [ process['ACCESS_SSO_USER_STATUS_UPDATE'] ],
 					isRequired: true,
-					role: {
-						name: [ 'Admin' ],
-					},
 				}),
 				id: Validators.id('id', payload['id']),
 				newId: Validators.id('newId', payload['newId']),
@@ -199,10 +193,13 @@ export class UserStatusController {
 				createdAt: Validators.date('createdAt', payload['createdAt']),
 			});
 
+			this.balancerService.decrementServiceResponseLoadingIndicator();
+
 			return true;
 		}
 		catch (err) {
-			this.logsService.emit(err);
+			this.balancerService.log(err);
+			this.balancerService.decrementServiceResponseLoadingIndicator();
 
 			return err;
 		}

@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { 
-	RegistryService,
-	LogsService,
-	CacheService, 
-} from '@nest-datum/services';
+	BalancerRepository,
+	BalancerService, 
+} from 'nest-datum/balancer/src';
+import { CacheService } from 'nest-datum/cache/src';
 import { Role } from '../role/role.entity';
 import { RoleAccess } from '../role-access/role-access.entity';
 import { AccessStatus } from '../access-status/access-status.entity';
@@ -17,16 +17,18 @@ import { AccessController } from './access.controller';
 @Module({
 	controllers: [ AccessController ],
 	imports: [
-		TypeOrmModule.forFeature([ Role ]),
-		TypeOrmModule.forFeature([ RoleAccess ]),
-		TypeOrmModule.forFeature([ AccessStatus ]),
-		TypeOrmModule.forFeature([ AccessAccessAccessOption ]),
-		TypeOrmModule.forFeature([ AccessAccessOption ]),
-		TypeOrmModule.forFeature([ Access ]),
+		TypeOrmModule.forFeature([ 
+			Role,
+			RoleAccess, 
+			AccessStatus,
+			AccessAccessAccessOption,
+			AccessAccessOption,
+			Access,
+		]),
 	],
 	providers: [
-		RegistryService, 
-		LogsService,
+		BalancerRepository, 
+		BalancerService,
 		CacheService,
 		AccessService, 
 	],
