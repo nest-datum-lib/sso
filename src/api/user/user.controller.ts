@@ -86,6 +86,8 @@ export class UserController {
 	@MessagePattern({ cmd: 'user.login' })
 	async login(payload) {
 		try {
+			console.log('0000')
+
 			const output = await this.userService.login({
 				login: Validators.str('login', payload['login'], {
 					isRequired: true,
@@ -97,11 +99,15 @@ export class UserController {
 				}),
 			});
 
+			console.log('------')
+
 			this.balancerService.decrementServiceResponseLoadingIndicator();
 
 			return output;
 		}
 		catch (err) {
+			console.log('err', err);
+
 			this.balancerService.log(err);
 			this.balancerService.decrementServiceResponseLoadingIndicator();
 

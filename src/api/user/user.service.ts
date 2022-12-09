@@ -137,11 +137,15 @@ export class UserService extends SqlService {
 
 	async login(payload): Promise<any> {
 		try {
+			console.log('11111', payload)
+
 			const user = await this.userRepository.findOne({
 				where: {
 					email: payload['login'],
 				},
 			});
+
+			console.log('222', user)
 
 			if (!user) {
 				throw new NotFoundException(`User with login "${payload['login']}" not found.`, getCurrentLine(), payload);
