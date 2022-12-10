@@ -142,10 +142,10 @@ export class RoleAccessController {
 					isRequired: true,
 				}),
 				id: Validators.id('id', payload['id']),
-				formId: Validators.id('formId', payload['formId'], {
+				roleId: Validators.id('roleId', payload['roleId'], {
 					isRequired: true,
 				}),
-				fieldId: Validators.id('fieldId', payload['fieldId'], {
+				accessId: Validators.id('accessId', payload['accessId'], {
 					isRequired: true,
 				}),
 			});
