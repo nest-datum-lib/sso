@@ -180,6 +180,58 @@ export class RoleService extends SqlService {
 		}
 	}
 
+	async createOptions({ user, id, data }): Promise<any> {
+		const queryRunner = await this.connection.createQueryRunner();
+
+		try {
+			await queryRunner.startTransaction();
+			await this.cacheService.clear([ 'role', 'many' ]);
+
+			await this.roleRoleRoleOptionRepository.delete({
+				roleId: id,
+			});
+
+			let i = 0,
+				ii = 0;
+
+			while (i < data.length) {
+				ii = 0;
+
+				const option = data[i];
+
+				while (ii < option.length) {
+					const {
+						entityOptionId,
+						entityId,
+						id: itemId,
+						...optionData
+					} = option[ii];
+
+					const output = await this.roleRoleRoleOptionRepository.save({
+						...optionData,
+						roleId: id,
+						roleRoleOptionId: entityOptionId,
+					});
+
+					ii++;
+				}
+				i++;
+			}
+			await queryRunner.commitTransaction();
+			
+			return true;
+		}
+		catch (err) {
+			await queryRunner.rollbackTransaction();
+			await queryRunner.release();
+
+			throw new ErrorException(err.message, getCurrentLine(), { user, id, data });
+		}
+		finally {
+			await queryRunner.release();
+		}
+	}
+
 	async createAccesses({ user, id, data }): Promise<any> {
 		const queryRunner = await this.connection.createQueryRunner(); 
 

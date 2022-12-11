@@ -170,6 +170,32 @@ export class RoleController {
 		}
 	}
 
+	@EventPattern('role.createOptions')
+	async createOptions(payload) {
+		try {
+			const output = await this.roleService.createOptions({
+				user: Validators.token('accessToken', payload['accessToken'], {
+					accesses: [ process['ACCESS_SSO_ROLE_CREATE_OPTIONS'] ],
+					isRequired: true,
+				}),
+				id: Validators.id('id', payload['id']),
+				data: Validators.arr('data', payload['data'], {
+					isRequired: true,
+				}),
+			});
+
+			this.balancerService.decrementServiceResponseLoadingIndicator();
+
+			return output;
+		}
+		catch (err) {
+			this.balancerService.log(err);
+			this.balancerService.decrementServiceResponseLoadingIndicator();
+
+			return err;
+		}
+	}
+
 	@EventPattern('role.update')
 	async update(payload) {
 		try {
