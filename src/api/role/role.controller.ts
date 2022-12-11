@@ -133,30 +133,6 @@ export class RoleController {
 		}
 	}
 
-	@EventPattern('role.dropOption')
-	async dropOption(payload) {
-		try {
-			await this.roleService.dropOption({
-				user: Validators.token('accessToken', payload['accessToken'], {
-					accesses: [ process['ACCESS_SSO_ROLE_DROP_OPTION'] ],
-					isRequired: true,
-				}),
-				id: Validators.id('id', payload['id'], {
-					isRequired: true,
-				}),
-			});
-			this.balancerService.decrementServiceResponseLoadingIndicator();
-
-			return true;
-		}
-		catch (err) {
-			this.balancerService.log(err);
-			this.balancerService.decrementServiceResponseLoadingIndicator();
-
-			return err;
-		}
-	}
-
 	@EventPattern('role.create')
 	async create(payload) {
 		try {
@@ -180,59 +156,6 @@ export class RoleController {
 					max: 255,
 				}),
 				isNotDelete: Validators.bool('isNotDelete', payload['isNotDelete']),
-			});
-
-			this.balancerService.decrementServiceResponseLoadingIndicator();
-
-			return output;
-		}
-		catch (err) {
-			this.balancerService.log(err);
-			this.balancerService.decrementServiceResponseLoadingIndicator();
-
-			return err;
-		}
-	}
-
-	@EventPattern('role.createOption')
-	async createOption(payload) {
-		try {
-			const output = await this.roleService.createOption({
-				user: Validators.token('accessToken', payload['accessToken'], {
-					accesses: [ process['ACCESS_SSO_ROLE_CREATE_OPTION'] ],
-					isRequired: true,
-				}),
-				id: Validators.id('id', payload['id']),
-				optionId: Validators.id('optionId', payload['optionId'], {
-					isRequired: true,
-				}),
-				data: Validators.arr('data', payload['data']) || {},
-			});
-
-			this.balancerService.decrementServiceResponseLoadingIndicator();
-
-			return output;
-		}
-		catch (err) {
-			this.balancerService.log(err);
-			this.balancerService.decrementServiceResponseLoadingIndicator();
-
-			return err;
-		}
-	}
-
-	@EventPattern('role.createOptions')
-	async createOptions(payload) {
-		try {
-			const output = await this.roleService.createOptions({
-				user: Validators.token('accessToken', payload['accessToken'], {
-					accesses: [ process['ACCESS_SSO_ROLE_CREATE_OPTIONS'] ],
-					isRequired: true,
-				}),
-				id: Validators.id('id', payload['id']),
-				data: Validators.arr('data', payload['data'], {
-					isRequired: true,
-				}),
 			});
 
 			this.balancerService.decrementServiceResponseLoadingIndicator();

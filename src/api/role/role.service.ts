@@ -153,33 +153,6 @@ export class RoleService extends SqlService {
 		}
 	}
 
-	async dropOption({ user, ...payload }): Promise<any> {
-		const queryRunner = await this.connection.createQueryRunner(); 
-
-		try {
-			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'role', 'one' ]);
-			await this.cacheService.clear([ 'role', 'many' ]);
-			await this.cacheService.clear([ 'role', 'option', 'many' ]);
-
-			await this.roleRoleRoleOptionRepository.delete({ roleRoleOptionId: payload['id'] });
-			await this.roleRoleOptionRepository.delete({ id: payload['id'] });
-
-			await queryRunner.commitTransaction();
-
-			return true;
-		}
-		catch (err) {
-			await queryRunner.rollbackTransaction();
-			await queryRunner.release();
-
-			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
-		}
-		finally {
-			await queryRunner.release();
-		}
-	}
-
 	async create({ user, ...payload }): Promise<any> {
 		const queryRunner = await this.connection.createQueryRunner(); 
 
@@ -201,100 +174,6 @@ export class RoleService extends SqlService {
 			await queryRunner.release();
 
 			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
-		}
-		finally {
-			await queryRunner.release();
-		}
-	}
-
-	async createOption({ 
-		user, 
-		id,
-		optionId, 
-		data, 
-	}): Promise<any> {
-		const queryRunner = await this.connection.createQueryRunner();
-
-		try {
-			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'role', 'one' ]);
-			await this.cacheService.clear([ 'role', 'many' ]);
-			await this.cacheService.clear([ 'role', 'option', 'many' ]);
-
-			const roleRoleOption = await this.roleRoleOptionRepository.save({
-				roleId: id,
-				roleOptionId: optionId,
-				...data,
-			});
-			
-			const output = await this.one({
-				user,
-				id,
-			});
-
-			output['roleRoleOptions'] = [ roleRoleOption ];
-
-			await queryRunner.commitTransaction();
-
-			return output;
-		}
-		catch (err) {
-			await queryRunner.rollbackTransaction();
-			await queryRunner.release();
-
-			throw new ErrorException(err.message, getCurrentLine(), { user, id, optionId, data });
-		}
-		finally {
-			await queryRunner.release();
-		}
-	}
-
-	async createOptions({ user, id, data }): Promise<any> {
-		const queryRunner = await this.connection.createQueryRunner();
-
-		try {
-			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'role', 'many' ]);
-
-			await this.roleRoleRoleOptionRepository.delete({
-				roleId: id,
-			});
-
-			let i = 0,
-				ii = 0;
-
-			while (i < data.length) {
-				ii = 0;
-
-				const option = data[i];
-
-				while (ii < option.length) {
-					const {
-						entityOptionId,
-						entityId,
-						id: itemId,
-						...optionData
-					} = option[ii];
-
-					const output = await this.roleRoleRoleOptionRepository.save({
-						...optionData,
-						roleId: id,
-						roleRoleOptionId: entityOptionId,
-					});
-
-					ii++;
-				}
-				i++;
-			}
-			await queryRunner.commitTransaction();
-			
-			return true;
-		}
-		catch (err) {
-			await queryRunner.rollbackTransaction();
-			await queryRunner.release();
-
-			throw new ErrorException(err.message, getCurrentLine(), { user, id, data });
 		}
 		finally {
 			await queryRunner.release();

@@ -6,22 +6,22 @@ import {
 } from '@nestjs/microservices';
 import { BalancerService } from 'nest-datum/balancer/src';
 import * as Validators from 'nest-datum/validators/src';
-import { AccessService } from './access.service';
+import { AccessAccessOptionService } from './access-access-option.service';
 
 @Controller()
-export class AccessController {
+export class AccessAccessOptionController {
 	constructor(
-		private readonly accessService: AccessService,
+		private readonly accessAccessOptionService: AccessAccessOptionService,
 		private readonly balancerService: BalancerService,
 	) {
 	}
 
-	@MessagePattern({ cmd: 'access.many' })
+	@MessagePattern({ cmd: 'accessOptionRelation.many' })
 	async many(payload) {
 		try {
-			const many = await this.accessService.many({
+			const many = await this.accessAccessOptionService.many({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					accesses: [ process['ACCESS_SSO_ACCESS_MANY'] ],
+					accesses: [ process['ACCESS_SSO_ACCESS_OPTION_RELATION_MANY'] ],
 					isRequired: true,
 				}),
 				relations: Validators.obj('relations', payload['relations']),
@@ -57,12 +57,12 @@ export class AccessController {
 		}
 	}
 
-	@MessagePattern({ cmd: 'access.one' })
+	@MessagePattern({ cmd: 'accessOptionRelation.one' })
 	async one(payload) {
 		try {
-			const output = await this.accessService.one({
+			const output = await this.accessAccessOptionService.one({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					accesses: [ process['ACCESS_SSO_ACCESS_ONE'] ],
+					accesses: [ process['ACCESS_SSO_ACCESS_OPTION_RELATION_ONE'] ],
 					isRequired: true,
 				}),
 				relations: Validators.obj('relations', payload['relations']),
@@ -84,12 +84,12 @@ export class AccessController {
 		}
 	}
 
-	@EventPattern('access.drop')
+	@EventPattern('accessOptionRelation.drop')
 	async drop(payload) {
 		try {
-			await this.accessService.drop({
+			await this.accessAccessOptionService.drop({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					accesses: [ process['ACCESS_SSO_ACCESS_DROP'] ],
+					accesses: [ process['ACCESS_SSO_ACCESS_OPTION_RELATION_DROP'] ],
 					isRequired: true,
 				}),
 				id: Validators.id('id', payload['id'], {
@@ -108,12 +108,12 @@ export class AccessController {
 		}
 	}
 
-	@EventPattern('access.dropMany')
+	@EventPattern('accessOptionRelation.dropMany')
 	async dropMany(payload) {
 		try {
-			await this.accessService.dropMany({
+			await this.accessAccessOptionService.dropMany({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					accesses: [ process['ACCESS_SSO_ACCESS_DROP_MANY'] ],
+					accesses: [ process['ACCESS_SSO_ACCESS_OPTION_RELATION_DROP_MANY'] ],
 					isRequired: true,
 				}),
 				ids: Validators.arr('ids', payload['ids'], {
@@ -133,71 +133,26 @@ export class AccessController {
 		}
 	}
 
-	@EventPattern('access.create')
+	@EventPattern('accessOptionRelation.create')
 	async create(payload) {
 		try {
-			const output = await this.accessService.create({
+			const output = await this.accessAccessOptionService.create({
 				user: Validators.token('accessToken', payload['accessToken'], {
-					accesses: [ process['ACCESS_SSO_ACCESS_CREATE'] ],
+					accesses: [ process['ACCESS_SSO_ACCESS_OPTION_RELATION_CREATE'] ],
 					isRequired: true,
 				}),
 				id: Validators.id('id', payload['id']),
-				userId: Validators.id('userId', payload['userId']),
-				roleStatusId: Validators.id('roleStatusId', payload['roleStatusId'], {
+				accessId: Validators.id('accessId', payload['accessId'], {
 					isRequired: true,
 				}),
-				name: Validators.str('name', payload['name'], {
+				accessOptionId: Validators.id('accessOptionId', payload['accessOptionId'], {
 					isRequired: true,
-					min: 1,
-					max: 255,
 				}),
-				description: Validators.str('description', payload['description'], {
-					min: 1,
-					max: 255,
-				}),
-				isNotDelete: Validators.bool('isNotDelete', payload['isNotDelete']),
 			});
 
 			this.balancerService.decrementServiceResponseLoadingIndicator();
 
 			return output;
-		}
-		catch (err) {
-			this.balancerService.log(err);
-			this.balancerService.decrementServiceResponseLoadingIndicator();
-
-			return err;
-		}
-	}
-
-	@EventPattern('access.update')
-	async update(payload) {
-		try {
-			await this.accessService.update({
-				user: Validators.token('accessToken', payload['accessToken'], {
-					accesses: [ process['ACCESS_SSO_ACCESS_UPDATE'] ],
-					isRequired: true,
-				}),
-				id: Validators.id('id', payload['id']),
-				newId: Validators.id('newId', payload['newId']),
-				userId: Validators.id('userId', payload['userId']),
-				roleStatusId: Validators.id('roleStatusId', payload['roleStatusId']),
-				name: Validators.str('name', payload['name'], {
-					min: 1,
-					max: 255,
-				}),
-				description: Validators.str('description', payload['description'], {
-					min: 1,
-					max: 255,
-				}),
-				isNotDelete: Validators.bool('isNotDelete', payload['isNotDelete']),
-				isDeleted: Validators.bool('isDeleted', payload['isDeleted']),
-				createdAt: Validators.date('createdAt', payload['createdAt']),
-			});
-
-			this.balancerService.decrementServiceResponseLoadingIndicator();
-
-			return true;
 		}
 		catch (err) {
 			this.balancerService.log(err);
