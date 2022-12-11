@@ -100,8 +100,9 @@ export class RoleService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'role', 'many' ]);
-			await this.cacheService.clear([ 'role', 'one', payload ]);
+			
+			this.cacheService.clear([ 'role', 'many' ]);
+			this.cacheService.clear([ 'role', 'one', payload ]);
 
 			await this.roleRoleRoleOptionRepository.delete({ roleId: payload['id'] });
 			await this.roleRoleOptionRepository.delete({ roleId: payload['id'] });
@@ -127,8 +128,9 @@ export class RoleService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'role', 'many' ]);
-			await this.cacheService.clear([ 'role', 'one', payload ]);
+			
+			this.cacheService.clear([ 'role', 'many' ]);
+			this.cacheService.clear([ 'role', 'one', payload ]);
 
 			let i = 0;
 
@@ -158,7 +160,8 @@ export class RoleService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'role', 'many' ]);
+			
+			this.cacheService.clear([ 'role', 'many' ]);
 
 			const output = await this.roleRepository.save({
 				...payload,
@@ -185,7 +188,10 @@ export class RoleService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'role', 'many' ]);
+			
+			this.cacheService.clear([ 'role', 'option', 'many' ]);
+			this.cacheService.clear([ 'role', 'many' ]);
+			this.cacheService.clear([ 'role', 'one' ]);
 
 			await this.roleRoleRoleOptionRepository.delete({
 				roleId: id,
@@ -237,8 +243,9 @@ export class RoleService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'role', 'many' ]);
-			await this.cacheService.clear([ 'access', 'many' ]);
+			
+			this.cacheService.clear([ 'role', 'many' ]);
+			this.cacheService.clear([ 'access', 'many' ]);
 
 			await this.roleAccessRepository.delete({
 				roleId: id,
@@ -282,8 +289,9 @@ export class RoleService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'role', 'many' ]);
-			await this.cacheService.clear([ 'role', 'one' ]);
+			
+			this.cacheService.clear([ 'role', 'many' ]);
+			this.cacheService.clear([ 'role', 'one' ]);
 			
 			await this.updateWithId(this.roleRepository, payload);
 			

@@ -99,8 +99,9 @@ export class RoleOptionService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'role', 'option', 'many' ]);
-			await this.cacheService.clear([ 'role', 'option', 'one', payload ]);
+			
+			this.cacheService.clear([ 'role', 'option', 'many' ]);
+			this.cacheService.clear([ 'role', 'option', 'one', payload ]);
 
 			await this.roleRoleOptionRepository.delete({ roleOptionId: payload['id'] });
 			await this.dropByIsDeleted(this.roleOptionRepository, payload['id']);
@@ -125,8 +126,9 @@ export class RoleOptionService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'role', 'option', 'many' ]);
-			await this.cacheService.clear([ 'role', 'option', 'one', payload ]);
+			
+			this.cacheService.clear([ 'role', 'option', 'many' ]);
+			this.cacheService.clear([ 'role', 'option', 'one', payload ]);
 
 			let i = 0;
 
@@ -155,7 +157,8 @@ export class RoleOptionService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'role', 'option', 'many' ]);
+			
+			this.cacheService.clear([ 'role', 'option', 'many' ]);
 
 			const output = await this.roleOptionRepository.save({
 				...payload,
@@ -182,8 +185,9 @@ export class RoleOptionService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'role', 'option', 'many' ]);
-			await this.cacheService.clear([ 'role', 'option', 'one' ]);
+			
+			this.cacheService.clear([ 'role', 'option', 'many' ]);
+			this.cacheService.clear([ 'role', 'option', 'one' ]);
 			
 			await this.updateWithId(this.roleOptionRepository, payload);
 			

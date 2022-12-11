@@ -90,8 +90,8 @@ export class RoleStatusService extends SqlService {
 
 	async drop({ user, ...payload }): Promise<any> {
 		try {
-			await this.cacheService.clear([ 'role', 'status', 'many' ]);
-			await this.cacheService.clear([ 'role', 'status', 'one', payload ]);
+			this.cacheService.clear([ 'role', 'status', 'many' ]);
+			this.cacheService.clear([ 'role', 'status', 'one', payload ]);
 
 			await this.dropByIsDeleted(this.roleStatusRepository, payload['id']);
 			
@@ -107,8 +107,9 @@ export class RoleStatusService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'role', 'status', 'many' ]);
-			await this.cacheService.clear([ 'role', 'status', 'one', payload ]);
+			
+			this.cacheService.clear([ 'role', 'status', 'many' ]);
+			this.cacheService.clear([ 'role', 'status', 'one', payload ]);
 
 			let i = 0;
 
@@ -136,7 +137,8 @@ export class RoleStatusService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'role', 'status', 'many' ]);
+			
+			this.cacheService.clear([ 'role', 'status', 'many' ]);
 
 			const output = await this.roleStatusRepository.save({
 				...payload,
@@ -163,8 +165,9 @@ export class RoleStatusService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'role', 'status', 'many' ]);
-			await this.cacheService.clear([ 'role', 'status', 'one' ]);
+			
+			this.cacheService.clear([ 'role', 'status', 'many' ]);
+			this.cacheService.clear([ 'role', 'status', 'one' ]);
 			
 			await this.updateWithId(this.roleStatusRepository, payload);
 			

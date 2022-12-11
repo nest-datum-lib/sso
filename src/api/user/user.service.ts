@@ -63,7 +63,7 @@ export class UserService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'user', 'many' ]);
+			this.cacheService.clear([ 'user', 'many' ]);
 
 			const data = {
 				...payload,
@@ -102,7 +102,7 @@ export class UserService extends SqlService {
 
 	async verify(payload): Promise<any> {
 		try {
-			await this.cacheService.clear([ 'user', 'many' ]);
+			this.cacheService.clear([ 'user', 'many' ]);
 
 			const user = await this.userRepository.findOne({
 				where: {
@@ -292,8 +292,9 @@ export class UserService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'user', 'many' ]);
-			await this.cacheService.clear([ 'user', 'one', payload ]);
+			
+			this.cacheService.clear([ 'user', 'many' ]);
+			this.cacheService.clear([ 'user', 'one', payload ]);
 
 			await this.userUserOptionRepository.delete({ userId: payload['id'] });
 			await this.dropByIsDeleted(this.userRepository, payload['id']);
@@ -318,8 +319,9 @@ export class UserService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'user', 'many' ]);
-			await this.cacheService.clear([ 'user', 'one', payload ]);
+			
+			this.cacheService.clear([ 'user', 'many' ]);
+			this.cacheService.clear([ 'user', 'one', payload ]);
 
 			let i = 0;
 
@@ -348,7 +350,8 @@ export class UserService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'user', 'many' ]);
+			
+			this.cacheService.clear([ 'user', 'many' ]);
 
 			const output = await this.userRepository.save(payload);
 
@@ -372,7 +375,8 @@ export class UserService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'user', 'many' ]);
+			
+			this.cacheService.clear([ 'user', 'many' ]);
 
 			await this.userUserOptionRepository.delete({
 				userId: id,
@@ -417,8 +421,9 @@ export class UserService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'user', 'many' ]);
-			await this.cacheService.clear([ 'user', 'one' ]);
+			
+			this.cacheService.clear([ 'user', 'many' ]);
+			this.cacheService.clear([ 'user', 'one' ]);
 			
 			await this.updateWithId(this.userRepository, payload);
 			

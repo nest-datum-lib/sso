@@ -93,8 +93,8 @@ export class SettingService extends SqlService {
 
 	async drop({ user, ...payload }): Promise<any> {
 		try {
-			await this.cacheService.clear([ 'setting', 'many' ]);
-			await this.cacheService.clear([ 'setting', 'one', payload ]);
+			this.cacheService.clear([ 'setting', 'many' ]);
+			this.cacheService.clear([ 'setting', 'one', payload ]);
 
 			await this.dropByIsDeleted(this.settingRepository, payload['id']);
 
@@ -110,8 +110,9 @@ export class SettingService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'setting', 'many' ]);
-			await this.cacheService.clear([ 'setting', 'one', payload ]);
+			
+			this.cacheService.clear([ 'setting', 'many' ]);
+			this.cacheService.clear([ 'setting', 'one', payload ]);
 
 			let i = 0;
 
@@ -139,7 +140,8 @@ export class SettingService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'setting', 'many' ]);
+			
+			this.cacheService.clear([ 'setting', 'many' ]);
 
 			const output = await this.settingRepository.save({
 				...payload,
@@ -166,8 +168,9 @@ export class SettingService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'setting', 'many' ]);
-			await this.cacheService.clear([ 'setting', 'one' ]);
+			
+			this.cacheService.clear([ 'setting', 'many' ]);
+			this.cacheService.clear([ 'setting', 'one' ]);
 			
 			await this.updateWithId(this.settingRepository, payload);
 			

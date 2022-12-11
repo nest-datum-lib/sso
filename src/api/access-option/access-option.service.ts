@@ -99,8 +99,9 @@ export class AccessOptionService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'access', 'option', 'many' ]);
-			await this.cacheService.clear([ 'access', 'option', 'one', payload ]);
+			
+			this.cacheService.clear([ 'access', 'option', 'many' ]);
+			this.cacheService.clear([ 'access', 'option', 'one', payload ]);
 
 			await this.accessAccessOptionRepository.delete({ accessOptionId: payload['id'] });
 			await this.dropByIsDeleted(this.accessOptionRepository, payload['id']);
@@ -125,8 +126,9 @@ export class AccessOptionService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'access', 'option', 'many' ]);
-			await this.cacheService.clear([ 'access', 'option', 'one', payload ]);
+			
+			this.cacheService.clear([ 'access', 'option', 'many' ]);
+			this.cacheService.clear([ 'access', 'option', 'one', payload ]);
 
 			let i = 0;
 
@@ -155,7 +157,8 @@ export class AccessOptionService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'access', 'option', 'many' ]);
+			
+			this.cacheService.clear([ 'access', 'option', 'many' ]);
 
 			const output = await this.accessOptionRepository.save({
 				...payload,
@@ -182,8 +185,9 @@ export class AccessOptionService extends SqlService {
 
 		try {
 			await queryRunner.startTransaction();
-			await this.cacheService.clear([ 'access', 'option', 'many' ]);
-			await this.cacheService.clear([ 'access', 'option', 'one' ]);
+			
+			this.cacheService.clear([ 'access', 'option', 'many' ]);
+			this.cacheService.clear([ 'access', 'option', 'one' ]);
 			
 			await this.updateWithId(this.accessOptionRepository, payload);
 			
