@@ -385,12 +385,23 @@ export class UserService extends SqlService {
 			let i = 0,
 				ii = 0;
 
+			console.log('data', data);
+
 			while (i < data.length) {
 				ii = 0;
 
 				const option = data[i];
 
+				console.log('option', option);
+
 				while (ii < option.length) {
+					console.log('===========', {
+						...option[ii],
+						userId: option[ii]['entityId'],
+						userOptionId: option[ii]['entityOptionId'],
+						id: option[ii]['id'] || uuidv4(),
+					});
+
 					const output = await this.userUserOptionRepository.save({
 						...option[ii],
 						userId: option[ii]['entityId'],
@@ -406,6 +417,8 @@ export class UserService extends SqlService {
 			return true;
 		}
 		catch (err) {
+			console.log('err', err);
+
 			await queryRunner.rollbackTransaction();
 			await queryRunner.release();
 
