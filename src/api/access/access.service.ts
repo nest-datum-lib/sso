@@ -97,9 +97,10 @@ export class AccessService extends SqlService {
 			this.cacheService.clear([ 'access', 'many' ]);
 			this.cacheService.clear([ 'access', 'one', payload ]);
 
-			await this.accessAccessAccessOptionRepository.delete({ accessId: payload['id'] });
-			await this.accessAccessOptionRepository.delete({ accessId: payload['id'] });
-			await this.dropByIsDeleted(this.accessRepository, payload['id']);
+			await this.dropByIsDeleted(this.accessRepository, payload['id'], async (entity) => {
+				await this.accessAccessAccessOptionRepository.delete({ accessId: entity['id'] });
+				await this.accessAccessOptionRepository.delete({ accessId: entity['id'] });
+			});
 
 			return true;
 		}
@@ -120,9 +121,10 @@ export class AccessService extends SqlService {
 			let i = 0;
 
 			while (i < payload['ids'].length) {
-				await this.accessAccessAccessOptionRepository.delete({ accessId: payload['ids'][i] });
-				await this.accessAccessOptionRepository.delete({ accessId: payload['ids'][i] });
-				await this.dropByIsDeleted(this.accessRepository, payload['ids'][i]);
+				await this.dropByIsDeleted(this.accessRepository, payload['ids'][i], async (entity) => {
+					await this.accessAccessAccessOptionRepository.delete({ accessId: entity['id'] });
+					await this.accessAccessOptionRepository.delete({ accessId: entity['id'] });
+				});
 				i++;
 			}
 			await queryRunner.commitTransaction();

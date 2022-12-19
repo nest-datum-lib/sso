@@ -103,8 +103,9 @@ export class RoleOptionService extends SqlService {
 			this.cacheService.clear([ 'role', 'option', 'many' ]);
 			this.cacheService.clear([ 'role', 'option', 'one', payload ]);
 
-			await this.roleRoleOptionRepository.delete({ roleOptionId: payload['id'] });
-			await this.dropByIsDeleted(this.roleOptionRepository, payload['id']);
+			await this.dropByIsDeleted(this.roleOptionRepository, payload['id'], async (entity) => {
+				await this.roleRoleOptionRepository.delete({ roleOptionId: entity['id'] });
+			});
 
 			await queryRunner.commitTransaction();
 
@@ -133,8 +134,9 @@ export class RoleOptionService extends SqlService {
 			let i = 0;
 
 			while (i < payload['ids'].length) {
-				await this.roleRoleOptionRepository.delete({ roleOptionId: payload['ids'][i] });
-				await this.dropByIsDeleted(this.roleOptionRepository, payload['ids'][i]);
+				await this.dropByIsDeleted(this.roleOptionRepository, payload['ids'][i], async (entity) => {
+					await this.roleRoleOptionRepository.delete({ roleOptionId: entity['id'] });
+				});
 				i++;
 			}
 			await queryRunner.commitTransaction();

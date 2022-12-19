@@ -103,8 +103,9 @@ export class AccessOptionService extends SqlService {
 			this.cacheService.clear([ 'access', 'option', 'many' ]);
 			this.cacheService.clear([ 'access', 'option', 'one', payload ]);
 
-			await this.accessAccessOptionRepository.delete({ accessOptionId: payload['id'] });
-			await this.dropByIsDeleted(this.accessOptionRepository, payload['id']);
+			await this.dropByIsDeleted(this.accessOptionRepository, payload['id'], async (entity) => {
+				await this.accessAccessOptionRepository.delete({ accessOptionId: entity['id'] });
+			});
 
 			await queryRunner.commitTransaction();
 
@@ -133,8 +134,9 @@ export class AccessOptionService extends SqlService {
 			let i = 0;
 
 			while (i < payload['ids'].length) {
-				await this.accessAccessOptionRepository.delete({ accessOptionId: payload['ids'][i] });
-				await this.dropByIsDeleted(this.accessOptionRepository, payload['ids'][i]);
+				await this.dropByIsDeleted(this.accessOptionRepository, payload['ids'][i], async (entity) => {
+					await this.accessAccessOptionRepository.delete({ accessOptionId: entity['id'] });
+				});
 				i++;
 			}
 			await queryRunner.commitTransaction();

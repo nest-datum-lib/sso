@@ -296,8 +296,9 @@ export class UserService extends SqlService {
 			this.cacheService.clear([ 'user', 'many' ]);
 			this.cacheService.clear([ 'user', 'one', payload ]);
 
-			await this.userUserOptionRepository.delete({ userId: payload['id'] });
-			await this.dropByIsDeleted(this.userRepository, payload['id']);
+			await this.dropByIsDeleted(this.userRepository, payload['id'], async (entity) => {
+				await this.userUserOptionRepository.delete({ userId: entity['id'] });
+			});
 
 			await queryRunner.commitTransaction();
 
@@ -326,8 +327,9 @@ export class UserService extends SqlService {
 			let i = 0;
 
 			while (i < payload['ids'].length) {
-				await this.userUserOptionRepository.delete({ userId: payload['ids'][i] });
-				await this.dropByIsDeleted(this.userRepository, payload['ids'][i]);
+				await this.dropByIsDeleted(this.userRepository, payload['ids'][i], async (entity) => {
+					await this.userUserOptionRepository.delete({ userId: entity['id'] });
+				});
 				i++;
 			}
 			await queryRunner.commitTransaction();
