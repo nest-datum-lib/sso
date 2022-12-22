@@ -183,7 +183,8 @@ export class BalancerService {
 
 		if (transporter
 			&& await this.transporterConnected(transporter, replica['id'], replica['serviceResponsLoadingIndicator'])) {
-			const isCreate = cmd.includes('.create');
+			const isCreate = cmd.includes('.create')
+				|| cmd.includes('.send');
 
 			if (isCreate
 				&& typeof payload === 'object'
