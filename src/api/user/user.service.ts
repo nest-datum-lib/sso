@@ -76,6 +76,9 @@ export class UserService extends SqlService {
 				password: await encryptPassword(payload['password']),
 				emailVerifyKey: await generateVerifyKey(payload['email']),
 			};
+
+			console.log('data', data);
+
 			const output = await this.userRepository.save(data);
 
 			await this.userUserOptionRepository.save({
