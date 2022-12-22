@@ -171,15 +171,24 @@ export class BalancerService {
 			name,
 			id,
 		} = query;
+		const isSend = cmd.includes('.send');
 		const replica =  await this.balancerRepository.selectLessLoaded({
 			id,
 			name,
 		});
 
+		if (isSend) {
+			console.log('replica', replica);
+		}
+
 		if (!replica) {
 			throw new NotFoundException(`Service replica ${name} not found`, getCurrentLine(), { name, cmd, payload });
 		}
 		const transporter = this.getTransporter(replica);
+
+		if (transporter) {
+			console.log('transporter', transporter);
+		}
 
 		if (transporter
 			&& await this.transporterConnected(transporter, replica['id'], replica['serviceResponsLoadingIndicator'])) {
@@ -196,6 +205,10 @@ export class BalancerService {
 			if (isCreate
 				|| cmd.includes('.update')
 				|| cmd.includes('.drop')) {
+				if (isSend) {
+					console.log('cmd', payload);
+				}
+
 				transporter.emit(cmd, { ...payload });
 			}
 			else {

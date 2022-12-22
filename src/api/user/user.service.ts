@@ -88,16 +88,20 @@ export class UserService extends SqlService {
 				userOptionId: 'sso-user-option-lastname',
 				content: lastname,
 			});
+			await queryRunner.commitTransaction();
 
 			// TODO: перехват ошибки и откат транзакции
-			await this.balancerService.send({ 
+			this.balancerService.send({ 
 				name: 'mail',
 				cmd: 'letter.send',
 			}, {
-				id: 'letter-register', 
-				body: data,
+				letterId: 'mail-letter-register', 
+				body: {
+					...data,
+					firstname,
+					lastname,
+				},
 			});
-			await queryRunner.commitTransaction();
 
 			return {
 				id: output['id'],
@@ -105,6 +109,8 @@ export class UserService extends SqlService {
 			};
 		}
 		catch (err) {
+			console.log('err', err);
+
 			await queryRunner.rollbackTransaction();
 			await queryRunner.release();
 
