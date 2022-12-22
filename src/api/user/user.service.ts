@@ -65,12 +65,29 @@ export class UserService extends SqlService {
 			await queryRunner.startTransaction();
 			this.cacheService.clear([ 'user', 'many' ]);
 
+			const firstname = payload['firstname'];
+			const lastname = payload['lastname'];
+
+			delete payload['firstname'];
+			delete payload['lastname'];
+
 			const data = {
 				...payload,
 				password: await encryptPassword(payload['password']),
 				emailVerifyKey: await generateVerifyKey(payload['email']),
 			};
 			const output = await this.userRepository.save(data);
+
+			await this.userUserOptionRepository.save({
+				userId: output['id'],
+				userOptionId: 'sso-user-option-firstname',
+				content: firstname,
+			});
+			await this.userUserOptionRepository.save({
+				userId: output['id'],
+				userOptionId: 'sso-user-option-lastname',
+				content: lastname,
+			});
 
 			// TODO: перехват ошибки и откат транзакции
 			await this.balancerService.send({ 
@@ -85,8 +102,6 @@ export class UserService extends SqlService {
 			return {
 				id: output['id'],
 				login: output['id'],
-				firstname: output['firstname'],
-				lastname: output['lastname'],
 			};
 		}
 		catch (err) {
