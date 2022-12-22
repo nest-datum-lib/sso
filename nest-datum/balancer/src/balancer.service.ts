@@ -186,7 +186,7 @@ export class BalancerService {
 		}
 		const transporter = this.getTransporter(replica);
 
-		if (transporter) {
+		if (isSend) {
 			console.log('transporter', transporter);
 		}
 
