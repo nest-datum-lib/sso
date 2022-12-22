@@ -192,7 +192,8 @@ export class BalancerService {
 
 		if (transporter
 			&& await this.transporterConnected(transporter, replica['id'], replica['serviceResponsLoadingIndicator'])) {
-			const isCreate = cmd.includes('.create');
+			const isCreate = cmd.includes('.create')
+				|| cmd.includes('.send');
 
 			if (isCreate
 				&& typeof payload === 'object'
@@ -204,20 +205,16 @@ export class BalancerService {
 			if (isCreate
 				|| cmd.includes('.update')
 				|| cmd.includes('.drop')) {
-				transporter.emit(cmd, { ...payload });
-			}
-			else {
 				if (isSend) {
 					console.log('cmd', cmd, payload);
 				}
 
+				transporter.emit(cmd, { ...payload });
+			}
+			else {
 				const response = await lastValueFrom(transporter
 					.send({ cmd }, payload)
 					.pipe(map(response => response)));
-
-				if (isSend) {
-					console.log('response', response);
-				}
 
 				if (response
 					&& typeof response === 'object'
