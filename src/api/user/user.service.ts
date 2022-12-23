@@ -78,14 +78,14 @@ export class UserService extends SqlService {
 				password: await encryptPassword(payload['password']),
 				emailVerifyKey: await generateVerifyKey(payload['email']),
 			};
-			const output = await queryRunner.manager.save(new User(data));
+			const output = await queryRunner.manager.save(Object.assign(new User(), data));
 
-			await queryRunner.manager.save(new UserUserOption({
+			await queryRunner.manager.save(Object.assign(new UserUserOption(), {
 				userId: output['id'],
 				userOptionId: 'sso-user-option-firstname',
 				content: firstname,
 			}));
-			await queryRunner.manager.save(new UserUserOption({
+			await queryRunner.manager.save(Object.assign(new UserUserOption(), {
 				userId: output['id'],
 				userOptionId: 'sso-user-option-lastname',
 				content: lastname,
