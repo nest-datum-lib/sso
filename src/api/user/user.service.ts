@@ -22,6 +22,7 @@ import {
 	encryptPassword,
 	checkPassword,
 	generateTokens,
+	generateAccessToken,
 } from 'nest-datum/jwt/src';
 import { User } from './user.entity';
 import { UserUserOption } from '../user-user-option/user-user-option.entity';
@@ -96,6 +97,11 @@ export class UserService extends SqlService {
 			}, {
 				letterId: 'mail-letter-register', 
 				body: {
+					accessToken: generateAccessToken({
+						id: 'sso-user-admin',
+						roleId: 'sso-role-admin',
+						email: process.env.USER_ROOT_EMAIL,
+					}, Date.now()),
 					...data,
 					firstname,
 					lastname,
