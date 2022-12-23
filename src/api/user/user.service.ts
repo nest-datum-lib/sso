@@ -88,10 +88,9 @@ export class UserService extends SqlService {
 				userOptionId: 'sso-user-option-lastname',
 				content: lastname,
 			});
-			await queryRunner.commitTransaction();
 
 			// TODO: перехват ошибки и откат транзакции
-			this.balancerService.send({ 
+			await this.balancerService.send({ 
 				name: 'mail',
 				cmd: 'letter.send',
 			}, {
@@ -102,6 +101,8 @@ export class UserService extends SqlService {
 					lastname,
 				},
 			});
+
+			await queryRunner.commitTransaction();
 
 			return {
 				id: output['id'],
