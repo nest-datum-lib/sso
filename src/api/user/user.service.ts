@@ -108,7 +108,6 @@ export class UserService extends SqlService {
 					lastname,
 				},
 			});
-			console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAaa');
 
 			await queryRunner.commitTransaction();
 
@@ -118,8 +117,6 @@ export class UserService extends SqlService {
 			};
 		}
 		catch (err) {
-			console.log('err!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11', err);
-
 			await queryRunner.rollbackTransaction();
 			await queryRunner.release();
 

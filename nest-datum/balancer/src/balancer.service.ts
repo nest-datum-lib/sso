@@ -225,8 +225,6 @@ export class BalancerService {
 				delete payload['accessToken'];
 				delete payload['refreshToken'];
 			}
-			console.log('payload', payload);
-
 			return payload;
 		}
 		throw new NotFoundException(`Service not found.`, getCurrentLine(), { name, cmd, payload });
