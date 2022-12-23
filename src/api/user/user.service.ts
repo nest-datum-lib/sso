@@ -96,13 +96,13 @@ export class UserService extends SqlService {
 				name: 'mail',
 				cmd: 'letter.send',
 			}, {
+				accessToken: generateAccessToken({
+					id: 'sso-user-admin',
+					roleId: 'sso-role-admin',
+					email: process.env.USER_ROOT_EMAIL,
+				}, Date.now()),
 				letterId: 'mail-letter-register', 
 				body: {
-					accessToken: generateAccessToken({
-						id: 'sso-user-admin',
-						roleId: 'sso-role-admin',
-						email: process.env.USER_ROOT_EMAIL,
-					}, Date.now()),
 					...data,
 					firstname,
 					lastname,
