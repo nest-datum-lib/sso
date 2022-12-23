@@ -171,28 +171,20 @@ export class BalancerService {
 			name,
 			id,
 		} = query;
-		const isSend = cmd.includes('.send');
 		const replica =  await this.balancerRepository.selectLessLoaded({
 			id,
 			name,
 		});
-
-		if (isSend) {
-			console.log('replica', replica);
-		}
 
 		if (!replica) {
 			throw new NotFoundException(`Service replica ${name} not found`, getCurrentLine(), { name, cmd, payload });
 		}
 		const transporter = this.getTransporter(replica);
 
-		if (isSend) {
-			console.log('transporter', transporter);
-		}
-
 		if (transporter
 			&& await this.transporterConnected(transporter, replica['id'], replica['serviceResponsLoadingIndicator'])) {
-			const isCreate = cmd.includes('.create');
+			const isCreate = cmd.includes('.create')
+				|| cmd.includes('.send');
 
 			if (isCreate
 				&& typeof payload === 'object'
@@ -207,17 +199,9 @@ export class BalancerService {
 				transporter.emit(cmd, { ...payload });
 			}
 			else {
-				if (isSend) {
-					console.log('cmd', cmd, payload);
-				}
-
 				const response = await lastValueFrom(transporter
 					.send({ cmd }, payload)
 					.pipe(map(response => response)));
-
-				if (isSend) {
-					console.log('response', response);
-				}
 
 				if (response
 					&& typeof response === 'object'
@@ -226,11 +210,7 @@ export class BalancerService {
 						case '404':
 							throw new NotFoundException(response['message'], getCurrentLine(), { name, cmd, payload });
 						case '403':
-							console.log('??????????');
-
-							throw new Error(response['message']);
-
-							// throw new WarningException(response['message'], getCurrentLine(), { name, cmd, payload });
+							throw new WarningException(response['message'], getCurrentLine(), { name, cmd, payload });
 						default:
 							throw new ErrorException(response['message'], getCurrentLine(), { name, cmd, payload });
 					}
@@ -245,6 +225,8 @@ export class BalancerService {
 				delete payload['accessToken'];
 				delete payload['refreshToken'];
 			}
+			console.log('payload', payload);
+
 			return payload;
 		}
 		throw new NotFoundException(`Service not found.`, getCurrentLine(), { name, cmd, payload });
