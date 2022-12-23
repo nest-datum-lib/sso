@@ -107,6 +107,7 @@ export class UserService extends SqlService {
 					lastname,
 				},
 			});
+			console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAaa');
 
 			await queryRunner.commitTransaction();
 
