@@ -33,9 +33,9 @@ export class RoleSeeder {
 				isNotDelete: true,
 				userId: 'sso-user-admin',
 			}, {
-				id: 'sso-role-preload',
-				name: 'Preload',
-				description: 'User waiting for account validation after registration.',
+				id: 'sso-role-member',
+				name: 'Member',
+				description: 'Basic access for ordinary registered users.',
 				roleStatusId: 'sso-role-status-active',
 				isNotDelete: true,
 				userId: 'sso-user-admin',

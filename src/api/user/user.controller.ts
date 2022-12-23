@@ -45,8 +45,8 @@ export class UserController {
 					isRequired: true,
 					value: payload['password'],
 				}),
-				roleId: 'sso-role-preload',
-				userStatusId: 'sso-user-status-active',
+				roleId: 'sso-role-member',
+				userStatusId: 'sso-user-status-new',
 			});
 
 			this.balancerService.decrementServiceResponseLoadingIndicator();
