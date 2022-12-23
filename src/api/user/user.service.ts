@@ -116,7 +116,7 @@ export class UserService extends SqlService {
 			};
 		}
 		catch (err) {
-			console.log('err', err);
+			console.log('err!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11', err);
 
 			await queryRunner.rollbackTransaction();
 			await queryRunner.release();

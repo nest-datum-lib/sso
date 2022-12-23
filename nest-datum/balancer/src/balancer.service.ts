@@ -226,7 +226,11 @@ export class BalancerService {
 						case '404':
 							throw new NotFoundException(response['message'], getCurrentLine(), { name, cmd, payload });
 						case '403':
-							throw new WarningException(response['message'], getCurrentLine(), { name, cmd, payload });
+							console.log('??????????');
+
+							throw new Error(response['message']);
+
+							// throw new WarningException(response['message'], getCurrentLine(), { name, cmd, payload });
 						default:
 							throw new ErrorException(response['message'], getCurrentLine(), { name, cmd, payload });
 					}
