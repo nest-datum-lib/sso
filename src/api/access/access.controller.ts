@@ -143,7 +143,7 @@ export class AccessController {
 				}),
 				id: Validators.id('id', payload['id']),
 				userId: Validators.id('userId', payload['userId']),
-				roleStatusId: Validators.id('roleStatusId', payload['roleStatusId'], {
+				accessStatusId: Validators.id('accessStatusId', payload['accessStatusId'], {
 					isRequired: true,
 				}),
 				name: Validators.str('name', payload['name'], {
@@ -207,7 +207,7 @@ export class AccessController {
 				id: Validators.id('id', payload['id']),
 				newId: Validators.id('newId', payload['newId']),
 				userId: Validators.id('userId', payload['userId']),
-				roleStatusId: Validators.id('roleStatusId', payload['roleStatusId']),
+				accessStatusId: Validators.id('accessStatusId', payload['accessStatusId']),
 				name: Validators.str('name', payload['name'], {
 					min: 1,
 					max: 255,

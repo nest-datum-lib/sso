@@ -261,6 +261,11 @@ export class UserService extends SqlService {
 				where: {
 					id: payload['id'],
 				},
+				relations: {
+					userUserOptions: {
+						userOption: true,
+					},
+				},
 			});
 
 			if (!user) {
