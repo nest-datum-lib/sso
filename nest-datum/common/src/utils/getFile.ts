@@ -2,9 +2,7 @@ const https = require('https');
 const http = require('http');
 const fs = require('fs');
 
-import { generateAccessToken } from 'nest-datum/jwt/src';
-
-const getFile = async (target: string | object, checkExists = false) => {
+const getFile = async (target: string | object, accessToken: string, checkExists = false) => {
 	let processedTarget = target;
 
 	if (typeof target === 'string') {
@@ -48,11 +46,6 @@ const getFile = async (target: string | object, checkExists = false) => {
 				return path;
 			}
 		}
-		const accessToken = generateAccessToken({
-			id: 'sso-user-admin',
-			roleId: 'sso-role-admin',
-			email: process.env.USER_ROOT_EMAIL,
-		}, Date.now());
 		const url = `${process.env.APP_FILES_1_URL}${processedTarget['path']}/${processedTarget['fileName']}?accessToken=${accessToken}`;
 		const file = fs.createWriteStream(path);
 		const request = (url.indexOf('https://') === 0)

@@ -219,7 +219,7 @@ export class UserService extends SqlService {
 				}, Date.now()),
 				letterId: 'mail-letter-recovery', 
 				body: {
-					...payload,
+					...output,
 				},
 			});
 			await queryRunner.commitTransaction();
