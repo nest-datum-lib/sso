@@ -209,8 +209,6 @@ export class UserService extends SqlService {
 				...output,
 			}));
 
-			console.log('output', output);
-
 			await this.balancerService.send({ 
 				name: 'mail',
 				cmd: 'letter.send',

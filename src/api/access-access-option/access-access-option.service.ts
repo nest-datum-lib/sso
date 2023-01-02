@@ -162,8 +162,6 @@ export class AccessAccessOptionService extends SqlService {
 			return accessOptionRelation;
 		}
 		catch (err) {
-			console.log('errr', err);
-
 			await queryRunner.rollbackTransaction();
 			await queryRunner.release();
 

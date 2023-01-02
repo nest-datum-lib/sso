@@ -162,8 +162,6 @@ export class RoleRoleOptionService extends SqlService {
 			return roleOptionRelation;
 		}
 		catch (err) {
-			console.log('errr', err);
-
 			await queryRunner.rollbackTransaction();
 			await queryRunner.release();
 
