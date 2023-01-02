@@ -208,6 +208,9 @@ export class UserService extends SqlService {
 			await queryRunner.manager.save(Object.assign(new User(), {
 				...output,
 			}));
+
+			console.log('output', output);
+
 			await this.balancerService.send({ 
 				name: 'mail',
 				cmd: 'letter.send',
