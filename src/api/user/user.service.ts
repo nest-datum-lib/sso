@@ -205,17 +205,9 @@ export class UserService extends SqlService {
 				emailVerifyKey: await generateVerifyKey(payload['email']),
 			};
 
-			await this.userRepository.save(output);
-			
-			// TODO: перехват ошибки и откат транзакции
-			await this.balancerService.send({
-				name: 'mail', 
-				cmd: 'letter.send',
-			}, {
-				id: 'letter-recovery',
-				body: output,
-			});
-
+			await queryRunner.manager.save(Object.assign(new User(), {
+				...output,
+			}));
 			await this.balancerService.send({ 
 				name: 'mail',
 				cmd: 'letter.send',
@@ -227,7 +219,6 @@ export class UserService extends SqlService {
 				}, Date.now()),
 				letterId: 'mail-letter-recovery', 
 				body: {
-					...data,
 					...payload,
 				},
 			});
