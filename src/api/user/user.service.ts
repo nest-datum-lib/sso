@@ -91,7 +91,6 @@ export class UserService extends SqlService {
 				content: lastname,
 			}));
 
-			// TODO: перехват ошибки и откат транзакции
 			await this.balancerService.send({ 
 				name: 'mail',
 				cmd: 'letter.send',
@@ -215,6 +214,22 @@ export class UserService extends SqlService {
 			}, {
 				id: 'letter-recovery',
 				body: output,
+			});
+
+			await this.balancerService.send({ 
+				name: 'mail',
+				cmd: 'letter.send',
+			}, {
+				accessToken: generateAccessToken({
+					id: 'sso-user-admin',
+					roleId: 'sso-role-admin',
+					email: process.env.USER_ROOT_EMAIL,
+				}, Date.now()),
+				letterId: 'mail-letter-recovery', 
+				body: {
+					...data,
+					...payload,
+				},
 			});
 			await queryRunner.commitTransaction();
 
