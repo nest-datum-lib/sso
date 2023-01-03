@@ -10,6 +10,7 @@ import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import { 
 	Repository,
 	Connection, 
+	Not,
 } from 'typeorm';
 import { SqlService } from 'nest-datum/sql/src';
 import { CacheService } from 'nest-datum/cache/src';
@@ -62,7 +63,11 @@ export class RoleService extends SqlService {
 			}
 			console.log('await this.findMany(payload)', await this.findMany(payload));
 
-			const output = await this.roleRepository.findAndCount(await this.findMany(payload));
+			const output = await this.roleRepository.findAndCount({
+				where: {
+					id: [ Not('sso-role-admin'), Not('sso-role-member'), ]
+				},
+			});
 
 			await this.cacheService.set([ 'role', 'many', payload ], output);
 			
