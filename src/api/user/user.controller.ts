@@ -141,6 +141,11 @@ export class UserController {
 					isRequired: true,
 					value: payload['password'],
 				}),
+				verifyKey: Validators.str('verifyKey', payload['verifyKey'], {
+					isRequired: true,
+					min: 32,
+					max: 512,
+				}),
 				...Validators.verifyKey('verifyKey', payload['verifyKey'], {
 					isRequired: true,
 				}),

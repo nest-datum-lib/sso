@@ -17,23 +17,19 @@ const getFile = async (target: string | object, accessToken: string, checkExists
 		throw new Error('Target file is undefined.');
 	}
 	if (typeof processedTarget === 'object') {
-		if (!processedTarget['fileName']
-			|| typeof processedTarget['fileName'] !== 'string') {
-			throw new Error('Target "fileName" file is wrong format.');
+		if (!processedTarget['name']
+			|| typeof processedTarget['name'] !== 'string') {
+			throw new Error('Target "name" file is wrong format.');
 		}
 		if (!processedTarget['path']
 			|| typeof processedTarget['path'] !== 'string') {
 			throw new Error('Target "path" file is wrong format.');
 		}
-		if (!processedTarget['src']
-			|| typeof processedTarget['src'] !== 'string') {
-			throw new Error('Target "src" file is wrong format.');
-		}
 		if (!processedTarget['systemId']
 			|| typeof processedTarget['systemId'] !== 'string') {
 			throw new Error('Target "systemId" file is wrong format.');
 		}
-		const path = `${process.env.APP_ROOT_PATH}/${processedTarget['fileName']}`;
+		const path = `${process.env.APP_ROOT_PATH}/${processedTarget['name']}`;
 
 		if (checkExists) {
 			const isExist = await (new Promise((resolve, reject) => {
@@ -46,7 +42,7 @@ const getFile = async (target: string | object, accessToken: string, checkExists
 				return path;
 			}
 		}
-		const url = `${process.env.APP_FILES_1_URL}${processedTarget['path']}/${processedTarget['fileName']}?accessToken=${accessToken}`;
+		const url = `${process.env.APP_FILES_1_URL}${processedTarget['path']}?accessToken=${accessToken}`;
 		const file = fs.createWriteStream(path);
 		const request = (url.indexOf('https://') === 0)
 			? https

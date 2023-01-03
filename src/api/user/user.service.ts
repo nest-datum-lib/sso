@@ -239,7 +239,11 @@ export class UserService extends SqlService {
 	};
 
 	async reset(payload): Promise<any> {
+		const queryRunner = await this.connection.createQueryRunner(); 
+
 		try {
+			await queryRunner.startTransaction();
+
 			const user = await this.userRepository.findOne({
 				where: {
 					email: payload['email'],
@@ -252,13 +256,27 @@ export class UserService extends SqlService {
 			if (!user['emailVerifiedAt']) {
 				throw new WarningException(`Current account already verified.`, getCurrentLine(), payload);
 			}
-			if (user['emailVerifyKey'] !== payload['password']) {
+			if (user['emailVerifyKey'] !== payload['verifyKey']) {
 				throw new WarningException(`Key not validated.`, getCurrentLine(), payload);
 			}
+			await queryRunner.manager.save(Object.assign(new User(), {
+				...user,
+				password: await encryptPassword(payload['password']),
+				emailVerifyKey: '',
+			}));
+
+			await queryRunner.commitTransaction();
+
 			return true;
 		}
 		catch (err) {
+			await queryRunner.rollbackTransaction();
+			await queryRunner.release();
+
 			throw new ErrorException(err.message, getCurrentLine(), payload);
+		}
+		finally {
+			await queryRunner.release();
 		}
 	};
 
