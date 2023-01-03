@@ -64,7 +64,7 @@ export class RoleService extends SqlService {
 			}
 			const output = await this.roleRepository.findAndCount({
 				where: {
-					id: In([ 'sso-role-admin', 'sso-role-member' ]),
+					id: In([ Not('sso-role-admin'), Not('sso-role-member') ]),
 				},
 			});
 
