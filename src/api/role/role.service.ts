@@ -60,6 +60,8 @@ export class RoleService extends SqlService {
 			if (cachedData) {
 				return cachedData;
 			}
+			console.log('await this.findMany(payload)', await this.findMany(payload));
+
 			const output = await this.roleRepository.findAndCount(await this.findMany(payload));
 
 			await this.cacheService.set([ 'role', 'many', payload ], output);
