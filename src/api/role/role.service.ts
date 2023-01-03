@@ -64,9 +64,10 @@ export class RoleService extends SqlService {
 			console.log('await this.findMany(payload)', await this.findMany(payload));
 
 			const output = await this.roleRepository.findAndCount({
-				where: {
-					id: Not('sso-role-admin')
-				},
+				where: [
+					{ id: Not('sso-role-admin') },
+					{ id: Not('sso-role-member') },
+				],
 			});
 
 			await this.cacheService.set([ 'role', 'many', payload ], output);
