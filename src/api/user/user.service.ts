@@ -241,8 +241,6 @@ export class UserService extends SqlService {
 	async reset(payload): Promise<any> {
 		const queryRunner = await this.connection.createQueryRunner(); 
 
-		console.log('4444444444', payload);
-
 		try {
 			await queryRunner.startTransaction();
 
@@ -252,16 +250,12 @@ export class UserService extends SqlService {
 				},
 			});
 
-			console.log('5555555', user);
-
 			if (!user) {
 				throw new NotFoundException(`User with login "${payload['login']}" not found.`, getCurrentLine(), payload);
 			}
 			if (!user['emailVerifiedAt']) {
 				throw new WarningException(`Current account already verified.`, getCurrentLine(), payload);
 			}
-			console.log('6666666', user['emailVerifyKey'], payload['verifyKey']);
-
 			if (user['emailVerifyKey'] !== payload['verifyKey']) {
 				throw new WarningException(`Key not validated.`, getCurrentLine(), payload);
 			}
@@ -270,12 +264,6 @@ export class UserService extends SqlService {
 				password: await encryptPassword(payload['password']),
 				emailVerifyKey: '',
 			}));
-
-			console.log('77777', {
-				...user,
-				password: await encryptPassword(payload['password']),
-				emailVerifyKey: '',
-			});
 
 			await queryRunner.commitTransaction();
 
