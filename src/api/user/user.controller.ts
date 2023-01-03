@@ -143,7 +143,7 @@ export class UserController {
 					isRequired: true,
 				}));
 
-			const output = await this.userService.recovery({
+			const output = await this.userService.reset({
 				password: Validators.password('password', payload['password'], {
 					isRequired: true,
 				}),
