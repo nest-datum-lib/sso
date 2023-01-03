@@ -11,6 +11,7 @@ import {
 	Repository,
 	Connection, 
 	Not,
+	In,
 } from 'typeorm';
 import { SqlService } from 'nest-datum/sql/src';
 import { CacheService } from 'nest-datum/cache/src';
@@ -64,10 +65,9 @@ export class RoleService extends SqlService {
 			console.log('await this.findMany(payload)', await this.findMany(payload));
 
 			const output = await this.roleRepository.findAndCount({
-				where: [
-					{ id: Not('sso-role-admin') },
-					{ id: Not('sso-role-member') },
-				],
+				where: {
+					id: In([ 'sso-role-admin', 'sso-role-member' ]),
+				},
 			});
 
 			await this.cacheService.set([ 'role', 'many', payload ], output);
