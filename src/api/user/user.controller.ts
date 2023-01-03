@@ -133,9 +133,10 @@ export class UserController {
 	@MessagePattern({ cmd: 'user.reset' })
 	async reset(payload) {
 		try {
-			console.log('payload', payload);
-			
 			const output = await this.userService.reset({
+				...Validators.verifyKey('verifyKey', payload['verifyKey'], {
+					isRequired: true,
+				}),
 				password: Validators.password('password', payload['password'], {
 					isRequired: true,
 				}),
@@ -147,9 +148,6 @@ export class UserController {
 					isRequired: true,
 					min: 32,
 					max: 512,
-				}),
-				...Validators.verifyKey('verifyKey', payload['verifyKey'], {
-					isRequired: true,
 				}),
 			});
 
