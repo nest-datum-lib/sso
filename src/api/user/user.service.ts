@@ -259,6 +259,8 @@ export class UserService extends SqlService {
 			if (user['emailVerifyKey'] !== payload['verifyKey']) {
 				throw new WarningException(`Key not validated.`, getCurrentLine(), payload);
 			}
+			console.log('password', payload['password'], await encryptPassword(payload['password']));
+
 			await queryRunner.manager.save(Object.assign(new User(), {
 				...user,
 				password: await encryptPassword(payload['password']),
