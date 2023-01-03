@@ -133,6 +133,8 @@ export class UserController {
 	@MessagePattern({ cmd: 'user.reset' })
 	async reset(payload) {
 		try {
+			console.log('payload', payload);
+			
 			const output = await this.userService.reset({
 				password: Validators.password('password', payload['password'], {
 					isRequired: true,
