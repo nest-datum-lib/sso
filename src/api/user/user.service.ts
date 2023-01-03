@@ -260,6 +260,8 @@ export class UserService extends SqlService {
 			if (!user['emailVerifiedAt']) {
 				throw new WarningException(`Current account already verified.`, getCurrentLine(), payload);
 			}
+			console.log('6666666', user['emailVerifyKey'], payload['verifyKey']);
+
 			if (user['emailVerifyKey'] !== payload['verifyKey']) {
 				throw new WarningException(`Key not validated.`, getCurrentLine(), payload);
 			}
@@ -269,7 +271,7 @@ export class UserService extends SqlService {
 				emailVerifyKey: '',
 			}));
 
-			console.log('666666666', {
+			console.log('77777', {
 				...user,
 				password: await encryptPassword(payload['password']),
 				emailVerifyKey: '',
