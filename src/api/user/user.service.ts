@@ -241,8 +241,6 @@ export class UserService extends SqlService {
 	async reset(payload): Promise<any> {
 		const queryRunner = await this.connection.createQueryRunner(); 
 
-		console.log('payload', payload);
-
 		try {
 			await queryRunner.startTransaction();
 
@@ -251,8 +249,6 @@ export class UserService extends SqlService {
 					email: payload['email'],
 				},
 			});
-
-			console.log('user', user);
 
 			if (!user) {
 				throw new NotFoundException(`User with login "${payload['login']}" not found.`, getCurrentLine(), payload);
@@ -268,8 +264,6 @@ export class UserService extends SqlService {
 				password: await encryptPassword(payload['password']),
 				emailVerifyKey: '',
 			}));
-
-			console.log('!!!!!!!!!!!!!11');
 
 			await queryRunner.commitTransaction();
 
