@@ -164,9 +164,10 @@ export class UserService extends SqlService {
 	async login(payload): Promise<any> {
 		try {
 			const user = await this.userRepository.findOne({
-				where: {
-					email: payload['login'],
-				},
+				where: [
+					{ email: payload['login'] },
+					{ login: payload['login'] },
+				],
 				relations: {
 					userUserOptions: {
 						userOption: true,
