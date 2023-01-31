@@ -38,6 +38,7 @@ export class SettingService extends SqlService {
 		regex: true,
 		isRequired: true,
 		isDeleted: true,
+		isNotDelete: true,
 		createdAt: true,
 		updatedAt: true,
 	};
