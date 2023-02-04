@@ -23,8 +23,6 @@ import { User } from 'src/api/user/user.entity';
 import { UserSeeder } from './user.seeder';
 import { SettingSeeder } from './setting.seeder';
 
-console.log('sql', sql);
-
 @Module({
 	controllers: [],
 	imports: [

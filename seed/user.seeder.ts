@@ -16,40 +16,51 @@ export class UserSeeder {
 	}
 
 	async send() {
-		const queryRunner = await this.connection.createQueryRunner(); 
+		console.log('000')
+
+		
+		const aaaa = await encryptPassword('XIUnv@#jgfo_r-32i0e(@12oj-f34!')
+		const bbbb = new Date();
+
+		console.log('1111')
+
+		console.log('========', {
+				id: 'sso-user-admin',
+				roleId: 'sso-role-admin',
+				userStatusId: 'sso-user-status-active',
+				email: 'ihor.bielchenko@gmail.com',
+				login: 'admin',
+				password: aaaa,
+				emailVerifyKey: '',
+				emailVerifiedAt: bbbb,
+				isNotDelete: true,
+			});
 
 		try {
 			// new transaction
-			await queryRunner.startTransaction();
 			await Bluebird.each([{
 				id: 'sso-user-admin',
 				roleId: 'sso-role-admin',
 				userStatusId: 'sso-user-status-active',
 				email: 'ihor.bielchenko@gmail.com',
 				login: 'admin',
-				password: await encryptPassword('XIUnv@#jgfo_r-32i0e(@12oj-f34!'),
+				password: aaaa,
 				emailVerifyKey: '',
-				emailVerifiedAt: new Date(),
+				emailVerifiedAt: bbbb,
 				isNotDelete: true,
 			}], async (data) => {
 				try {
 					await this.userRepository.insert(data);
 				}
 				catch (err) {
-					await queryRunner.rollbackTransaction();
-
 					console.error(`ERROR: user 2: ${err.message}`);
 				}
 			});
-			await queryRunner.commitTransaction();
 		}
 		catch (err) {
-			await queryRunner.rollbackTransaction();
-
 			console.error(`ERROR: user 1: ${err.message}`);
 		}
 		finally {
-			await queryRunner.release();
 		}
 	}
 }
