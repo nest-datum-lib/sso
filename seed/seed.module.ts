@@ -18,10 +18,10 @@ import {
 	CacheService, 
 } from '@nest-datum/cache';
 import { SeedService } from './seed.service';
-import { Setting } from 'src/api/setting/setting.entity';
+// import { Setting } from 'src/api/setting/setting.entity';
 import { User } from 'src/api/user/user.entity';
 import { UserSeeder } from './user.seeder';
-import { SettingSeeder } from './setting.seeder';
+// import { SettingSeeder } from './setting.seeder';
 
 @Module({
 	controllers: [],
@@ -29,7 +29,7 @@ import { SettingSeeder } from './setting.seeder';
 		RedisModule.forRoot(redis),
 		TypeOrmModule.forRoot(sql),
 		TypeOrmModule.forFeature([
-			Setting,
+			// Setting,
 			User,
 		]),
 		ReplicaModule,
@@ -41,7 +41,7 @@ import { SettingSeeder } from './setting.seeder';
 		TransportService,
 		CacheService,
 		SeedService,
-		SettingSeeder,
+		// SettingSeeder,
 		UserSeeder,
 	]
 })
