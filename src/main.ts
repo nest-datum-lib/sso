@@ -1,64 +1,45 @@
 require('dotenv').config();
 
-import { v4 as uuidv4 } from 'uuid';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions } from '@nestjs/microservices';
-import { TransportStrategies } from 'nest-datum/common/src';
 import { 
-	BalancerModule,
-	BalancerService, 
-} from 'nest-datum/balancer/src';
-import { 
-	getEnvValue,
 	onExit,
 	onWarning,
 	onUncaughtException, 
-} from 'nest-datum/common/src';
+} from '@nest-datum-common/process';
+import { CustomServerTCP } from '@nest-datum-common/strategies';
+import { 
+	TransportModule,
+	TransportService, 
+} from '@nest-datum/transport';
 import { AppModule } from './app.module';
 
 process.on('exit', onExit);
 process.on('warning', onWarning);
 process.on('uncaughtException', onUncaughtException);
 
-async function createApp() {
+async function bootstrap() {
 	const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
-		strategy: new TransportStrategies[process.env.APP_TRANSPORTER]({
+		strategy: new CustomServerTCP({
 			host: process.env.APP_HOST,
 			port: Number(process.env.APP_PORT),
 		}),
 	});
-	const balancer = await NestFactory.create(BalancerModule);
-	const balancerService = balancer.get(BalancerService);
+	const transport = await NestFactory.create(TransportModule);
+	const transportService = transport.get(TransportService);
 
-	const registred = await balancerService.registry({
-		email: process['USER_ROOT_EMAIL'],
-		login: process['USER_ROOT_LOGIN'],
-		password: process['USER_ROOT_PASSWORD'],
-	});
+	try {
+		await transportService.create()
+		await app.listen()
+		await transport.close();
 
-	if (registred) {
-		console.log('Replica listening on port:', process.env.APP_PORT);
-
-		await app.listen();
+		console.log(`Successfuly started on "${process.env.APP_HOST}:${process.env.APP_PORT}".`);
 	}
-	else {
-		console.error('Error while adding replica to services registry in redis. Check the settings in the .env file.');
-
+	catch (err) {
 		await app.close();
+		
+		console.error(err.message);
 	}
-	await balancer.close();
-};
-
-async function bootstrap() {
-	process['USER_ROOT_EMAIL'] = process.env.USER_ROOT_EMAIL;
-	process['USER_ROOT_LOGIN'] = process.env.USER_ROOT_LOGIN;
-	process['USER_ROOT_PASSWORD'] = process.env.USER_ROOT_PASSWORD;
-	process['PROJECT_ID'] = getEnvValue('PROJECT_ID');
-	process['APP_ID'] = getEnvValue('APP_ID') || uuidv4();
-	process['JWT_SECRET_ACCESS_KEY'] = getEnvValue('JWT_SECRET_ACCESS_KEY');
-	process['JWT_SECRET_REFRESH_KEY'] = getEnvValue('JWT_SECRET_REFRESH_KEY');
-
-	await createApp();
 };
 
 bootstrap();
