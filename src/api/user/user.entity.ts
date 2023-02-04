@@ -25,11 +25,9 @@ export class User {
 
 	@Column({ unique: true })
 	@IsEmail()
-	@Index({ unique: true })
 	public email: string;
 
 	@Column({ unique: true })
-	@Index({ unique: true })
 	public login: string;
 
 	@Column()
