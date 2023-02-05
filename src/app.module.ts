@@ -32,9 +32,8 @@ import { RoleOptionModule } from './api/role-option/role-option.module';
 import { RoleRoleOptionModule } from './api/role-role-option/role-role-option.module';
 import { RoleAccessModule } from './api/role-access/role-access.module';
 import { UserModule } from './api/user/user.module';
-import { UserStatusModule } from './api/user/user.module';
-import { UserOptionModule } from './api/user/user.module';
-// import { UserStatusModule } from './api/user-status/user-status.module';
+import { UserStatusModule } from './api/user-status/user-status.module';
+import { UserOptionModule } from './api/user-option/user-option.module';
 import { AppController } from './app.controller';
 
 @Module({
