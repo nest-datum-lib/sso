@@ -26,6 +26,11 @@ import { AccessModule } from './api/access/access.module';
 import { AccessStatusModule } from './api/access-status/access-status.module';
 import { AccessOptionModule } from './api/access-option/access-option.module';
 import { AccessAccessOptionModule } from './api/access-access-option/access-access-option.module';
+import { RoleModule } from './api/role/role.module';
+import { RoleStatusModule } from './api/role-status/role-status.module';
+import { RoleOptionModule } from './api/role-option/role-option.module';
+import { RoleRoleOptionModule } from './api/role-role-option/role-role-option.module';
+import { RoleAccessModule } from './api/role-access/role-access.module';
 
 import { UserModule } from './api/user/user.module';
 // import { UserStatusModule } from './api/user-status/user-status.module';
@@ -44,7 +49,11 @@ import { AppController } from './app.controller';
 		AccessStatusModule,
 		AccessOptionModule,
 		AccessAccessOptionModule,
-
+		RoleModule,
+		RoleStatusModule,
+		RoleOptionModule,
+		RoleRoleOptionModule,
+		RoleAccessModule,
 		UserModule,
 		// UserStatusModule,
 	],

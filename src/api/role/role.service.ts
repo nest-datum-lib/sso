@@ -17,23 +17,21 @@ import {
 	generateTokens,
 	checkPassword,
 } from '@nest-datum/jwt';
-import { AccessAccessAccessOption } from '../access-access-access-option/access-access-access-option.entity';
-import { AccessAccessOption } from '../access-access-option/access-access-option.entity';
-import { Access } from './access.entity';
+import { RoleRoleRoleOption } from '../role-role-role-option/role-role-role-option.entity';
+import { Role } from './role.entity';
 
 @Injectable()
-export class AccessService extends SqlWithOptionService {
-	public entityName = 'access';
-	public entityConstructor = Access;
-	public optionRelationConstructor = AccessAccessAccessOption;
-	public columnOptionId = 'accessOptionId';
-	public optionId = 'accessId';
-	public optionOptionId = 'accessAccessOptionId';
+export class RoleService extends SqlWithOptionService {
+	public entityName = 'role';
+	public entityConstructor = Role;
+	public optionId = 'roleId';
+	public optionOptionId = 'roleRoleOptionId';
+	public optionRelationConstructor = RoleRoleRoleOption;
 
 	constructor(
-		@InjectRepository(Access) public repository: Repository<Access>,
-		@InjectRepository(AccessAccessOption) public repositoryOption: Repository<AccessAccessOption>,
-		@InjectRepository(AccessAccessAccessOption) public repositoryOptionRelation: Repository<AccessAccessAccessOption>,
+		@InjectRepository(Role) public repository: Repository<Role>,
+		@InjectRepository(RoleRoleOption) public repositoryOption: Repository<RoleRoleOption>,
+		@InjectRepository(RoleRoleRoleOption) public repositoryOptionRelation: Repository<RoleRoleRoleOption>,
 		public connection: Connection,
 		public cacheService: CacheService,
 	) {
@@ -43,7 +41,7 @@ export class AccessService extends SqlWithOptionService {
 	protected selectDefaultMany = {
 		id: true,
 		userId: true,
-		accessStatusId: true,
+		roleStatusId: true,
 		name: true,
 		description: true,
 		isDeleted: true,

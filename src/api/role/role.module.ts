@@ -16,22 +16,22 @@ import {
 	SqlModule,
 	SqlService, 
 } from '@nest-datum/sql';
-import { AccessService } from './access.service';
-import { AccessController } from './access.controller';
+import { RoleService } from './role.service';
+import { RoleController } from './role.controller';
+import { RoleRoleRoleOption } from '../role-role-role-option/role-role-role-option.entity';
+import { RoleOption } from '../role-option/role-option.entity';
+import { RoleRoleOption } from '../role-role-option/role-role-option.entity';
 import { RoleAccess } from '../role-access/role-access.entity';
-import { AccessAccessAccessOption } from '../access-access-access-option/access-access-access-option.entity';
-import { AccessOption } from '../access-option/access-option.entity';
-import { AccessAccessOption } from '../access-access-option/access-access-option.entity';
-import { Access } from './access.entity';
+import { Role } from './role.entity';
 
 @Module({
-	controllers: [ AccessController ],
+	controllers: [ RoleController ],
 	imports: [
 		TypeOrmModule.forFeature([ 
-			AccessOption,
-			AccessAccessOption,
-			Access,
-			AccessAccessAccessOption, 
+			RoleOption,
+			RoleRoleOption,
+			Role,
+			RoleRoleRoleOption, 
 			RoleAccess,
 		]),
 		ReplicaModule,
@@ -44,9 +44,9 @@ import { Access } from './access.entity';
 		TransportService,
 		CacheService,
 		SqlService,
-		AccessService, 
+		RoleService, 
 	],
 })
-export class AccessModule {
+export class RoleModule {
 }
 

@@ -10,12 +10,12 @@ import {
 import {
 	IsEmail,
 } from 'class-validator';
-import { AccessAccessAccessOption } from '../access-access-access-option/access-access-access-option.entity';
-import { AccessAccessOption } from '../access-access-option/access-access-option.entity';
+import { RoleRoleRoleOption } from '../role-role-role-option/role-role-role-option.entity';
+import { RoleRoleOption } from '../role-role-option/role-role-option.entity';
 import { RoleAccess } from '../role-access/role-access.entity';
 
 @Entity()
-export class Access {
+export class Role {
 	@PrimaryGeneratedColumn('uuid')
 	public id: string;
 
@@ -24,7 +24,7 @@ export class Access {
 	public userId: string;
 
 	@Column({ default: '' })
-	public accessStatusId: string;
+	public roleStatusId: string;
 
 	@Column()
 	@Index({ unique: true })
@@ -55,12 +55,12 @@ export class Access {
 	})
 	public updatedAt: Date;
 
-	@OneToMany(() => AccessAccessOption, (accessAccessOption) => accessAccessOption.access)
-	public accessAccessOptions: AccessAccessOption[];
+	@OneToMany(() => RoleRoleOption, (roleRoleOption) => roleRoleOption.role)
+	public roleRoleOptions: RoleRoleOption[];
 
-	@OneToMany(() => AccessAccessAccessOption, (accessAccessAccessOption) => accessAccessAccessOption.access)
-	public accessAccessAccessOptions: AccessAccessAccessOption[];
+	@OneToMany(() => RoleRoleRoleOption, (roleRoleRoleOption) => roleRoleRoleOption.role)
+	public roleRoleRoleOptions: RoleRoleRoleOption[];
 
-	@OneToMany(() => RoleAccess, (roleAccess) => roleAccess.access)
+	@OneToMany(() => RoleAccess, (roleAccess) => roleAccess.role)
 	public roleAccesses: RoleAccess[];
 }
