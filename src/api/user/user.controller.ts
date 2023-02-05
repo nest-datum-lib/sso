@@ -91,12 +91,9 @@ export class UserController extends NestDatumController {
 			...(options['password'] && utilsCheckStrPassword(options['password'])) 
 				? { password: options['password'] } 
 				: {},
-			...(options['emailVerifyKey'] && utilsCheckStr(options['emailVerifyKey'])) 
+			...utilsCheckStr(options['emailVerifyKey']) 
 				? { emailVerifyKey: options['emailVerifyKey'] } 
-				: {},
-			...(options['emailVerifiedAt'] && utilsCheckStrDate(options['emailVerifiedAt'])) 
-				? { emailVerifiedAt: options['emailVerifiedAt'] } 
-				: {},
+				: { emailVerifyKey: '' },
 			...(options['login'] && utilsCheckStrName(options['login'])) 
 				? { login: options['login'] } 
 				: {},
