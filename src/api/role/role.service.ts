@@ -18,6 +18,7 @@ import {
 	checkPassword,
 } from '@nest-datum/jwt';
 import { RoleRoleRoleOption } from '../role-role-role-option/role-role-role-option.entity';
+import { RoleRoleOption } from '../role-role-option/role-role-option.entity';
 import { Role } from './role.entity';
 
 @Injectable()
