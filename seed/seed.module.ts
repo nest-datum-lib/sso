@@ -19,7 +19,10 @@ import {
 } from '@nest-datum/cache';
 import { SeedService } from './seed.service';
 // import { Setting } from 'src/api/setting/setting.entity';
+import { UserOption } from 'src/api/user-option/user-option.entity';
+import { UserUserOption } from 'src/api/user-user-option/user-user-option.entity';
 import { User } from 'src/api/user/user.entity';
+
 import { UserSeeder } from './user.seeder';
 // import { SettingSeeder } from './setting.seeder';
 
@@ -30,7 +33,9 @@ import { UserSeeder } from './user.seeder';
 		TypeOrmModule.forRoot(sql),
 		TypeOrmModule.forFeature([
 			// Setting,
-			User,
+			UserOption,
+			User, 
+			UserUserOption,
 		]),
 		ReplicaModule,
 		TransportModule,
