@@ -74,6 +74,42 @@ export class UserController extends NestDatumController {
 			throw new WarningException(`Property "userStatusId" is not valid.`);
 		}
 
+		console.log('22222222222222', {
+			...(options['id'] && !utilsCheckStrId(options['id'])) 
+				? { id: options['id'] } 
+				: {},
+			...(options['newId'] && !utilsCheckStrId(options['newId'])) 
+				? { newId: options['newId'] } 
+				: {},
+			...(options['userStatusId'] && !utilsCheckStrId(options['userStatusId'])) 
+				? { userStatusId: options['userStatusId'] } 
+				: {},
+			...(options['roleId'] && !utilsCheckStrId(options['roleId'])) 
+				? { roleId: options['roleId'] } 
+				: {},
+			...(options['email'] && !utilsCheckStrEmail(options['email'])) 
+				? { email: options['email'] } 
+				: {},
+			...(options['password'] && !utilsCheckStrPassword(options['password'])) 
+				? { password: options['password'] } 
+				: {},
+			...(options['emailVerifyKey'] && !utilsCheckStr(options['emailVerifyKey'])) 
+				? { emailVerifyKey: options['emailVerifyKey'] } 
+				: {},
+			...(options['emailVerifiedAt'] && !utilsCheckStrDate(options['emailVerifiedAt'])) 
+				? { emailVerifiedAt: options['emailVerifiedAt'] } 
+				: {},
+			...(options['login'] && !utilsCheckStrName(options['login'])) 
+				? { login: options['login'] } 
+				: {},
+			...(utilsCheckExists(options['isNotDelete']) && utilsCheckBool(options['isNotDelete'])) 
+				? { isNotDelete: options['isNotDelete'] } 
+				: {},
+			...(utilsCheckExists(options['isDeleted']) && utilsCheckBool(options['isDeleted'])) 
+				? { isDeleted: options['isDeleted'] } 
+				: {},
+		});
+
 		return {
 			...(options['id'] && !utilsCheckStrId(options['id'])) 
 				? { id: options['id'] } 

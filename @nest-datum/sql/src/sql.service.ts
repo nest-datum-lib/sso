@@ -275,10 +275,17 @@ export class SqlService {
 	}
 
 	async create(payload: object = {}): Promise<any> {
+		console.log('3333333333333333333333333', payload);
+
 		delete payload['accessToken'];
 		delete payload['refreshToken'];
 		
 		this.cacheService.clear([ this.entityName, 'many' ]);
+
+		console.log('4444444444', {
+			...payload,
+			userId: payload['userId'] || process.env.USER_ID,
+		});
 
 		return await this.repository.save({
 			...payload,
