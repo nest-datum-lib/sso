@@ -43,6 +43,6 @@ import { RoleAccess } from './role-access.entity';
 		RoleAccessService, 
 	],
 })
-export class RoleModule {
+export class RoleAccessModule {
 }
 
