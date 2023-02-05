@@ -34,8 +34,6 @@ export class UserController extends NestDatumController {
 	}
 
 	validateCreate(options: object = {}): object {
-		console.log('????????', options);
-
 		if (!utilsCheckStrName(options['login'])) {
 			throw new WarningException(`Property "login" is not valid.`);
 		}
@@ -51,14 +49,10 @@ export class UserController extends NestDatumController {
 		if (!utilsCheckStrId(options['userStatusId'])) {
 			throw new WarningException(`Property "userStatusId" is not valid.`);
 		}
-		console.log('000000000000', options);
-
 		return this.validateUpdate(options);
 	}
 
 	validateUpdate(options: object = {}): object {
-		console.log('111111111111111111111', options);
-
 		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
 			throw new WarningException(`User is undefined or token is not valid.`);
 		}
@@ -78,68 +72,32 @@ export class UserController extends NestDatumController {
 			throw new WarningException(`Property "userStatusId" is not valid.`);
 		}
 
-		console.log('22222222222222', {
-			...(options['id'] && !utilsCheckStrId(options['id'])) 
-				? { id: options['id'] } 
-				: {},
-			...(options['newId'] && !utilsCheckStrId(options['newId'])) 
-				? { newId: options['newId'] } 
-				: {},
-			...(options['userStatusId'] && !utilsCheckStrId(options['userStatusId'])) 
-				? { userStatusId: options['userStatusId'] } 
-				: {},
-			...(options['roleId'] && !utilsCheckStrId(options['roleId'])) 
-				? { roleId: options['roleId'] } 
-				: {},
-			...(options['email'] && !utilsCheckStrEmail(options['email'])) 
-				? { email: options['email'] } 
-				: {},
-			...(options['password'] && !utilsCheckStrPassword(options['password'])) 
-				? { password: options['password'] } 
-				: {},
-			...(options['emailVerifyKey'] && !utilsCheckStr(options['emailVerifyKey'])) 
-				? { emailVerifyKey: options['emailVerifyKey'] } 
-				: {},
-			...(options['emailVerifiedAt'] && !utilsCheckStrDate(options['emailVerifiedAt'])) 
-				? { emailVerifiedAt: options['emailVerifiedAt'] } 
-				: {},
-			...(options['login'] && !utilsCheckStrName(options['login'])) 
-				? { login: options['login'] } 
-				: {},
-			...(utilsCheckExists(options['isNotDelete']) && utilsCheckBool(options['isNotDelete'])) 
-				? { isNotDelete: options['isNotDelete'] } 
-				: {},
-			...(utilsCheckExists(options['isDeleted']) && utilsCheckBool(options['isDeleted'])) 
-				? { isDeleted: options['isDeleted'] } 
-				: {},
-		});
-
 		return {
-			...(options['id'] && !utilsCheckStrId(options['id'])) 
+			...(options['id'] && utilsCheckStrId(options['id'])) 
 				? { id: options['id'] } 
 				: {},
-			...(options['newId'] && !utilsCheckStrId(options['newId'])) 
+			...(options['newId'] && utilsCheckStrId(options['newId'])) 
 				? { newId: options['newId'] } 
 				: {},
-			...(options['userStatusId'] && !utilsCheckStrId(options['userStatusId'])) 
+			...(options['userStatusId'] && utilsCheckStrId(options['userStatusId'])) 
 				? { userStatusId: options['userStatusId'] } 
 				: {},
-			...(options['roleId'] && !utilsCheckStrId(options['roleId'])) 
+			...(options['roleId'] && utilsCheckStrId(options['roleId'])) 
 				? { roleId: options['roleId'] } 
 				: {},
-			...(options['email'] && !utilsCheckStrEmail(options['email'])) 
+			...(options['email'] && utilsCheckStrEmail(options['email'])) 
 				? { email: options['email'] } 
 				: {},
-			...(options['password'] && !utilsCheckStrPassword(options['password'])) 
+			...(options['password'] && utilsCheckStrPassword(options['password'])) 
 				? { password: options['password'] } 
 				: {},
-			...(options['emailVerifyKey'] && !utilsCheckStr(options['emailVerifyKey'])) 
+			...(options['emailVerifyKey'] && utilsCheckStr(options['emailVerifyKey'])) 
 				? { emailVerifyKey: options['emailVerifyKey'] } 
 				: {},
-			...(options['emailVerifiedAt'] && !utilsCheckStrDate(options['emailVerifiedAt'])) 
+			...(options['emailVerifiedAt'] && utilsCheckStrDate(options['emailVerifiedAt'])) 
 				? { emailVerifiedAt: options['emailVerifiedAt'] } 
 				: {},
-			...(options['login'] && !utilsCheckStrName(options['login'])) 
+			...(options['login'] && utilsCheckStrName(options['login'])) 
 				? { login: options['login'] } 
 				: {},
 			...(utilsCheckExists(options['isNotDelete']) && utilsCheckBool(options['isNotDelete'])) 
