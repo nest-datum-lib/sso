@@ -4,11 +4,13 @@ import {
 	Column,
 	CreateDateColumn,
 	UpdateDateColumn,
-	Index,
+	OneToMany,
+	ManyToOne,
 } from 'typeorm';
 import {
 	IsEmail,
 } from 'class-validator';
+import { UserUserOption } from '../user-user-option/user-user-option.entity';
 
 @Entity()
 export class User {
@@ -16,11 +18,9 @@ export class User {
 	public id: string;
 
 	@Column({ default: '' })
-	@Index()
 	public roleId: string;
 
 	@Column({ default: '' })
-	@Index()
 	public userStatusId: string;
 
 	@Column({ unique: true })
@@ -28,13 +28,13 @@ export class User {
 	public email: string;
 
 	@Column({ unique: true })
+	@Column()
 	public login: string;
 
 	@Column()
 	public password: string;
 
 	@Column()
-	@Index()
 	public emailVerifyKey: string;
 
 	@Column({ 
@@ -65,4 +65,7 @@ export class User {
 		onUpdate: 'CURRENT_TIMESTAMP', 
 	})
 	public updatedAt: Date;
+
+	@OneToMany(() => UserUserOption, (userUserOption) => userUserOption.user)
+	public userUserOptions: UserUserOption[];
 }

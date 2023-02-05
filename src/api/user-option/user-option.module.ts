@@ -16,18 +16,18 @@ import {
 	SqlModule,
 	SqlService, 
 } from '@nest-datum/sql';
-import { UserService } from './user.service';
-import { UserController } from './user.controller';
-import { UserOption } from '../user-option/user-option.entity';
+import { UserOptionService } from './user-option.service';
+import { UserOptionController } from './user-option.controller';
+import { User } from '../user/user.entity';
 import { UserUserOption } from '../user-user-option/user-user-option.entity';
-import { User } from './user.entity';
+import { UserOption } from './user-option.entity';
 
 @Module({
-	controllers: [ UserController ],
+	controllers: [ UserOptionController ],
 	imports: [
-		TypeOrmModule.forFeature([ 
+		TypeOrmModule.forFeature([
 			UserOption,
-			User, 
+			User,
 			UserUserOption,
 		]),
 		ReplicaModule,
@@ -40,9 +40,9 @@ import { User } from './user.entity';
 		TransportService,
 		CacheService,
 		SqlService,
-		UserService, 
+		UserOptionService, 
 	],
 })
-export class UserModule {
+export class UserOptionModule {
 }
 

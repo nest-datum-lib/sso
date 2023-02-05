@@ -73,35 +73,39 @@ export class UserController extends NestDatumController {
 		}
 
 		return {
-			id: (options['id'] && !utilsCheckStrId(options['id'])) 
+			...(options['id'] && !utilsCheckStrId(options['id'])) 
 				? { id: options['id'] } 
 				: {},
-			newId: (options['newId'] && !utilsCheckStrId(options['newId'])) 
+			...(options['newId'] && !utilsCheckStrId(options['newId'])) 
 				? { newId: options['newId'] } 
 				: {},
-			userStatusId: (options['userStatusId'] && !utilsCheckStrId(options['userStatusId'])) 
+			...(options['userStatusId'] && !utilsCheckStrId(options['userStatusId'])) 
 				? { userStatusId: options['userStatusId'] } 
 				: {},
-			roleId: (options['roleId'] && !utilsCheckStrId(options['roleId'])) 
+			...(options['roleId'] && !utilsCheckStrId(options['roleId'])) 
 				? { roleId: options['roleId'] } 
 				: {},
-			email: (options['email'] && !utilsCheckStrEmail(options['email'])) 
+			...(options['email'] && !utilsCheckStrEmail(options['email'])) 
 				? { email: options['email'] } 
 				: {},
-			password: (options['password'] && !utilsCheckStrPassword(options['password'])) 
+			...(options['password'] && !utilsCheckStrPassword(options['password'])) 
 				? { password: options['password'] } 
 				: {},
-			emailVerifyKey: (options['emailVerifyKey'] && !utilsCheckStr(options['emailVerifyKey'])) 
+			...(options['emailVerifyKey'] && !utilsCheckStr(options['emailVerifyKey'])) 
 				? { emailVerifyKey: options['emailVerifyKey'] } 
 				: {},
-			emailVerifiedAt: (options['emailVerifiedAt'] && !utilsCheckStrDate(options['emailVerifiedAt'])) 
+			...(options['emailVerifiedAt'] && !utilsCheckStrDate(options['emailVerifiedAt'])) 
 				? { emailVerifiedAt: options['emailVerifiedAt'] } 
 				: {},
-			login: (options['login'] && !utilsCheckStrName(options['login'])) 
+			...(options['login'] && !utilsCheckStrName(options['login'])) 
 				? { login: options['login'] } 
 				: {},
-			isNotDelete: (utilsCheckExists(options['isNotDelete']) && !utilsCheckBool(options['isNotDelete'])) ? { isNotDelete: options['isNotDelete'] } : {},
-			isDeleted: (utilsCheckExists(options['isDeleted']) && !utilsCheckBool(options['isDeleted'])) ? { isDeleted: options['isDeleted'] } : {},
+			...(utilsCheckExists(options['isNotDelete']) && utilsCheckBool(options['isNotDelete'])) 
+				? { isNotDelete: options['isNotDelete'] } 
+				: {},
+			...(utilsCheckExists(options['isDeleted']) && utilsCheckBool(options['isDeleted'])) 
+				? { isDeleted: options['isDeleted'] } 
+				: {},
 		};
 	}
 
@@ -283,6 +287,65 @@ export class UserController extends NestDatumController {
 			this.transportService.decrementLoadingIndicator();
 
 			return output;
+		}
+		catch (err) {
+			this.log(err);
+			this.transportService.decrementLoadingIndicator();
+
+			return err;
+		}
+	}
+
+	@MessagePattern({ cmd: 'user.many' })
+	async many(payload) {
+		return await super.many(payload);
+	}
+
+	@MessagePattern({ cmd: 'user.one' })
+	async one(payload) {
+		return await super.one(payload);
+	}
+
+	@EventPattern('user.drop')
+	async drop(payload) {
+		return await super.drop(payload);
+	}
+
+	@EventPattern('user.dropMany')
+	async dropMany(payload) {
+		return await super.dropMany(payload);
+	}
+
+	@EventPattern('user.createOptions')
+	async createOptions(payload) {
+		return await super.createOptions(payload);
+	}
+
+	@EventPattern('user.create')
+	async create(payload) {
+		try {
+			const output = await this.service.create(this.validateCreate(payload));
+			
+			this.transportService.decrementLoadingIndicator();
+
+			return output;
+		}
+		catch (err) {
+			this.log(err);
+			this.transportService.decrementLoadingIndicator();
+
+			return err;
+		}
+	}
+
+	@EventPattern('user.update')
+	async update(payload: object = {}) {
+		try {
+			await this.service.update(this.validateUpdate(payload));
+
+			this.transportService.decrementLoadingIndicator();
+
+			return true;
 		}
 		catch (err) {
 			this.log(err);

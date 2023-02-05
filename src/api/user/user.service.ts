@@ -17,15 +17,20 @@ import {
 	generateTokens,
 	checkPassword,
 } from '@nest-datum/jwt';
+import { UserUserOption } from '../user-user-option/user-user-option.entity';
 import { User } from './user.entity';
 
 @Injectable()
 export class UserService extends SqlService {
 	public entityName = 'user';
 	public entityConstructor = User;
+	public optionId = 'userId';
+	public optionOptionId = 'userOptionId';
+	public optionRelationConstructor = UserUserOption;
 
 	constructor(
 		@InjectRepository(User) public repository: Repository<User>,
+		@InjectRepository(UserUserOption) public repositoryOptionRelation: Repository<UserUserOption>,
 		public connection: Connection,
 		public cacheService: CacheService,
 	) {
