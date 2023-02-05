@@ -21,7 +21,12 @@ import {
 	redis,
 	sql, 
 } from '@nest-datum-common/config';
-// import { SettingModule } from './api/setting/setting.module';
+import { SettingModule } from './api/setting/setting.module';
+import { AccessModule } from './api/access/access.module';
+import { AccessStatusModule } from './api/access-status/access-status.module';
+import { AccessOptionModule } from './api/access-option/access-option.module';
+import { AccessAccessOptionModule } from './api/access-access-option/access-access-option.module';
+
 import { UserModule } from './api/user/user.module';
 // import { UserStatusModule } from './api/user-status/user-status.module';
 import { AppController } from './app.controller';
@@ -34,7 +39,12 @@ import { AppController } from './app.controller';
 		TransportModule,
 		CacheModule,
 		SqlModule,
-		// SettingModule,
+		SettingModule,
+		AccessModule,
+		AccessStatusModule,
+		AccessOptionModule,
+		AccessAccessOptionModule,
+
 		UserModule,
 		// UserStatusModule,
 	],

@@ -312,13 +312,12 @@ export class SqlService {
 					const {
 						entityOptionId,
 						entityId,
-						id: itemId,
 						...optionData
 					} = option[ii];
 
 					await queryRunner.manager.save(Object.assign(new this.optionRelationConstructor, {
 						...optionData,
-						[this.optionId]: itemId,
+						[this.optionId]: entityId,
 						[this.optionOptionId]: entityOptionId,
 					}));
 					ii++;
@@ -332,7 +331,7 @@ export class SqlService {
 		catch (err) {
 			await queryRunner.rollbackTransaction();
 
-			throw new err;
+			throw err;
 		}
 		finally {
 			await queryRunner.release();
