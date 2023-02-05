@@ -34,7 +34,7 @@ export class User {
 	@Column()
 	public password: string;
 
-	@Column()
+	@Column({ default: '' })
 	public emailVerifyKey: string;
 
 	@Column({ 
