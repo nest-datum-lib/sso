@@ -21,7 +21,6 @@ import {
 import { 
 	checkToken,
 	getUser, 
-	encryptPassword,
 } from '@nest-datum/jwt';
 import { UserService } from './user.service';
 
@@ -90,7 +89,7 @@ export class UserController extends NestDatumController {
 				? { email: options['email'] } 
 				: {},
 			...(options['password'] && utilsCheckStrPassword(options['password'])) 
-				? { password: await encryptPassword(options['password']), } 
+				? { password: options['password'] } 
 				: {},
 			...utilsCheckStr(options['emailVerifyKey']) 
 				? { emailVerifyKey: options['emailVerifyKey'] } 

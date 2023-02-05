@@ -283,4 +283,11 @@ export class UserService extends SqlService {
 			throw new ErrorException(err.message);
 		}
 	}
+
+	async createProps (payload) {
+		if (payload['password']) {
+			payload['password'] = await encryptPassword(payload['password']);
+		}
+		return payload;
+	}
 }

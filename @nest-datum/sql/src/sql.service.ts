@@ -274,16 +274,20 @@ export class SqlService {
 		return entity;
 	}
 
+	async createProps (payload) {
+		return payload;
+	}
+
 	async create(payload: object = {}): Promise<any> {
 		delete payload['accessToken'];
 		delete payload['refreshToken'];
 		
 		this.cacheService.clear([ this.entityName, 'many' ]);
 
-		return await this.repository.save({
+		return await this.repository.save(await this.createProps({
 			...payload,
 			userId: payload['userId'] || process.env.USER_ID,
-		});
+		}));
 	}
 
 	async createOptions(payload: object = {}): Promise<any> {
