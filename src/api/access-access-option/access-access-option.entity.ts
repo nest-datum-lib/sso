@@ -23,6 +23,6 @@ export class AccessAccessOption extends NestDatumOptionOption {
 	@ManyToOne(() => Access, (access) => access.accessAccessOptions)
 	public access: Access;
 
-	@OneToMany(() => AccessAccessAccessOption, (accessAccessAccessOption) => AccessAccessAccessOption.accessAccessOption)
+	@OneToMany(() => AccessAccessAccessOption, (accessAccessAccessOption) => accessAccessAccessOption.accessAccessOption)
 	public accessAccessAccessOptions: AccessAccessAccessOption[];
 }
