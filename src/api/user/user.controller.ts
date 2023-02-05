@@ -34,6 +34,8 @@ export class UserController extends NestDatumController {
 	}
 
 	validateCreate(options: object = {}): object {
+		console.log('????????', options);
+
 		if (!utilsCheckStrName(options['login'])) {
 			throw new WarningException(`Property "login" is not valid.`);
 		}
