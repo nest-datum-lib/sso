@@ -291,8 +291,6 @@ export class SqlService {
 	}
 
 	async createOptions(payload: object = {}): Promise<any> {
-		console.log('createOptions', payload);
-
 		const queryRunner = await this.connection.createQueryRunner();
 
 		try {
@@ -301,8 +299,6 @@ export class SqlService {
 			this.cacheService.clear([ this.entityName, 'option', 'many' ]);
 			this.cacheService.clear([ this.entityName, 'many' ]);
 			this.cacheService.clear([ this.entityName, 'one' ]);
-
-			console.log('22222222', this.optionId, this.optionOptionId);
 
 			await this.repositoryOptionRelation.delete({
 				[this.optionId]: payload['id'],

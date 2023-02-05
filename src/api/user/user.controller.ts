@@ -315,8 +315,6 @@ export class UserController extends NestDatumController {
 
 	@EventPattern('user.createOptions')
 	async createOptions(payload) {
-		console.log('user.createOptions', payload);
-
 		return await super.createOptions(payload);
 	}
 

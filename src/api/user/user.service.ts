@@ -57,6 +57,23 @@ export class UserService extends SqlService {
 		email: true,
 	};
 
+	async dropIsDeletedRows(repository, id: string): Promise<any> {
+		const entity = await repository.findOne({
+			where: {
+				id,
+			},
+		});
+
+		if (entity['isDeleted'] === true) {
+			await this.repositoryOptionRelation.delete({ userId: id });
+			await this.repository.delete({ id });
+		}
+		else {
+			await repository.save(Object.assign(new this.entityConstructor(), { id, isDeleted: true }));
+		}
+		return entity;
+	}
+
 	async register(payload): Promise<any> {
 		const queryRunner = await this.connection.createQueryRunner(); 
 
