@@ -51,10 +51,14 @@ export class UserController extends NestDatumController {
 		if (!utilsCheckStrId(options['userStatusId'])) {
 			throw new WarningException(`Property "userStatusId" is not valid.`);
 		}
+		console.log('000000000000', options);
+
 		return this.validateUpdate(options);
 	}
 
 	validateUpdate(options: object = {}): object {
+		console.log('111111111111111111111', options);
+
 		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
 			throw new WarningException(`User is undefined or token is not valid.`);
 		}
