@@ -9,7 +9,7 @@ import {
 	WarningException, 
 	NotFoundException,
 } from '@nest-datum-common/exceptions';
-import { WithOptionService as SqlWithOptionService } from '@nest-datum/sql';
+import { SqlService } from '@nest-datum/sql';
 import { CacheService } from '@nest-datum/cache';
 import {
 	encryptPassword,
@@ -22,7 +22,7 @@ import { RoleRoleOption } from '../role-role-option/role-role-option.entity';
 import { Role } from './role.entity';
 
 @Injectable()
-export class RoleService extends SqlWithOptionService {
+export class RoleService extends SqlService {
 	public entityName = 'role';
 	public entityConstructor = Role;
 	public optionId = 'roleId';
@@ -31,7 +31,6 @@ export class RoleService extends SqlWithOptionService {
 
 	constructor(
 		@InjectRepository(Role) public repository: Repository<Role>,
-		@InjectRepository(RoleRoleOption) public repositoryOption: Repository<RoleRoleOption>,
 		@InjectRepository(RoleRoleRoleOption) public repositoryOptionRelation: Repository<RoleRoleRoleOption>,
 		public connection: Connection,
 		public cacheService: CacheService,

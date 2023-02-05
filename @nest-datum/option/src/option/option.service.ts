@@ -9,8 +9,12 @@ import { CacheService } from '@nest-datum/cache';
 
 @Injectable()
 export class OptionService extends SqlService {
+	public entityColumnOption;
+	public entityConstructor;
+
 	constructor(
 		public repository,
+		public repositoryOptionOption,
 		public connection,
 		public cacheService,
 	) {
@@ -39,4 +43,21 @@ export class OptionService extends SqlService {
 		defaultValue: true,
 		regex: true,
 	};
+
+	async dropIsDeletedRows(repository, id: string): Promise<any> {
+		const entity = await repository.findOne({
+			where: {
+				id,
+			},
+		});
+
+		if (entity['isDeleted'] === true) {
+			await this.repositoryOptionOption.delete({ [this.entityColumnOption]: id });
+			await this.repository.delete({ id });
+		}
+		else {
+			await repository.save(Object.assign(new this.entityConstructor(), { id, isDeleted: true }));
+		}
+		return entity;
+	}
 }

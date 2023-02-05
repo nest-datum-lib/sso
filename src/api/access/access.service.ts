@@ -9,7 +9,7 @@ import {
 	WarningException, 
 	NotFoundException,
 } from '@nest-datum-common/exceptions';
-import { WithOptionService as SqlWithOptionService } from '@nest-datum/sql';
+import { SqlService } from '@nest-datum/sql';
 import { CacheService } from '@nest-datum/cache';
 import {
 	encryptPassword,
@@ -18,21 +18,18 @@ import {
 	checkPassword,
 } from '@nest-datum/jwt';
 import { AccessAccessAccessOption } from '../access-access-access-option/access-access-access-option.entity';
-import { AccessAccessOption } from '../access-access-option/access-access-option.entity';
 import { Access } from './access.entity';
 
 @Injectable()
-export class AccessService extends SqlWithOptionService {
+export class AccessService extends SqlService {
 	public entityName = 'access';
 	public entityConstructor = Access;
 	public optionRelationConstructor = AccessAccessAccessOption;
-	public columnOptionId = 'accessOptionId';
 	public optionId = 'accessId';
 	public optionOptionId = 'accessAccessOptionId';
 
 	constructor(
 		@InjectRepository(Access) public repository: Repository<Access>,
-		@InjectRepository(AccessAccessOption) public repositoryOption: Repository<AccessAccessOption>,
 		@InjectRepository(AccessAccessAccessOption) public repositoryOptionRelation: Repository<AccessAccessAccessOption>,
 		public connection: Connection,
 		public cacheService: CacheService,
