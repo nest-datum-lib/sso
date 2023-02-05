@@ -12,7 +12,7 @@ import { RoleOption } from './role-option.entity';
 @Injectable()
 export class RoleOptionService extends NestDatumOptionService {
 	public entityName = 'roleOption';
-	public entityColumnOption = 'accessOptionId';
+	public entityColumnOption = 'roleOptionId';
 	public entityConstructor = RoleOption;
 
 	constructor(
