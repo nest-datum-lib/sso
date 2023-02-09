@@ -196,7 +196,6 @@ export class UserService extends SqlService {
 			if (!user) {
 				throw new NotFoundException(`User with login "${payload['login']}" not found.`);
 			}
-			console.log('000', payload['password'], user['password'])
 			if (await checkPassword(payload['password'], user['password'])) {
 				return await generateTokens(user);
 			}
