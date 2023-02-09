@@ -184,7 +184,9 @@ export class UserController extends NestDatumController {
 		if (!utilsCheckStr(options['verifyKey'])) {
 			throw new WarningException(`Property "verifyKey" is not valid.`);
 		}
-		return options;
+		return {
+			verifyKey: options['verifyKey'],
+		};
 	}
 
 	@MessagePattern({ cmd: 'user.register' })
