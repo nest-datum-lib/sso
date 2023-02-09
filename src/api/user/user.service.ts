@@ -10,6 +10,7 @@ import {
 	NotFoundException,
 } from '@nest-datum-common/exceptions';
 import { SqlService } from '@nest-datum/sql';
+import { TransportService } from '@nest-datum/transport';
 import { CacheService } from '@nest-datum/cache';
 import {
 	encryptPassword,
@@ -36,6 +37,7 @@ export class UserService extends SqlService {
 		@InjectRepository(User) public repository: Repository<User>,
 		@InjectRepository(UserUserOption) public repositoryOptionRelation: Repository<UserUserOption>,
 		public connection: Connection,
+		public transportService: TransportService,
 		public cacheService: CacheService,
 	) {
 		super();
@@ -110,23 +112,23 @@ export class UserService extends SqlService {
 				content: lastname,
 			}));
 
-			// await this.balancerService.send({ 
-			// 	name: 'mail',
-			// 	cmd: 'letter.send',
-			// }, {
-			// 	accessToken: generateAccessToken({
-			// 		id: 'sso-user-admin',
-			// 		roleId: 'sso-role-admin',
-			// 		email: process.env.USER_ROOT_EMAIL,
-			// 	}, Date.now()),
-			// 	letterId: 'mail-letter-register', 
-			// 	body: {
-			// 		...data,
-			// 		firstname,
-			// 		lastname,
-			// 	},
-			// });
-
+			await this.transportService.send({ 
+				name: process.env.SERVICE_MAIL,
+				cmd: 'report.create',
+			}, {
+				letterId: 'mail-letter-base-registration', 
+				email: data['email'],
+				content: {
+					...data,
+					firstname,
+					lastname,
+				},
+				accessToken: generateAccessToken({
+					id: process.env.USER_ID,
+					roleId: process.env.USER_ADMIN_ROLE,
+					email: process.env.USER_EMAIL,
+				}, Date.now()),
+			});
 			await queryRunner.commitTransaction();
 
 			return {
@@ -230,20 +232,21 @@ export class UserService extends SqlService {
 				...output,
 			});
 
-			// await this.balancerService.send({ 
-			// 	name: 'mail',
-			// 	cmd: 'letter.send',
-			// }, {
-			// 	accessToken: generateAccessToken({
-			// 		id: 'sso-user-admin',
-			// 		roleId: 'sso-role-admin',
-			// 		email: process.env.USER_ROOT_EMAIL,
-			// 	}, Date.now()),
-			// 	letterId: 'mail-letter-recovery', 
-			// 	body: {
-			// 		...output,
-			// 	},
-			// });
+			await this.transportService.send({ 
+				name: process.env.SERVICE_MAIL,
+				cmd: 'report.create',
+			}, {
+				letterId: 'mail-letter-base-recovery', 
+				email: payload['email'],
+				content: {
+					...output,
+				},
+				accessToken: generateAccessToken({
+					id: process.env.USER_ID,
+					roleId: process.env.USER_ADMIN_ROLE,
+					email: process.env.USER_EMAIL,
+				}, Date.now()),
+			});
 
 			return true;
 		}
