@@ -17,6 +17,7 @@ import {
 	generateVerifyKey,
 	generateTokens,
 	checkPassword,
+	generateAccessToken,
 } from '@nest-datum/jwt';
 import {
 	arrFilled as utilsCheckArrFilled,
