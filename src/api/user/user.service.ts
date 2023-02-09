@@ -17,6 +17,10 @@ import {
 	generateTokens,
 	checkPassword,
 } from '@nest-datum/jwt';
+import {
+	arrFilled as utilsCheckArrFilled,
+	objFilled as utilsCheckObjFilled,
+} from '@nest-datum-utils/check';
 import { UserUserOption } from '../user-user-option/user-user-option.entity';
 import { User } from './user.entity';
 
@@ -284,14 +288,16 @@ export class UserService extends SqlService {
 				where: {
 					id: payload['id'],
 				},
-				// relations: {
-				// 	userUserOptions: {
-				// 		userOption: true,
-				// 	},
-				// },
+				relations: {
+					userUserOptions: {
+						userOption: true,
+					},
+				},
 			});
 
-			if (!user) {
+			if (!user 
+				|| !utilsCheckArrFilled(user['userUserOptions'])
+				|| !utilsCheckObjFilled(user['userUserOptions'][0]['userOption'])) {
 				throw new NotFoundException(`User with email "${payload['email']}" not found.`);
 			}
 			return await generateTokens(user);
