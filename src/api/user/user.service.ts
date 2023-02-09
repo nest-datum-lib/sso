@@ -186,11 +186,11 @@ export class UserService extends SqlService {
 					{ email: payload['login'] },
 					{ login: payload['login'] },
 				],
-				// relations: {
-				// 	userUserOptions: {
-				// 		userOption: true,
-				// 	},
-				// },
+				relations: {
+					userUserOptions: {
+						userOption: true,
+					},
+				},
 			});
 
 			if (!user) {
