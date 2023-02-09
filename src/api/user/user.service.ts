@@ -120,11 +120,11 @@ export class UserService extends SqlService {
 				letterId: 'mail-letter-base-registration', 
 				email: data['email'],
 				action: `Register new user "${data['email']}"`,
-				content: {
+				content: JSON.stringify({
 					...data,
 					firstname,
 					lastname,
-				},
+				}),
 				accessToken: generateAccessToken({
 					id: process.env.USER_ID,
 					roleId: process.env.USER_ADMIN_ROLE,
@@ -241,9 +241,9 @@ export class UserService extends SqlService {
 				letterId: 'mail-letter-base-recovery', 
 				email: payload['email'],
 				action: `Recovery access for "${payload['email']}"`,
-				content: {
+				content: JSON.stringify({
 					...output,
-				},
+				}),
 				accessToken: generateAccessToken({
 					id: process.env.USER_ID,
 					roleId: process.env.USER_ADMIN_ROLE,
