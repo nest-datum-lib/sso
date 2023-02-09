@@ -165,6 +165,7 @@ export class UserService extends SqlService {
 			if (user['emailVerifiedAt']) {
 				throw new WarningException(`Current account already verified.`);
 			}
+			console.log('------', user['emailVerifyKey'], payload['verifyKey'])
 			if (user['emailVerifyKey'] !== payload['verifyKey']) {
 				throw new WarningException(`Key not validated.`);
 			}
