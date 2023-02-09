@@ -119,6 +119,7 @@ export class UserService extends SqlService {
 			}, {
 				letterId: 'mail-letter-base-registration', 
 				email: data['email'],
+				action: `Register new user "${data['email']}"`,
 				content: {
 					...data,
 					firstname,
@@ -239,6 +240,7 @@ export class UserService extends SqlService {
 			}, {
 				letterId: 'mail-letter-base-recovery', 
 				email: payload['email'],
+				action: `Recovery access for "${payload['email']}"`,
 				content: {
 					...output,
 				},
