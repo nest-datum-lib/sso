@@ -209,9 +209,6 @@ export class UserController extends NestDatumController {
 	@MessagePattern({ cmd: 'user.verify' })
 	async verify(payload) {
 		try {
-			console.log('0000', payload);
-			console.log('111', this.validateVerifyKey(payload));
-
 			const output = await this.service.verify(await this.validateVerifyKey(payload));
 
 			this.transportService.decrementLoadingIndicator();
