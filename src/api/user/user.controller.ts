@@ -181,7 +181,7 @@ export class UserController extends NestDatumController {
 	}
 
 	async validateVerifyKey(options: object = {}) {
-		if (!utilsCheckStrName(options['verifyKey'])) {
+		if (!utilsCheckStr(options['verifyKey'])) {
 			throw new WarningException(`Property "verifyKey" is not valid.`);
 		}
 		return options;
