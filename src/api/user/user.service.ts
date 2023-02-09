@@ -99,16 +99,16 @@ export class UserService extends SqlService {
 			};
 			const output = await queryRunner.manager.save(Object.assign(new User(), data));
 
-			// await queryRunner.manager.save(Object.assign(new UserUserOption(), {
-			// 	userId: output['id'],
-			// 	userOptionId: 'sso-user-option-firstname',
-			// 	content: firstname,
-			// }));
-			// await queryRunner.manager.save(Object.assign(new UserUserOption(), {
-			// 	userId: output['id'],
-			// 	userOptionId: 'sso-user-option-lastname',
-			// 	content: lastname,
-			// }));
+			await queryRunner.manager.save(Object.assign(new UserUserOption(), {
+				userId: output['id'],
+				userOptionId: 'sso-user-option-firstname',
+				content: firstname,
+			}));
+			await queryRunner.manager.save(Object.assign(new UserUserOption(), {
+				userId: output['id'],
+				userOptionId: 'sso-user-option-lastname',
+				content: lastname,
+			}));
 
 			// await this.balancerService.send({ 
 			// 	name: 'mail',
