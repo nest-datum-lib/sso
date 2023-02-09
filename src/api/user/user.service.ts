@@ -152,6 +152,7 @@ export class UserService extends SqlService {
 	async verify(payload): Promise<any> {
 		try {
 			this.cacheService.clear([ this.entityName, 'many' ]);
+			this.cacheService.clear([ this.entityName, 'one' ]);
 
 			const user = await this.repository.findOne({
 				where: {
