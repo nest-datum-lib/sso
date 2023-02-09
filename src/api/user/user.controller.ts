@@ -181,23 +181,10 @@ export class UserController extends NestDatumController {
 	}
 
 	async validateVerifyKey(options: object = {}) {
-		console.log('validateVerifyKey', options);
-
 		if (!utilsCheckStrName(options['verifyKey'])) {
 			throw new WarningException(`Property "verifyKey" is not valid.`);
 		}
-		try {
-			const verifyKey = (JSON.parse(Buffer.from(options['verifyKey'], 'base64').toString()));
-
-			console.log('ffffffffff', verifyKey);
-
-			return {
-				verifyKey: verifyKey['verifyKey'],
-			};
-		}
-		catch (err) {
-			throw new WarningException(`Property "verifyKey" is not valid.`);
-		}
+		return options;
 	}
 
 	@MessagePattern({ cmd: 'user.register' })
@@ -219,8 +206,6 @@ export class UserController extends NestDatumController {
 
 	@MessagePattern({ cmd: 'user.verify' })
 	async verify(payload) {
-		console.log('payload', payload);
-
 		try {
 			const output = await this.service.verify(this.validateVerifyKey(payload));
 
