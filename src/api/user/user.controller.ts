@@ -33,7 +33,7 @@ export class UserController extends NestDatumController {
 		super(transportService, service);
 	}
 
-	validateCreate(options: object = {}): object {
+	async validateCreate(options: object = {}) {
 		if (!utilsCheckStrName(options['login'])) {
 			throw new WarningException(`Property "login" is not valid.`);
 		}
@@ -49,10 +49,10 @@ export class UserController extends NestDatumController {
 		if (!utilsCheckStrId(options['userStatusId'])) {
 			throw new WarningException(`Property "userStatusId" is not valid.`);
 		}
-		return this.validateUpdate(options);
+		return await this.validateUpdate(options);
 	}
 
-	validateUpdate(options: object = {}): object {
+	async validateUpdate(options: object = {}) {
 		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
 			throw new WarningException(`User is undefined or token is not valid.`);
 		}
@@ -106,7 +106,7 @@ export class UserController extends NestDatumController {
 		};
 	}
 
-	validateLogin(options: object = {}) {
+	async validateLogin(options: object = {}) {
 		if (!utilsCheckStrName(options['login'])) {
 			throw new WarningException(`Property "login" is not valid.`);
 		}
@@ -119,7 +119,7 @@ export class UserController extends NestDatumController {
 		};
 	}
 
-	validateRegister(options: object = {}) {
+	async validateRegister(options: object = {}) {
 		if (!utilsCheckStrName(options['login'])) {
 			throw new WarningException(`Property "login" is not valid.`);
 		}
@@ -148,7 +148,7 @@ export class UserController extends NestDatumController {
 		};
 	}
 
-	validateRecovery(options: object = {}) {
+	async validateRecovery(options: object = {}) {
 		if (!utilsCheckStrEmail(options['email'])) {
 			throw new WarningException(`Property "email" is not valid.`);
 		}
@@ -158,7 +158,7 @@ export class UserController extends NestDatumController {
 		};
 	}
 
-	validateReset(options: object = {}) {
+	async validateReset(options: object = {}) {
 		if (!utilsCheckStrPassword(options['password']) || options['password'] !== options['repeatedPassword']) {
 			throw new WarningException(`Property "password" is not valid.`);
 		}
@@ -166,11 +166,11 @@ export class UserController extends NestDatumController {
 		return {
 			password: options['password'],
 			repeatedPassword: options['repeatedPassword'],
-			...this.validateVerifyKey(options),
+			...await this.validateVerifyKey(options),
 		};
 	}
 
-	validateToken(options: object = {}) {
+	async validateToken(options: object = {}) {
 		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
 			throw new WarningException(`User is undefined or token is not valid [1].`);
 		}
@@ -192,7 +192,7 @@ export class UserController extends NestDatumController {
 	@MessagePattern({ cmd: 'user.register' })
 	async register(payload) {
 		try {
-			const output = await this.service.register(this.validateRegister(payload));
+			const output = await this.service.register(await this.validateRegister(payload));
 
 			this.transportService.decrementLoadingIndicator();
 
@@ -212,7 +212,7 @@ export class UserController extends NestDatumController {
 			console.log('0000', payload);
 			console.log('111', this.validateVerifyKey(payload));
 
-			const output = await this.service.verify(this.validateVerifyKey(payload));
+			const output = await this.service.verify(await this.validateVerifyKey(payload));
 
 			this.transportService.decrementLoadingIndicator();
 
@@ -229,7 +229,7 @@ export class UserController extends NestDatumController {
 	@MessagePattern({ cmd: 'user.login' })
 	async login(payload) {
 		try {
-			const output = await this.service.login(this.validateLogin(payload));
+			const output = await this.service.login(await this.validateLogin(payload));
 
 			this.transportService.decrementLoadingIndicator();
 
@@ -246,7 +246,7 @@ export class UserController extends NestDatumController {
 	@MessagePattern({ cmd: 'user.recovery' })
 	async recovery(payload) {
 		try {
-			const output = await this.service.recovery(this.validateRecovery(payload));
+			const output = await this.service.recovery(await this.validateRecovery(payload));
 
 			this.transportService.decrementLoadingIndicator();
 
@@ -263,7 +263,7 @@ export class UserController extends NestDatumController {
 	@MessagePattern({ cmd: 'user.reset' })
 	async reset(payload) {
 		try {
-			const output = await this.service.reset(this.validateReset(payload));
+			const output = await this.service.reset(await this.validateReset(payload));
 
 			this.transportService.decrementLoadingIndicator();
 
@@ -280,7 +280,7 @@ export class UserController extends NestDatumController {
 	@MessagePattern({ cmd: 'user.refresh' })
 	async refresh(payload) {
 		try {
-			const output = await this.service.refresh(this.validateToken(payload));
+			const output = await this.service.refresh(await this.validateToken(payload));
 
 			this.transportService.decrementLoadingIndicator();
 
@@ -322,7 +322,7 @@ export class UserController extends NestDatumController {
 	@EventPattern('user.create')
 	async create(payload) {
 		try {
-			const output = await this.service.create(this.validateCreate(payload));
+			const output = await this.service.create(await this.validateCreate(payload));
 			
 			this.transportService.decrementLoadingIndicator();
 
@@ -339,7 +339,7 @@ export class UserController extends NestDatumController {
 	@EventPattern('user.update')
 	async update(payload: object = {}) {
 		try {
-			await this.service.update(this.validateUpdate(payload));
+			await this.service.update(await this.validateUpdate(payload));
 
 			this.transportService.decrementLoadingIndicator();
 
