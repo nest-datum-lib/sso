@@ -284,6 +284,11 @@ export class SqlService {
 		
 		this.cacheService.clear([ this.entityName, 'many' ]);
 
+		console.log('>>>>', await this.createProps({
+			...payload,
+			userId: payload['userId'] || process.env.USER_ID,
+		}));
+
 		return await this.repository.save(await this.createProps({
 			...payload,
 			userId: payload['userId'] || process.env.USER_ID,
