@@ -159,6 +159,8 @@ export class UserService extends SqlService {
 					email: payload['email'],
 				},
 			});
+
+			console.log('--------------', user['emailVerifyKey'], payload['verifyKey']);
 			
 			if (!user) {
 				throw new NotFoundException(`User with email "${payload['email']}" not found.`);
