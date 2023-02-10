@@ -12,6 +12,7 @@ import { AccessOption } from './access-option.entity';
 @Injectable()
 export class AccessOptionService extends NestDatumOptionService {
 	public entityName = 'accessOption';
+	public entityColumnOption = 'accessOptionId';
 	public entityConstructor = AccessOption;
 
 	constructor(
