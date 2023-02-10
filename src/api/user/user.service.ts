@@ -156,20 +156,15 @@ export class UserService extends SqlService {
 
 			const user = await this.repository.findOne({
 				where: {
-					email: payload['email'],
+					emailVerifyKey: payload['verifyKey'],
 				},
 			});
 
-			console.log('--------------', user['emailVerifyKey'], payload['verifyKey']);
-			
 			if (!user) {
 				throw new NotFoundException(`User with email "${payload['email']}" not found.`);
 			}
 			if (user['emailVerifiedAt']) {
 				throw new WarningException(`Current account already verified.`);
-			}
-			if (user['emailVerifyKey'] !== payload['verifyKey']) {
-				throw new WarningException(`Key not validated.`);
 			}
 			if ((Date.now() - user['createdAt'].getTime()) > 86400000) {
 				throw new WarningException(`Key expired.`);
