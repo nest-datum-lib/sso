@@ -4,44 +4,22 @@ import {
 	Repository,
 	Connection, 
 } from 'typeorm';
-import { 
-	ErrorException,
-	WarningException, 
-	NotFoundException,
-} from '@nest-datum-common/exceptions';
-import { SqlService } from '@nest-datum/sql';
+import { OptionOptionService } from '@nest-datum/option';
 import { CacheService } from '@nest-datum/cache';
-import {
-	encryptPassword,
-	generateVerifyKey,
-	generateTokens,
-	checkPassword,
-} from '@nest-datum/jwt';
 import { RoleAccess } from './role-access.entity';
 
 @Injectable()
-export class RoleAccessService extends SqlService {
-	public entityName = 'roleAccess';
-	public entityConstructor = RoleAccess;
+export class RoleAccessService extends OptionOptionService {
+	protected entityName = 'roleRoleOption';
+	protected entityConstructor = RoleAccess;
+	protected entityOptionId = 'accessId';
+	protected entityId = 'roleId';
 
 	constructor(
-		@InjectRepository(RoleAccess) public repository: Repository<RoleAccess>,
-		public connection: Connection,
-		public cacheService: CacheService,
+		@InjectRepository(RoleAccess) protected entityRepository: Repository<RoleAccess>,
+		protected connection: Connection,
+		protected cacheService: CacheService,
 	) {
 		super();
 	}
-
-	protected selectDefaultMany = {
-		id: true,
-		userId: true,
-		roleId: true,
-		accessId: true,
-		createdAt: true,
-		updatedAt: true,
-	};
-
-	protected queryDefaultMany = {
-		id: true,
-	};
 }

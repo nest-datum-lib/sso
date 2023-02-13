@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { CacheService } from '@nest-datum/cache';
 import { UserSeeder } from './user.seeder';
-// import { SettingSeeder } from './setting.seeder';
+import { SettingSeeder } from './setting.seeder';
 
 @Injectable()
 export class SeedService {
@@ -16,11 +16,11 @@ export class SeedService {
 	constructor(
 		private readonly cacheService: CacheService,
 		private readonly connection: Connection,
-		// private readonly settings: SettingSeeder,
+		private readonly settings: SettingSeeder,
 		private readonly user: UserSeeder,
 	) {
 		this.seeders = [
-			// this.settings,
+			this.settings,
 			this.user,
 		];
 	}

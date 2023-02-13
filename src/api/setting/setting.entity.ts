@@ -1,6 +1,6 @@
 import { Entity } from 'typeorm';
-import { Setting as NestDatumSetting } from '@nest-datum/setting';
+import { Setting as BaseSetting } from '@nest-datum/setting';
 
 @Entity()
-export class Setting extends NestDatumSetting {
+export class Setting extends BaseSetting {
 }

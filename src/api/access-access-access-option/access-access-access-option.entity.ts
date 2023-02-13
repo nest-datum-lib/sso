@@ -3,12 +3,12 @@ import {
 	Column, 
 	ManyToOne,
 } from 'typeorm';
-import { OptionOptionOption as NestDatumOptionOptionOption } from '@nest-datum/option';
+import { OptionOptionOption } from '@nest-datum/option';
 import { AccessAccessOption } from '../access-access-option/access-access-option.entity';
 import { Access } from '../access/access.entity';
 
 @Entity()
-export class AccessAccessAccessOption extends NestDatumOptionOptionOption {
+export class AccessAccessAccessOption extends OptionOptionOption {
 	@Column()
 	public accessAccessOptionId: string;
 

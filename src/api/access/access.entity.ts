@@ -24,6 +24,7 @@ export class Access {
 	public userId: string;
 
 	@Column({ default: '' })
+	@Index()
 	public accessStatusId: string;
 
 	@Column()
@@ -31,7 +32,6 @@ export class Access {
 	public name: string;
 
 	@Column({ default: '' })
-	@Index()
 	public description: string;
 
 	@Column('boolean', { default: false })

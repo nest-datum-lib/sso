@@ -7,10 +7,26 @@ const path = require('path');
  * @param {string} fileName - File name. Default: .env
  * @return {Array}
  */
-const all = (fileName: string = '.env') => {
+const all = (fileName: string = '.env', notParsed = false) => {
 	const envFilePath = path.resolve(process.env.PWD, fileName);
+	const data = fs.readFileSync(envFilePath, 'utf-8').split(os.EOL);
 
-	return fs.readFileSync(envFilePath, 'utf-8').split(os.EOL);
+	if (notParsed) {
+		return data;
+	}
+
+	let i = 0,
+		output = {};
+
+	while (i < data.length) {
+		if (data[i]) {
+			const dataItemSplit = data[i].split('=');
+
+			output[dataItemSplit[0]] = dataItemSplit[1];
+		}
+		i++;
+	}
+	return output;
 };
 
 export default all;

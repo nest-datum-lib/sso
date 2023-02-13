@@ -12,10 +12,14 @@ import {
 	SqlService, 
 } from '@nest-datum/sql';
 import { OptionService } from './option.service';
-import { OptionController } from './option.controller';
+import { OptionTcpController } from './option-tcp.controller';
+import { OptionHttpController } from './option-http.controller';
 
 @Module({
-	controllers: [ OptionController ],
+	controllers: [ 
+		OptionTcpController,
+		OptionHttpController, 
+	],
 	imports: [
 		SqlModule,
 		TransportModule,

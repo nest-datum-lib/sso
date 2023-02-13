@@ -11,9 +11,11 @@ export class Option {
 	public id: string;
 
 	@Column({ default: '' })
+	@Index()
 	public userId: string;
 
 	@Column({ default: '' })
+	@Index()
 	public dataTypeId: string;
 
 	@Column()
@@ -25,11 +27,9 @@ export class Option {
 	public description: string;
 
 	@Column({ default: '' })
-	@Index()
 	public defaultValue: string;
 
 	@Column({ default: '' })
-	@Index()
 	public regex: string;
 
 	@Column('boolean', { default: false })

@@ -3,12 +3,12 @@ import {
 	Column, 
 	ManyToOne,
 } from 'typeorm';
-import { OptionOptionOption as NestDatumOptionOptionOption } from '@nest-datum/option';
+import { OptionOptionOption } from '@nest-datum/option';
 import { RoleRoleOption } from '../role-role-option/role-role-option.entity';
 import { Role } from '../role/role.entity';
 
 @Entity()
-export class RoleRoleRoleOption extends NestDatumOptionOptionOption {
+export class RoleRoleRoleOption extends OptionOptionOption {
 	@Column()
 	public roleRoleOptionId: string;
 

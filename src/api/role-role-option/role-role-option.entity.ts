@@ -4,13 +4,13 @@ import {
 	ManyToOne,
 	OneToMany,
 } from 'typeorm';
-import { OptionOption as NestDatumOptionOption } from '@nest-datum/option';
+import { OptionOption } from '@nest-datum/option';
 import { RoleRoleRoleOption } from '../role-role-role-option/role-role-role-option.entity';
 import { RoleOption } from '../role-option/role-option.entity';
 import { Role } from '../role/role.entity';
 
 @Entity()
-export class RoleRoleOption extends NestDatumOptionOption {
+export class RoleRoleOption extends OptionOption {
 	@Column()
 	public roleOptionId: string;
 

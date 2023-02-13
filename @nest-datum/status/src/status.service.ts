@@ -1,40 +1,31 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { 
-	Repository,
-	Connection, 
-} from 'typeorm';
+import { Repository } from 'typeorm';
 import { SqlService } from '@nest-datum/sql';
-import { CacheService } from '@nest-datum/cache';
-import { Status } from './status.entity';
 
-@Injectable()
 export class StatusService extends SqlService {
-	public entityName = 'status';
-	public entityConstructor = Status;
+	protected entityWithTwoStepRemoval = true;
 
-	constructor(
-		public repository,
-		public connection,
-		public cacheService,
-	) {
-		super();
+	protected manyGetColumns(customColumns: object = {}) {
+		return ({
+			...super.manyGetColumns(customColumns),
+			userId: true,
+			name: true,
+			description: true,
+			isNotDelete: true,
+			isDeleted: true,
+		});
 	}
 
-	protected selectDefaultMany = {
-		id: true,
-		userId: true,
-		name: true,
-		description: true,
-		isDeleted: true,
-		isNotDelete: true,
-		createdAt: true,
-		updatedAt: true,
-	};
+	protected oneGetColumns(customColumns: object = {}) {
+		return ({
+			...this.manyGetColumns(customColumns),
+		});
+	}
 
-	protected queryDefaultMany = {
-		id: true,
-		name: true,
-		description: true,
-	};
+	protected manyGetQueryColumns(customColumns: object = {}) {
+		return ({
+			...super.manyGetQueryColumns(customColumns),
+			name: true,
+			description: true,
+		});
+	}
 }

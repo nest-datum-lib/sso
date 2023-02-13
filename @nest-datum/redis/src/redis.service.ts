@@ -1,44 +1,40 @@
 import Redis from 'ioredis';
 
+/**
+ * Functional wrapper over the Redis (ioredis) service. Provides functions for generating keys and template queries to redis.
+ */
 export class RedisService {
-	public readonly redis;
+	public readonly redisService;
 
-	async redisScanStream(key: string, callback: Function = async (key, fullKey) => ({})): Promise<any> {
+	async keysScan(match: string, callback: Function = async (item, index) => item): Promise<Array<any>> {
 		try {
 			const output = [];
 
-			return await (new Promise(async (resolve, reject) => {
-				let scanStream; 
-						
-				try {
-					scanStream = await this.redis.scanStream({
-						match: `*${key}*`,
-						count: 64,
-					});
-				}
-				catch (err) {
-					return reject(err);
-				}
-				scanStream.on('data', async (resultKeys) => {
-					let i = 0;
+			await (new Promise(async (resolve, reject) => {
+				(await this.redisService.scanStream({
+					match: `*${match}*`,
+					count: 64,
+				}))
+					.on('data', async (resultKeys) => {
+						let i = 0;
 
-					while (i < resultKeys.length) {
-						try {
-							await callback(key, resultKeys[i]);
-
-							output.push(resultKeys[i]);
+						while (i < resultKeys.length) {
+							try {
+								output.push(await callback(resultKeys[i], i));
+							}
+							catch (err) {
+								return reject(err);
+							}
+							i++;
 						}
-						catch (err) {
-							return reject(err);
-						}
-						i++;
-					}
-				});
-				scanStream.on('end', () => resolve(output));
+					})
+					.on('end', () => resolve(output));
 			}));
+			return output;
 		}
 		catch (err) {
-			return [];
+			console.log(`Redis service error: ${err.message} { match: "${match}" }]`);
 		}
+		return [];
 	}
 }

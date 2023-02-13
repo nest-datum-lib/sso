@@ -5,7 +5,7 @@ import {
 import { Controller } from '@nestjs/common';
 import { WarningException } from '@nest-datum-common/exceptions';
 import { TransportService } from '@nest-datum/transport';
-import { Controller as NestDatumController } from '@nest-datum-common/controller';
+import { TcpController } from '@nest-datum/controller';
 import { 
 	bool as utilsCheckBool,
 	exists as utilsCheckExists,
@@ -25,15 +25,15 @@ import {
 import { UserService } from './user.service';
 
 @Controller()
-export class UserController extends NestDatumController {
+export class UserController extends TcpController {
 	constructor(
-		public transportService: TransportService,
-		public service: UserService,
+		protected transportService: TransportService,
+		protected entityService: UserService,
 	) {
-		super(transportService, service);
+		super();
 	}
 
-	async validateCreate(options: object = {}) {
+	async validateCreate(options) {
 		if (!utilsCheckStrName(options['login'])) {
 			throw new WarningException(`Property "login" is not valid.`);
 		}
@@ -52,7 +52,7 @@ export class UserController extends NestDatumController {
 		return await this.validateUpdate(options);
 	}
 
-	async validateUpdate(options: object = {}) {
+	async validateUpdate(options) {
 		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
 			throw new WarningException(`User is undefined or token is not valid.`);
 		}
@@ -71,13 +71,9 @@ export class UserController extends NestDatumController {
 		if (options['userStatusId'] && !utilsCheckStrId(options['userStatusId'])) {
 			throw new WarningException(`Property "userStatusId" is not valid.`);
 		}
-
 		return {
-			...(options['id'] && utilsCheckStrId(options['id'])) 
-				? { id: options['id'] } 
-				: {},
-			...(options['newId'] && utilsCheckStrId(options['newId'])) 
-				? { newId: options['newId'] } 
+			...(options['newId'] && utilsCheckStrId(options['newId']))
+				? { newId: options['newId'] }
 				: {},
 			...(options['userStatusId'] && utilsCheckStrId(options['userStatusId'])) 
 				? { userStatusId: options['userStatusId'] } 
@@ -97,16 +93,13 @@ export class UserController extends NestDatumController {
 			...(options['login'] && utilsCheckStrName(options['login'])) 
 				? { login: options['login'] } 
 				: {},
-			...(utilsCheckExists(options['isNotDelete']) && utilsCheckBool(options['isNotDelete'])) 
-				? { isNotDelete: options['isNotDelete'] } 
-				: {},
-			...(utilsCheckExists(options['isDeleted']) && utilsCheckBool(options['isDeleted'])) 
-				? { isDeleted: options['isDeleted'] } 
+			...(utilsCheckExists(options['isNotDelete']) && utilsCheckBool(options['isNotDelete']))
+				? { isNotDelete: options['isNotDelete'] }
 				: {},
 		};
 	}
 
-	async validateLogin(options: object = {}) {
+	async validateLogin(options) {
 		if (!utilsCheckStrName(options['login'])) {
 			throw new WarningException(`Property "login" is not valid.`);
 		}
@@ -119,7 +112,7 @@ export class UserController extends NestDatumController {
 		};
 	}
 
-	async validateRegister(options: object = {}) {
+	async validateRegister(options) {
 		if (!utilsCheckStrName(options['login'])) {
 			throw new WarningException(`Property "login" is not valid.`);
 		}
@@ -148,7 +141,7 @@ export class UserController extends NestDatumController {
 		};
 	}
 
-	async validateRecovery(options: object = {}) {
+	async validateRecovery(options) {
 		if (!utilsCheckStrEmail(options['email'])) {
 			throw new WarningException(`Property "email" is not valid.`);
 		}
@@ -158,7 +151,7 @@ export class UserController extends NestDatumController {
 		};
 	}
 
-	async validateReset(options: object = {}) {
+	async validateReset(options) {
 		if (!utilsCheckStrPassword(options['password']) || options['password'] !== options['repeatedPassword']) {
 			throw new WarningException(`Property "password" is not valid.`);
 		}
@@ -170,7 +163,7 @@ export class UserController extends NestDatumController {
 		};
 	}
 
-	async validateToken(options: object = {}) {
+	async validateToken(options) {
 		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
 			throw new WarningException(`User is undefined or token is not valid [1].`);
 		}
@@ -180,7 +173,7 @@ export class UserController extends NestDatumController {
 		return getUser(options['refreshToken']);
 	}
 
-	async validateVerifyKey(options: object = {}) {
+	async validateVerifyKey(options) {
 		if (!utilsCheckStr(options['verifyKey'])) {
 			throw new WarningException(`Property "verifyKey" is not valid.`);
 		}
@@ -191,104 +184,32 @@ export class UserController extends NestDatumController {
 
 	@MessagePattern({ cmd: 'user.register' })
 	async register(payload) {
-		try {
-			const output = await this.service.register(await this.validateRegister(payload));
-
-			this.transportService.decrementLoadingIndicator();
-
-			return output
-		}
-		catch (err) {
-			this.log(err);
-			this.transportService.decrementLoadingIndicator();
-
-			return err;
-		}
+		return await this.serviceHandlerWrapper(async () => await this.entityService.register(await this.validateRegister(payload)));
 	}
 
 	@MessagePattern({ cmd: 'user.verify' })
 	async verify(payload) {
-		try {
-			const output = await this.service.verify(await this.validateVerifyKey(payload));
-
-			this.transportService.decrementLoadingIndicator();
-
-			return output;
-		}
-		catch (err) {
-			this.log(err);
-			this.transportService.decrementLoadingIndicator();
-
-			return err;
-		}
+		return await this.serviceHandlerWrapper(async () => await this.entityService.verify(await this.validateVerifyKey(payload)));
 	}
 
 	@MessagePattern({ cmd: 'user.login' })
 	async login(payload) {
-		try {
-			const output = await this.service.login(await this.validateLogin(payload));
-
-			this.transportService.decrementLoadingIndicator();
-
-			return output;
-		}
-		catch (err) {
-			this.log(err);
-			this.transportService.decrementLoadingIndicator();
-
-			return err;
-		}
+		return await this.serviceHandlerWrapper(async () => await this.entityService.login(await this.validateLogin(payload)));
 	}
 
 	@MessagePattern({ cmd: 'user.recovery' })
 	async recovery(payload) {
-		try {
-			const output = await this.service.recovery(await this.validateRecovery(payload));
-
-			this.transportService.decrementLoadingIndicator();
-
-			return output;
-		}
-		catch (err) {
-			this.log(err);
-			this.transportService.decrementLoadingIndicator();
-
-			return err;
-		}
+		return await this.serviceHandlerWrapper(async () => await this.entityService.recovery(await this.validateRecovery(payload)));
 	}
 
 	@MessagePattern({ cmd: 'user.reset' })
 	async reset(payload) {
-		try {
-			const output = await this.service.reset(await this.validateReset(payload));
-
-			this.transportService.decrementLoadingIndicator();
-
-			return output;
-		}
-		catch (err) {
-			this.log(err);
-			this.transportService.decrementLoadingIndicator();
-
-			return err;
-		}
+		return await this.serviceHandlerWrapper(async () => await this.entityService.reset(await this.validateReset(payload)));
 	}
 
 	@MessagePattern({ cmd: 'user.refresh' })
 	async refresh(payload) {
-		try {
-			const output = await this.service.refresh(await this.validateToken(payload));
-
-			this.transportService.decrementLoadingIndicator();
-
-			return output;
-		}
-		catch (err) {
-			this.log(err);
-			this.transportService.decrementLoadingIndicator();
-
-			return err;
-		}
+		return await this.serviceHandlerWrapper(async () => await this.entityService.refresh(await this.validateToken(payload)));
 	}
 
 	@MessagePattern({ cmd: 'user.many' })
@@ -311,42 +232,13 @@ export class UserController extends NestDatumController {
 		return await super.dropMany(payload);
 	}
 
-	@EventPattern('user.createOptions')
-	async createOptions(payload) {
-		return await super.createOptions(payload);
-	}
-
 	@EventPattern('user.create')
 	async create(payload) {
-		try {
-			const output = await this.service.create(await this.validateCreate(payload));
-			
-			this.transportService.decrementLoadingIndicator();
-
-			return output;
-		}
-		catch (err) {
-			this.log(err);
-			this.transportService.decrementLoadingIndicator();
-
-			return err;
-		}
+		return await super.create(payload);
 	}
 
 	@EventPattern('user.update')
-	async update(payload: object = {}) {
-		try {
-			await this.service.update(await this.validateUpdate(payload));
-
-			this.transportService.decrementLoadingIndicator();
-
-			return true;
-		}
-		catch (err) {
-			this.log(err);
-			this.transportService.decrementLoadingIndicator();
-
-			return err;
-		}
+	async update(payload) {
+		return await super.update(payload);
 	}
 }

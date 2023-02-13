@@ -1,5 +1,5 @@
 
-const str = (value = '') => {
+const str = (value) => {
 	return typeof value === 'string';
 };
 

@@ -4,55 +4,44 @@ import {
 	Repository,
 	Connection, 
 } from 'typeorm';
-import { 
-	ErrorException,
-	WarningException, 
-	NotFoundException,
-} from '@nest-datum-common/exceptions';
-import { SqlService } from '@nest-datum/sql';
+import { OptionEntityService } from '@nest-datum/option';
 import { CacheService } from '@nest-datum/cache';
-import {
-	encryptPassword,
-	generateVerifyKey,
-	generateTokens,
-	checkPassword,
-} from '@nest-datum/jwt';
-import { RoleRoleRoleOption } from '../role-role-role-option/role-role-role-option.entity';
 import { RoleRoleOption } from '../role-role-option/role-role-option.entity';
 import { Role } from './role.entity';
 
 @Injectable()
-export class RoleService extends SqlService {
-	public entityName = 'role';
-	public entityConstructor = Role;
-	public optionId = 'roleId';
-	public optionOptionId = 'roleRoleOptionId';
-	public optionRelationConstructor = RoleRoleRoleOption;
+export class RoleService extends OptionEntityService {
+	protected entityName = 'role';
+	protected entityConstructor = Role;
+	protected entityOptionConstructor = RoleRoleOption;
+	protected entityId = 'roleId';
 
 	constructor(
-		@InjectRepository(Role) public repository: Repository<Role>,
-		@InjectRepository(RoleRoleRoleOption) public repositoryOptionRelation: Repository<RoleRoleRoleOption>,
-		public connection: Connection,
-		public cacheService: CacheService,
+		@InjectRepository(Role) protected entityRepository: Repository<Role>,
+		@InjectRepository(RoleRoleOption) protected entityOptionRepository: Repository<RoleRoleOption>,
+		protected connection: Connection,
+		protected cacheService: CacheService,
 	) {
 		super();
 	}
 
-	protected selectDefaultMany = {
-		id: true,
-		userId: true,
-		roleStatusId: true,
-		name: true,
-		description: true,
-		isDeleted: true,
-		isNotDelete: true,
-		createdAt: true,
-		updatedAt: true,
-	};
+	protected manyGetColumns(customColumns: object = {}) {
+		return ({
+			...super.manyGetColumns(customColumns),
+			userId: true,
+			roleStatusId: true,
+			name: true,
+			description: true,
+			isDeleted: true,
+			isNotDelete: true,
+		});
+	}
 
-	protected queryDefaultMany = {
-		id: true,
-		name: true,
-		description: true,
-	};
+	protected manyGetQueryColumns(customColumns: object = {}) {
+		return ({
+			...super.manyGetQueryColumns(customColumns),
+			name: true,
+			description: true,
+		});
+	}
 }

@@ -12,10 +12,14 @@ import {
 	SqlService, 
 } from '@nest-datum/sql';
 import { StatusService } from './status.service';
-import { StatusController } from './status.controller';
+import { StatusTcpController } from './status-tcp.controller';
+import { StatusHttpController } from './status-http.controller';
 
 @Module({
-	controllers: [ StatusController ],
+	controllers: [ 
+		StatusTcpController,
+		StatusHttpController, 
+	],
 	imports: [
 		SqlModule,
 		TransportModule,

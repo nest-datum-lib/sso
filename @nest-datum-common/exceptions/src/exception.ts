@@ -3,7 +3,8 @@ export class Exception {
 	public readonly cmd: string = 'err.create';
 	public readonly errorCode: number = 500;
 	
-	constructor(public message: string) {
+	constructor(public message: string, public exceptionCode?: string|number) {
+		this.message = `${message} ${exceptionCode || ''}`;
 	}
 
 	public getCmd(): string {

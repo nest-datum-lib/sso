@@ -1,44 +1,35 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { 
-	Repository,
-	Connection, 
-} from 'typeorm';
+import { Repository } from 'typeorm';
 import { SqlService } from '@nest-datum/sql';
-import { CacheService } from '@nest-datum/cache';
-import { Setting } from './setting.entity';
 
-@Injectable()
 export class SettingService extends SqlService {
-	public entityName = 'setting';
-	public entityConstructor = Setting;
+	protected entityName = 'setting';
+	protected entityWithTwoStepRemoval = true;
 
-	constructor(
-		public repository,
-		public connection,
-		public cacheService,
-	) {
-		super();
+	protected manyGetColumns(customColumns: object = {}) {
+		return ({
+			...super.manyGetColumns(customColumns),
+			userId: true,
+			name: true,
+			description: true,
+			dataTypeId: true,
+			value: true,
+			regex: true,
+			isDeleted: true,
+			isNotDelete: true,
+		});
 	}
 
-	protected selectDefaultMany = {
-		id: true,
-		name: true,
-		description: true,
-		dataTypeId: true,
-		value: true,
-		regex: true,
-		isDeleted: true,
-		isNotDelete: true,
-		createdAt: true,
-		updatedAt: true,
-	};
+	protected oneGetColumns(customColumns: object = {}) {
+		return ({
+			...this.manyGetColumns(customColumns),
+		});
+	}
 
-	protected queryDefaultMany = {
-		id: true,
-		name: true,
-		description: true,
-		value: true,
-		regex: true,
-	};
+	protected manyGetQueryColumns(customColumns: object = {}) {
+		return ({
+			...super.manyGetQueryColumns(customColumns),
+			name: true,
+			description: true,
+		});
+	}
 }

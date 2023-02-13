@@ -4,16 +4,16 @@ import {
 } from '@nestjs/microservices';
 import { Controller } from '@nestjs/common';
 import { TransportService } from '@nest-datum/transport';
-import { OptionController as NestDatumOptionController } from '@nest-datum/option';
+import { OptionTcpController } from '@nest-datum/option';
 import { RoleOptionService } from './role-option.service';
 
 @Controller()
-export class RoleOptionController extends NestDatumOptionController {
+export class RoleOptionController extends OptionTcpController {
 	constructor(
-		public transportService: TransportService,
-		public service: RoleOptionService,
+		protected transportService: TransportService,
+		protected entityService: RoleOptionService,
 	) {
-		super(transportService, service);
+		super();
 	}
 
 	@MessagePattern({ cmd: 'roleOption.many' })
@@ -44,5 +44,10 @@ export class RoleOptionController extends NestDatumOptionController {
 	@EventPattern('roleOption.update')
 	async update(payload) {
 		return await super.update(payload);
+	}
+
+	@EventPattern('role.content')
+	async content(payload) {
+		return await super.content(payload);
 	}
 }

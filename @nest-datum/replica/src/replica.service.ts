@@ -1,27 +1,41 @@
-import Redis from 'ioredis';
-import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
-import { strId as utilsCheckStrId } from '@nest-datum-utils/check';
-import {
-	get as envGet,
-	set as envSet,
+import { 
+	all as envAll,
+	get as envGet, 
 } from '@nest-datum-utils/env';
 
 @Injectable()
 export class ReplicaService {
-	prefix(key: string, id?: string, name?: string) {
-		return `${process.env.USER_ID}|${process.env.PROJECT_ID}|${name || process.env.APP_NAME}|${id || this.id()}|${key}`;
+	/**
+	 * Concatenates a string parameter with a wildcard phrase to form keys in a redis. The character "*" will be used by default.
+	 * 
+	 * @param {string} value - A string parameter from which the key will be generated.
+	 * @example
+	 * // returns `queue-user1|project1|myString`
+	 * this.redisService.prefix('myString')
+	 * @example
+	 * // returns `queue-user1|project1|*`
+	 * this.redisService.prefix()
+	 * @returns {string}
+	 */
+	prefix(value?: string): string {
+		return `${process.env.USER_ID}|${process.env.PROJECT_ID}|${String(value || '')}`;
 	}
 
-	id(): string {
-		let value = process.env.APP_ID || envGet('APP_ID');
+	setting(name: string) {
+		const nameEnv = name.toUpperCase();
 
-		if (!utilsCheckStrId(value)) {
-			value = uuidv4();
-			process.env['APP_ID'] = value;
+		return process.env[nameEnv] || envGet(nameEnv);
+	}
 
-			envSet('APP_ID', value);
+	settings() {
+		const data = envAll();
+		let key,
+			output = {};
+
+		for (key in data) {
+			output[key.toLowerCase()] = data[key];
 		}
-		return value;
+		return output;
 	}
 }

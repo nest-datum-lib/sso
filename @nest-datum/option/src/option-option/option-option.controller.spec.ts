@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { OptionOptionController } from './option-option.controller';
+import { OptionOptionController } from './option-option-tcp.controller';
 
 describe('OptionOptionController', () => {
 	let controller: OptionOptionController;

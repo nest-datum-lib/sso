@@ -15,7 +15,7 @@ const tmp = {};
 @Injectable()
 export class CacheService extends RedisService {
 	constructor(
-		@InjectRedis(process['REDIS_CACHE']) public redis: Redis,
+		@InjectRedis(process['REDIS_CACHE']) public redisService: Redis,
 		private readonly replicaService: ReplicaService,
 	) {
 		super();
@@ -29,23 +29,32 @@ export class CacheService extends RedisService {
 			if (!query[i]) {
 				throw new ErrorException(`Cache query item is undefined.`);
 			}
-			key += utlisCheckObj(query[i])
-				? JSON.stringify(query[i])
-				: String(query[i]);
+			if (utlisCheckObj(query[i])) {
+				const processedItem = { ...query[i] };
+
+				delete processedItem['accessToken'];
+				delete processedItem['refreshToken'];
+				delete processedItem['userId'];
+
+				key += JSON.stringify(processedItem);
+			}
+			else {
+				key += String(query[i]);
+			}
 
 			if (i < (query.length - 1)) {
 				key += '|';
 			}
 			i++;
 		}
-		return this.replicaService.prefix(key);
+		return this.replicaService.prefix(`${this.replicaService.setting('app_id')}|${key}`);
 	}
 
 	async get(query: Array<any>): Promise<any> {
 		const key = this.getKey(query);
 		const output = tmp[key]
 			? undefined
-			: await this.redis.get(key);
+			: await this.redisService.get(key);
 
 		if (utilsCheckStrExists(output)) {
 			try {
@@ -58,20 +67,20 @@ export class CacheService extends RedisService {
 	}
 
 	async set(query: Array<any>, payload?: any): Promise<any> {
-		return await this.redis.set(this.getKey(query), utlisCheckObj(payload)
+		return await this.redisService.set(this.getKey(query), utlisCheckObj(payload)
 			? JSON.stringify(payload)
 			: String(payload));
 	}
 
 	async clear(query: Array<any>): Promise<any> {
 		const key = this.getKey(query);
-		const cacheDataByKey = Number(await this.redis.exists(key));
+		const cacheDataByKey = Number(await this.redisService.exists(key));
 
 		tmp[key] = true;
 
 		(cacheDataByKey) 
-			? await this.redis.del(key)
-			: await this.redisScanStream(key, (prevKey, fullKey) => this.redis.del(fullKey));
+			? await this.redisService.del(key)
+			: await this.keysScan(key, async (redisKey) => await this.redisService.del(redisKey));
 		clearTimeout(timeouts[key]);
 
 		timeouts[key] = setTimeout(() => {

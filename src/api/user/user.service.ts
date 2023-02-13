@@ -4,14 +4,14 @@ import {
 	Repository,
 	Connection, 
 } from 'typeorm';
-import { 
+import { OptionEntityService } from '@nest-datum/option';
+import { CacheService } from '@nest-datum/cache';
+import { TransportService } from '@nest-datum/transport';
+import {
 	ErrorException,
-	WarningException, 
+	WarningException,
 	NotFoundException,
 } from '@nest-datum-common/exceptions';
-import { SqlService } from '@nest-datum/sql';
-import { TransportService } from '@nest-datum/transport';
-import { CacheService } from '@nest-datum/cache';
 import {
 	encryptPassword,
 	generateVerifyKey,
@@ -27,65 +27,49 @@ import { UserUserOption } from '../user-user-option/user-user-option.entity';
 import { User } from './user.entity';
 
 @Injectable()
-export class UserService extends SqlService {
-	public entityName = 'user';
-	public entityConstructor = User;
-	public optionId = 'userId';
-	public optionOptionId = 'userOptionId';
-	public optionRelationConstructor = UserUserOption;
+export class UserService extends OptionEntityService {
+	protected entityName = 'user';
+	protected entityConstructor = User;
+	protected entityOptionConstructor = UserUserOption;
+	protected entityId = 'userId';
 
 	constructor(
-		@InjectRepository(User) public repository: Repository<User>,
-		@InjectRepository(UserUserOption) public repositoryOptionRelation: Repository<UserUserOption>,
-		public connection: Connection,
-		public transportService: TransportService,
-		public cacheService: CacheService,
+		@InjectRepository(User) protected entityRepository: Repository<User>,
+		@InjectRepository(UserUserOption) protected entityOptionRepository: Repository<UserUserOption>,
+		protected connection: Connection,
+		protected cacheService: CacheService,
+		protected transportService: TransportService,
 	) {
 		super();
 	}
 
-	protected selectDefaultMany = {
-		id: true,
-		roleId: true,
-		userStatusId: true,
-		login: true,
-		email: true,
-		isDeleted: true,
-		isNotDelete: true,
-		emailVerifyKey: true,
-		emailVerifiedAt: true,
-		createdAt: true,
-		updatedAt: true,
-	};
-
-	protected queryDefaultMany = {
-		id: true,
-		login: true,
-		email: true,
-	};
-
-	async dropIsDeletedRows(repository, id: string): Promise<any> {
-		const entity = await repository.findOne({
-			where: {
-				id,
-			},
+	protected manyGetColumns(customColumns: object = {}) {
+		return ({
+			...super.manyGetColumns(customColumns),
+			roleId: true,
+			userStatusId: true,
+			login: true,
+			email: true,
+			isDeleted: true,
+			isNotDelete: true,
+			emailVerifyKey: true,
+			emailVerifiedAt: true,
 		});
+	}
 
-		if (entity['isDeleted'] === true) {
-			await this.repositoryOptionRelation.delete({ userId: id });
-			await this.repository.delete({ id });
-		}
-		else {
-			await repository.save(Object.assign(new this.entityConstructor(), { id, isDeleted: true }));
-		}
-		return entity;
+	protected manyGetQueryColumns(customColumns: object = {}) {
+		return ({
+			...super.manyGetQueryColumns(customColumns),
+			login: true,
+			email: true,
+		});
 	}
 
 	async register(payload): Promise<any> {
-		const queryRunner = await this.connection.createQueryRunner(); 
+		await this.createQueryRunnerManager();
 
 		try {
-			await queryRunner.startTransaction();
+			await this.startQueryRunnerManager();
 			
 			this.cacheService.clear([ this.entityName, 'many' ]);
 
@@ -100,14 +84,14 @@ export class UserService extends SqlService {
 				password: await encryptPassword(payload['password']),
 				emailVerifyKey: await generateVerifyKey(payload['email']),
 			};
-			const output = await queryRunner.manager.save(Object.assign(new User(), data));
+			const output = await this.queryRunner.manager.save(Object.assign(new User(), data));
 
-			await queryRunner.manager.save(Object.assign(new UserUserOption(), {
+			await this.queryRunner.manager.save(Object.assign(new UserUserOption(), {
 				userId: output['id'],
 				userOptionId: 'sso-user-option-firstname',
 				content: firstname,
 			}));
-			await queryRunner.manager.save(Object.assign(new UserUserOption(), {
+			await this.queryRunner.manager.save(Object.assign(new UserUserOption(), {
 				userId: output['id'],
 				userOptionId: 'sso-user-option-lastname',
 				content: lastname,
@@ -132,7 +116,7 @@ export class UserService extends SqlService {
 					email: process.env.USER_EMAIL,
 				}, Date.now()),
 			});
-			await queryRunner.commitTransaction();
+			await this.commitQueryRunnerManager();
 
 			return {
 				id: output['id'],
@@ -140,12 +124,12 @@ export class UserService extends SqlService {
 			};
 		}
 		catch (err) {
-			await queryRunner.rollbackTransaction();
+			await this.rollbackQueryRunnerManager();
 
 			throw new ErrorException(err.message);
 		}
 		finally {
-			await queryRunner.release();
+			await this.dropQueryRunnerManager();
 		}
 	}
 
@@ -154,7 +138,7 @@ export class UserService extends SqlService {
 			this.cacheService.clear([ this.entityName, 'many' ]);
 			this.cacheService.clear([ this.entityName, 'one' ]);
 
-			const user = await this.repository.findOne({
+			const user = await this.entityRepository.findOne({
 				where: {
 					emailVerifyKey: payload['verifyKey'],
 				},
@@ -169,7 +153,7 @@ export class UserService extends SqlService {
 			if ((Date.now() - user['createdAt'].getTime()) > 86400000) {
 				throw new WarningException(`Key expired.`);
 			}
-			await this.repository.save({ 
+			await this.entityRepository.save({ 
 				...user, 
 				emailVerifyKey: '',
 				emailVerifiedAt: new Date(),
@@ -184,7 +168,7 @@ export class UserService extends SqlService {
 
 	async login(payload): Promise<any> {
 		try {
-			const user = await this.repository.findOne({
+			const user = await this.entityRepository.findOne({
 				where: [
 					{ email: payload['login'] },
 					{ login: payload['login'] },
@@ -211,7 +195,7 @@ export class UserService extends SqlService {
 
 	async recovery(payload): Promise<any> {
 		try {
-			const user = await this.repository.findOne({
+			const user = await this.entityRepository.findOne({
 				where: {
 					email: payload['email'],
 				},
@@ -228,11 +212,10 @@ export class UserService extends SqlService {
 				emailVerifyKey: await generateVerifyKey(payload['email']),
 			};
 
-			await this.repository.save({
+			await this.entityRepository.save({
 				...user,
 				...output,
 			});
-
 			await this.transportService.send({ 
 				name: process.env.SERVICE_MAIL,
 				cmd: 'report.create',
@@ -260,7 +243,7 @@ export class UserService extends SqlService {
 
 	async reset(payload): Promise<any> {
 		try {
-			const user = await this.repository.findOne({
+			const user = await this.entityRepository.findOne({
 				where: {
 					email: payload['email'],
 				},
@@ -275,7 +258,7 @@ export class UserService extends SqlService {
 			if (user['emailVerifyKey'] !== payload['verifyKey']) {
 				throw new WarningException(`Key not validated.`);
 			}
-			await this.repository.save({
+			await this.entityRepository.save({
 				...user,
 				password: await encryptPassword(payload['password']),
 				emailVerifyKey: '',
@@ -290,22 +273,22 @@ export class UserService extends SqlService {
 
 	async refresh(payload): Promise<any> {
 		try {
-			const user = await this.repository.findOne({
+			const user = await this.entityRepository.findOne({
 				where: {
 					id: payload['id'],
 				},
-				relations: {
-					userUserOptions: {
-						userOption: true,
-					},
-				},
+				// relations: {
+				// 	userUserOptions: {
+				// 		userOption: true,
+				// 	},
+				// },
 			});
 
-			if (!user 
-				|| !utilsCheckArrFilled(user['userUserOptions'])
-				|| !utilsCheckObjFilled(user['userUserOptions'][0]['userOption'])) {
-				throw new NotFoundException(`User with email "${payload['email']}" not found.`);
-			}
+			// if (!user 
+			// 	|| !utilsCheckArrFilled(user['userUserOptions'])
+			// 	|| !utilsCheckObjFilled(user['userUserOptions'][0]['userOption'])) {
+			// 	throw new NotFoundException(`User with id "${payload['id']}" not found.`);
+			// }
 			return await generateTokens(user);
 		}
 		catch (err) {
@@ -313,7 +296,14 @@ export class UserService extends SqlService {
 		}
 	}
 
-	async createProps (payload) {
+	protected async createProperties(payload: object): Promise<any> {
+		if (payload['password']) {
+			payload['password'] = await encryptPassword(payload['password']);
+		}
+		return payload;
+	}
+
+	protected async updateProperties(payload: object): Promise<any> {
 		if (payload['password']) {
 			payload['password'] = await encryptPassword(payload['password']);
 		}

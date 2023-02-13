@@ -11,20 +11,22 @@ import all from './all';
  * @param {string} fileName - File name. Default: .env
  * @return {Array}
  */
-const set = (key: string, value: string|number, fileName: string = '.env') => {
+const set = (key: string, value: any, fileName: string = '.env') => {
 	const envFilePath = path.resolve(process.env.PWD, fileName);
-	const envVars = all(fileName);
+	const envVars = all(fileName, true);
 	const targetLine = envVars.find((line) => line.split('=')[0] === key);
+	const processedValue = String(value);
 	
 	if (targetLine !== undefined) {
 		const targetLineIndex = envVars.indexOf(targetLine);
 		
-		envVars.splice(targetLineIndex, 1, `${key}=${value}`);
+		envVars.splice(targetLineIndex, 1, `${key}=${processedValue}`);
 	}
 	else {
-		envVars.push(`${key}=${value}`);
+		envVars.push(`${key}=${processedValue}`);
 	}
 	fs.writeFileSync(envFilePath, envVars.join(os.EOL));
+	process.env[key] = processedValue;
 
 	return envVars;
 };

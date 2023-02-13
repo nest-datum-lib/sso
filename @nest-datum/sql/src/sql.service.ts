@@ -14,26 +14,20 @@ import {
 	Any,
 	IsNull,
 } from 'typeorm';
-import { 
-	Repository,
-	Connection, 
-} from 'typeorm';
-import {
-	NotFoundException,
-	ErrorException,
-} from '@nest-datum-common/exceptions';
+import { Repository } from 'typeorm';
 import { 
 	arr as utilsCheckArr,
 	arrFilled as utilsCheckArrFilled, 
 	obj as utilsCheckObj,
 	objFilled as utilsCheckObjFilled,
+	objQueryRunner as utilsCheckObjQueryRunner,
 	numericInt as utilsCheckNumericInt,
 	strId as utilsCheckStrId,
 } from '@nest-datum-utils/check';
-import { CacheService } from '@nest-datum/cache';
+import { loopAsync as utilsLoopAsync } from '@nest-datum-utils/loop';
 
 export class SqlService {
-	protected operators = {
+	private operators = {
 		'$Not': Not,
 		'$LessThan': LessThan,
 		'$LessThanOrEqual': LessThanOrEqual,
@@ -47,19 +41,51 @@ export class SqlService {
 		'$Any': Any,
 		'$IsNull': IsNull,
 	};
-	protected selectDefaultMany;
-	protected queryDefaultMany;
-	public connection;
-	public cacheService;
-	public repository;
-	public repositoryOptionRelation;
-	public entityName;
-	public entityConstructor;
-	public optionRelationConstructor;
-	public optionId;
-	public optionOptionId;
+	protected connection;
+	protected cacheService;
+	protected entityRepository;
+	protected entityConstructor;
+	protected entityName;
+	protected entityWithTwoStepRemoval = true;
+	protected enableTransactions = true;
+	protected listSortByDefault = { createdAt: 'DESC' };
+	protected queryRunner;
 
-	where(filter: object = {}, where: object = {}): object {
+	protected manyGetColumns(customColumns: object = {}) {
+		return ({
+			id: true,
+			createdAt: true,
+			updatedAt: true,
+		});
+	}
+
+	protected oneGetColumns(customColumns: object = {}) {
+		return ({
+			id: true,
+			createdAt: true,
+			updatedAt: true,
+		});
+	}
+
+	protected manyGetQueryColumns(customColumns: object = {}) {
+		return ({
+			id: true,
+		});
+	}
+
+	protected existsInManyGetColumns(columnName: string): boolean {
+		return this.manyGetColumns()[columnName] === true;
+	}
+
+	protected existsInOneGetColumns(columnName: string): boolean {
+		return this.oneGetColumns()[columnName] === true;
+	}
+
+	protected existsInManyGetQueryColumns(columnName: string): boolean {
+		return this.manyGetQueryColumns()[columnName] === true;
+	}
+
+	protected where(filter: object = {}, where: object = {}): object {
 		let key;
 
 		for (key in filter) {
@@ -84,7 +110,7 @@ export class SqlService {
 		return where;
 	}
 
-	queryDeep(query: string = '', querySelect = {}, where: object = {}) {
+	protected queryDeep(query: string = '', querySelect = {}, where: object = {}) {
 		let key;
 
 		for (key in querySelect) {
@@ -95,7 +121,7 @@ export class SqlService {
 		return where;
 	}
 
-	query(query: string = '', querySelect = {}, where: Array<any> = []): Array<any> {
+	protected query(query: string = '', querySelect = {}, where: Array<any> = []): Array<any> {
 		let key;
 
 		for (key in querySelect) {
@@ -108,7 +134,7 @@ export class SqlService {
 		return where;
 	}
 
-	relationsByFilter(filter: object = {}, collect: object = {}) {
+	protected relationsByFilter(filter: object = {}, collect: object = {}) {
 		let key;
 
 		for (key in filter) {
@@ -134,7 +160,7 @@ export class SqlService {
 		return collect;
 	}
 
-	relations(data?: object, filter: object = {}): object {
+	protected relations(data?: object, filter: object = {}): object {
 		const relationsByFilter = this.relationsByFilter(filter);
 
 		if (utilsCheckObj(data)) {
@@ -143,7 +169,7 @@ export class SqlService {
 		return relationsByFilter;
 	}
 
-	pagination(page: number, limit: number): object {
+	protected pagination(page: number, limit: number): object {
 		const limitProcessed = utilsCheckNumericInt(limit) ? limit : 0;
 
 		const skip = (page > 0)
@@ -158,29 +184,29 @@ export class SqlService {
 		};
 	}
 
-	order(sort: object = {}): object {
+	protected order(sort: object = {}): object {
 		return utilsCheckObjFilled(sort)
 			? sort
-			: ((this.selectDefaultMany || {})['createdAt']
+			: (this.manyGetColumns()['createdAt']
 				? { createdAt: 'DESC' }
 				: {});
 	}
 
-	async findMany({ page = 1, limit = 20, query, filter, sort, relations }: { page?: number; limit?: number; query?: string; filter?: object; sort?: object; relations?: object }): Promise<any> {
+	protected async findMany({ page = 1, limit = 20, query, filter, sort, relations }: { page?: number; limit?: number; query?: string; filter?: object; sort?: object; relations?: object }): Promise<any> {
 		const relationsProcessed = this.relations(relations, filter);
 		const whereProcessed = this.where(filter);
 		const order = this.order(sort);
 		let where;
 
 		if (query) {
-			where = this.query(query, this.queryDefaultMany);
+			where = this.query(query, this.manyGetQueryColumns());
 			where = where.map((item) => ({
 				...item,
 				...whereProcessed,
 			}));
 		}
 		return {
-			select: this.selectDefaultMany,
+			select: this.manyGetColumns(),
 			...utilsCheckObjFilled(relationsProcessed)
 				? { relations: relationsProcessed }
 				: {},
@@ -195,7 +221,7 @@ export class SqlService {
 		};
 	}
 
-	async findOne(options?: object): Promise<any> {
+	protected async findOne(options?: object): Promise<any> {
 		const id = options['id'];
 		const relations = options['relations'];
 		const filter = { id };
@@ -203,7 +229,7 @@ export class SqlService {
 		const where = this.where(filter);
 
 		return {
-			select: this.selectDefaultMany,
+			select: this.oneGetColumns(),
 			...(Object.keys(relationsProcessed).length > 0)
 				? { relations: relationsProcessed }
 				: {},
@@ -213,187 +239,403 @@ export class SqlService {
 		};
 	}
 
-	async drop({ user, ...payload }, withTwoStepRemoval = true): Promise<any> {
-		this.cacheService.clear([ this.entityName, 'many' ]);
-		this.cacheService.clear([ this.entityName, 'one', payload ]);
-
-		(withTwoStepRemoval)
-			? await this.dropIsDeletedRows(this.repository, payload['id'])
-			: await this.repository.delete({ id: payload['id'] });
-
-		return true;
+	protected async before(payload): Promise<any> {
 	}
 
-	async dropMany({ user, ...payload }, withTwoStepRemoval = true): Promise<any> {
-		const queryRunner = await this.connection.createQueryRunner(); 
+	protected async after(initialPayload: object, processedPayload: object, data: any): Promise<any> {
+		await this.commitQueryRunnerManager();
 
-		try {
-			await queryRunner.startTransaction();
-			
-			this.cacheService.clear([ this.entityName, 'many' ]);
-			this.cacheService.clear([ this.entityName, 'one', payload ]);
-
-			let i = 0;
-
-			if (withTwoStepRemoval) { 
-				while (i < payload['ids'].length) {
-					await this.dropIsDeletedRows(queryRunner.manager, payload['ids'][i]);
-					i++;
-				}
-			}
-			else {
-				while (i < payload['ids'].length) {
-					queryRunner.manager.delete(this.entityConstructor, { id: payload['ids'][i] });
-					i++;
-				}
-			}
-			await queryRunner.commitTransaction();
-
-			return true;
-		}
-		catch (err) {
-			await queryRunner.rollbackTransaction();
-
-			throw new ErrorException(err.message);
-		}
-		finally {
-			await queryRunner.release();
-		}
+		return data;
 	}
 
-	async dropIsDeletedRows(repository, id: string): Promise<any> {
-		const entity = await repository.findOne({
-			where: {
-				id,
-			},
-		});
+	public async many(payload): Promise<any> {
+		await this.manyBefore(payload);
 
-		(entity['isDeleted'] === true)
-			? await this.repository.delete({ id })
-			: await repository.save(Object.assign(new this.entityConstructor(), { id, isDeleted: true }));
-		return entity;
-	}
-
-	async createProps (payload) {
-		return payload;
-	}
-
-	async create(payload: object = {}): Promise<any> {
-		delete payload['accessToken'];
-		delete payload['refreshToken'];
-		
-		this.cacheService.clear([ this.entityName, 'many' ]);
-
-		return await this.repository.save(await this.createProps({
-			...payload,
-			...payload['userId']
-				? { userId: payload['userId'] }
-				: {},
-		}));
-	}
-
-	async createOptions(payload: object = {}): Promise<any> {
-		const queryRunner = await this.connection.createQueryRunner();
-
-		try {
-			await queryRunner.startTransaction();
-			
-			this.cacheService.clear([ this.entityName, 'option', 'many' ]);
-			this.cacheService.clear([ this.entityName, 'many' ]);
-			this.cacheService.clear([ this.entityName, 'one' ]);
-
-			await this.repositoryOptionRelation.delete({
-				[this.optionId]: payload['id'],
-			});
-
-			let i = 0,
-				ii = 0;
-
-			while (i < payload['data'].length) {
-				ii = 0;
-
-				const option = payload['data'][i];
-
-				while (ii < option.length) {
-					const {
-						entityOptionId,
-						entityId,
-						...optionData
-					} = option[ii];
-
-					await queryRunner.manager.save(Object.assign(new this.optionRelationConstructor, {
-						...optionData,
-						[this.optionId]: entityId,
-						[this.optionOptionId]: entityOptionId,
-					}));
-					ii++;
-				}
-				i++;
-			}
-			await queryRunner.commitTransaction();
-
-			return true;
-		}
-		catch (err) {
-			await queryRunner.rollbackTransaction();
-
-			throw err;
-		}
-		finally {
-			await queryRunner.release();
-		}
-	}
-
-	async update(payload: object = {}): Promise<any> {
-		const newId = utilsCheckStrId(payload['newId']) && payload['newId'];
-
-		delete payload['accessToken'];
-		delete payload['refreshToken'];
-		delete payload['newId'];
-
-		this.cacheService.clear([ this.entityName, 'many' ]);
-		this.cacheService.clear([ this.entityName, 'one' ]);
-
-		await this.repository.update({ id: payload['id'] }, {
-			...await this.createProps({ ...payload }),
-			...newId
-				? { id: newId }
-				: {},
-		});
-
-		return true;
-	}
-
-	async one({ user, ...payload }): Promise<any> {
-		const cachedData = await this.cacheService.get([ this.entityName, 'one', payload ]);
-
-		if (cachedData) {
-			return cachedData;
-		}
-		const output = await this.repository.findOne(await this.findOne(payload));
-		
-		if (output) {
-			await this.cacheService.set([ this.entityName, 'one', payload ], JSON.stringify(output));
-		}
-		if (!output) {
-			return new NotFoundException('Entity is undefined');
-		}
-		return output;
-	}
-
-	async many({ user, ...payload }): Promise<any> {
 		const cachedData = await this.cacheService.get([ this.entityName, 'many', payload ]);
 
 		if (cachedData) {
 			return cachedData;
 		}
-		if (!payload['sort'] && this.selectDefaultMany['createdAt']) {
-			payload['sort'] = { createdAt: 'DESC' };
-		}
-		const output = await this.repository.findAndCount(await this.findMany(payload));
+		const processedPayload = await this.manyProperties(payload);
+		const many = await this.entityRepository.findAndCount(await this.findMany(processedPayload));
+		const output = {
+			rows: many[0],
+			total: many[1],
+		};
 
 		await this.cacheService.set([ this.entityName, 'many', payload ], JSON.stringify(output));
+		
+		return await this.manyOutput(processedPayload, await this.manyAfter(payload, processedPayload, output));
+	}
 
-		return output;
+	protected async manyProperties(payload: object): Promise<any> {
+		return await this.manySortByDefault(payload);
+	}
+
+	protected async manySortByDefault(payload: object) {
+		if (!payload['sort'] && this.existsInManyGetQueryColumns('createdAt')) {
+			payload['sort'] = this.listSortByDefault;
+		}
+		return payload;
+	}
+
+	protected async manyBefore(payload): Promise<any> {
+		return await this.before(payload);
+	}
+
+	protected async manyAfter(initialPayload: object, processedPayload: object, data: any): Promise<any> {
+		return await this.after(initialPayload, processedPayload, data);
+	}
+
+	protected async manyOutput(payload: object, data: any): Promise<any> {
+		return data;
+	}
+
+	public async one(payload): Promise<any> {
+		await this.oneBefore(payload);
+
+		const cachedData = await this.cacheService.get([ this.entityName, 'one', payload ]);
+
+		if (cachedData) {
+			return cachedData;
+		}
+		const processedPayload = await this.oneProperties(payload);
+		const output = await this.entityRepository.findOne(await this.findOne(processedPayload));
+		
+		if (output) {
+			await this.cacheService.set([ this.entityName, 'one', payload ], JSON.stringify(output));
+		}
+		if (!output) {
+			return new Error('Entity is undefined.');
+		}
+		return await this.oneOutput(processedPayload, await this.oneAfter(payload, processedPayload, output));
+	}
+
+	protected async oneProperties(payload: object): Promise<any> {
+		return payload;
+	}
+
+	protected async oneBefore(payload): Promise<any> {
+		return await this.before(payload);
+	}
+
+	protected async oneAfter(initialPayload: object, processedPayload: object, data: any): Promise<any> {
+		return await this.after(initialPayload, processedPayload, data);
+	}
+
+	protected async oneOutput(payload: object, data: any): Promise<any> {
+		return data;
+	}
+
+	protected async createQueryRunnerManager(): Promise<any> {
+		return (this.queryRunner = await this.connection.createQueryRunner());
+	}
+
+	protected async startQueryRunnerManager(): Promise<any> {
+		if (utilsCheckObjQueryRunner(this.queryRunner) 
+			&& this.enableTransactions === true) {
+			await this.queryRunner.startTransaction();
+		}
+	}
+
+	protected async commitQueryRunnerManager(): Promise<any> {
+		if (utilsCheckObjQueryRunner(this.queryRunner) 
+			&& this.enableTransactions === true) {
+			await this.queryRunner.commitTransaction();
+		}
+	}
+
+	protected async rollbackQueryRunnerManager(): Promise<any> {
+		if (utilsCheckObjQueryRunner(this.queryRunner) 
+			&& this.enableTransactions === true) {
+			await this.queryRunner.rollbackTransaction();
+		}
+	}
+
+	protected async dropQueryRunnerManager(): Promise<any> {
+		if (utilsCheckObjQueryRunner(this.queryRunner) 
+			&& this.enableTransactions === true) {
+			await this.queryRunner.release();
+			this.queryRunner = undefined;
+		}
+		return true;
+	}
+
+	public async update(payload: object = {}): Promise<any> {
+		await this.createQueryRunnerManager();
+
+		try {
+			await this.startQueryRunnerManager();
+			await this.updateBefore(payload);
+
+			const newId = utilsCheckStrId(payload['newId']) && payload['newId'];
+
+			this.cacheService.clear([ this.entityName, 'many' ]);
+			this.cacheService.clear([ this.entityName, 'one' ]);
+
+			const processedPayload = await this.updateProperties({ 
+				...payload, 
+				...newId
+					? { id: newId }
+					: {},
+			});
+			const output = await this.updateProcess(processedPayload);
+
+			return await this.updateOutput(processedPayload, await this.updateAfter(payload, processedPayload, output));
+		}
+		catch (err) {
+			await this.rollbackQueryRunnerManager();
+
+			throw err;
+		}
+		finally {
+			await this.dropQueryRunnerManager();
+
+		}
+	}
+
+	protected async updateProperties(payload: object): Promise<any> {
+		delete payload['accessToken'];
+		delete payload['refreshToken'];
+		delete payload['newId'];
+
+		return payload;
+	}
+
+	protected async updateBefore(payload): Promise<any> {
+		return await this.before(payload);
+	}
+
+	protected async updateProcess(payload: object): Promise<any> {
+		return (utilsCheckObjQueryRunner(this.queryRunner) 
+				&& this.enableTransactions === true)
+			? await this.queryRunner.manager.update(this.entityConstructor, payload['id'], payload)
+			: await this.entityRepository.update({ id: payload['id'] }, payload);
+	}
+
+	protected async updateAfter(initialPayload: object, processedPayload: object, data: any): Promise<any> {
+		return await this.after(initialPayload, processedPayload, data);
+	}
+
+	protected async updateOutput(payload: object, data: any): Promise<any> {
+		return true;
+	}
+
+	public async create(payload: object = {}): Promise<any> {
+		await this.createQueryRunnerManager();
+		
+		try {
+			await this.startQueryRunnerManager();
+			await this.createBefore(payload);
+		
+			this.cacheService.clear([ this.entityName, 'many' ]);
+
+			const processedPayload = await this.createProperties(payload);
+			const output = await this.createProcess(processedPayload);
+
+			return await this.createOutput(processedPayload, await this.createAfter(payload, processedPayload, output));
+		}
+		catch (err) {
+			await this.rollbackQueryRunnerManager();
+
+			throw err;
+		}
+		finally {
+			await this.dropQueryRunnerManager();
+		}
+	}
+
+	protected async createProperties(payload: object): Promise<any> {
+		delete payload['accessToken'];
+		delete payload['refreshToken'];
+
+		return payload;
+	}
+
+	protected async createBefore(payload): Promise<any> {
+		return await this.before(payload);
+	}
+
+	protected async createProcess(payload: object): Promise<any> {
+		return (utilsCheckObjQueryRunner(this.queryRunner) 
+				&& this.enableTransactions === true)
+			? await this.queryRunner.manager.save(Object.assign(new this.entityConstructor(), payload))
+			: await this.entityRepository.save(payload);
+	}
+
+	protected async createAfter(initialPayload: object, processedPayload: object, data: any): Promise<any> {
+		return await this.after(initialPayload, processedPayload, data);
+	}
+
+	protected async createOutput(payload: object, data: any): Promise<any> {
+		return data;
+	}
+
+	public async drop(payload): Promise<any> {
+		await this.createQueryRunnerManager();
+		
+		try {
+			await this.startQueryRunnerManager();
+			await this.dropBefore(payload);
+
+			this.cacheService.clear([ this.entityName, 'many' ]);
+			this.cacheService.clear([ this.entityName, 'one', payload ]);
+
+			const processedPayload = await this.dropProperties(payload);
+			let entityOrId = processedPayload['id'];
+
+			if (this.entityWithTwoStepRemoval) {
+				entityOrId = await this.entityRepository.findOne({
+					where: {
+						id: processedPayload['id'],
+					},
+				});
+			}
+			const output = await this.dropProcess(entityOrId);
+
+			return await this.dropOutput(processedPayload, await this.dropAfter(payload, processedPayload, output));
+		}
+		catch (err) {
+			await this.rollbackQueryRunnerManager();
+
+			throw err;
+		}
+		finally {
+			await this.dropQueryRunnerManager();
+
+		}
+	}
+
+	protected async dropProperties(payload: object): Promise<any> {
+		return payload;
+	}
+
+	protected async dropBefore(payload): Promise<any> {
+		return await this.before(payload);
+	}
+
+	protected async dropProcess(entityOrId): Promise<any> {
+		if (!this.entityWithTwoStepRemoval) {
+			return await this.dropProcessForever(entityOrId);
+		}
+		let id = String(entityOrId),
+			entity = entityOrId;
+
+		if (utilsCheckObj(entityOrId)) {
+			id = (entityOrId || {})['id'];
+		}
+		if (!utilsCheckObj(entityOrId)) {
+			entity = await this.entityRepository.findOne({
+				select: {
+					id: true,
+					isDeleted: true,
+				},
+				where: {
+					id,
+				},
+			});
+		}
+
+		entity.isDeleted
+			? await this.dropProcessForever(id)
+			: await this.dropProcessPrepare(id);
+
+		return entity;
+	}
+
+	protected async dropProcessForever(id): Promise<any> {
+		return (utilsCheckObjQueryRunner(this.queryRunner) 
+				&& this.enableTransactions === true)
+			? await this.queryRunner.manager.delete(this.entityConstructor, id)
+			: await this.entityRepository.delete({ id });
+	}
+
+	protected async dropProcessPrepare(id: string): Promise<any> {
+		return (utilsCheckObjQueryRunner(this.queryRunner) 
+				&& this.enableTransactions === true)
+			? await this.queryRunner.manager.save(Object.assign(new this.entityConstructor(), { id, isDeleted: true }))
+			: await this.entityRepository.save({ id, isDeleted: true });
+	}
+
+	protected async dropAfter(initialPayload: object, processedPayload: object, data: any): Promise<any> {
+		return await this.after(initialPayload, processedPayload, data);
+	}
+
+	protected async dropOutput(payload: object, data: any): Promise<any> {
+		return true;
+	}
+
+	public async dropMany(payload): Promise<any> {
+		await this.createQueryRunnerManager();
+		
+		try {
+			await this.startQueryRunnerManager();
+			await this.dropManyBefore(payload);
+
+			this.cacheService.clear([ this.entityName, 'many' ]);
+			this.cacheService.clear([ this.entityName, 'one', payload ]);
+
+			const processedPayload = await this.dropManyProperties(payload);
+			const output = await this.dropManyProcess(payload['ids']);
+
+			return await this.dropManyOutput(processedPayload, await this.dropManyAfter(payload, processedPayload, output));
+		}
+		catch (err) {
+			await this.rollbackQueryRunnerManager();
+
+			throw err;
+		}
+		finally {
+			await this.dropQueryRunnerManager();
+
+		}
+	}
+
+	protected async dropManyProperties(payload: object): Promise<any> {
+		return payload;
+	}
+
+	protected async dropManyBefore(payload): Promise<any> {
+		return await this.before(payload);
+	}
+
+	protected async dropManyProcess(ids: Array<string>): Promise<any> {
+		if (!this.entityWithTwoStepRemoval) {
+			return await this.dropManyProcessForever(ids);
+		}
+		return await utilsLoopAsync(ids, (async (id) => {
+			const entity = await this.entityRepository.findOne({
+				select: {
+					id: true,
+					isDeleted: true,
+				},
+				where: {
+					id,
+				},
+			});
+
+			return entity.isDeleted
+				? await this.dropProcessForever(entity.id)
+				: await this.dropProcessPrepare(entity.id);
+		}));
+	}
+
+	protected async dropManyProcessForever(idsArrOrId): Promise<any> {
+		return (utilsCheckObjQueryRunner(this.queryRunner) 
+				&& this.enableTransactions === true)
+			? await this.queryRunner.manager.delete(this.entityConstructor, idsArrOrId)
+			: await this.entityRepository.delete(utilsCheckStrId(idsArrOrId) ? { id: idsArrOrId } : idsArrOrId);
+	}
+
+	protected async dropManyProcessPrepare(id: string): Promise<any> {
+		return this.dropProcessPrepare(id);
+	}
+
+	protected async dropManyAfter(initialPayload: object, processedPayload: object, data: any): Promise<any> {
+		return await this.after(initialPayload, processedPayload, data);
+	}
+
+	protected async dropManyOutput(payload: object, data: any): Promise<any> {
+		return true;
 	}
 }

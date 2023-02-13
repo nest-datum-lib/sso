@@ -3,14 +3,19 @@ import bool from './src/bool';
 import arr from './src/arr';
 import arrFilled from './src/arr/filled';
 import entityExists from './src/entity/exists';
+import file from './src/file';
 import fileModel from './src/file/model';
 import func from './src/func';
 import numeric from './src/numeric';
 import numericInt from './src/numeric/int';
 import obj from './src/obj';
+import objQueryRunnerManager from './src/obj/queryRunnerManager';
+import objQueryRunner from './src/obj/queryRunner';
 import objFileList from './src/obj/fileList';
 import objFilled from './src/obj/filled';
 import str from './src/str';
+import strQueue from './src/str/queue';
+import strArr from './src/str/arr';
 import strBool from './src/str/bool';
 import strDate from './src/str/date';
 import strDescription from './src/str/description';
@@ -36,14 +41,19 @@ export {
 	arr,
 	arrFilled,
 	entityExists,
+	file,
 	fileModel,
 	func,
 	numeric,
 	numericInt,
 	obj,
+	objQueryRunnerManager,
+	objQueryRunner,
 	objFileList,
 	objFilled,
 	str,
+	strQueue,
+	strArr,
 	strBool,
 	strDate,
 	strDescription,

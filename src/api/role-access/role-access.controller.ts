@@ -5,59 +5,32 @@ import {
 import { Controller } from '@nestjs/common';
 import { WarningException } from '@nest-datum-common/exceptions';
 import { TransportService } from '@nest-datum/transport';
-import { Controller as NestDatumController } from '@nest-datum-common/controller';
-import { 
-	bool as utilsCheckBool,
-	exists as utilsCheckExists,
-	str as utilsCheckStr,
-	strId as utilsCheckStrId,
-	strName as utilsCheckStrName,
-	strEmail as utilsCheckStrEmail,
-	strPassword as utilsCheckStrPassword,
-	strDescription as utilsCheckStrDescription,
-	strRegex as utilsCheckStrRegex,
-	strDate as utilsCheckStrDate,
-} from '@nest-datum-utils/check';
-import { 
-	checkToken,
-	getUser, 
-} from '@nest-datum/jwt';
+import { TcpController } from '@nest-datum/controller';
+import { strId as utilsCheckStrId } from '@nest-datum-utils/check';
 import { RoleAccessService } from './role-access.service';
 
 @Controller()
-export class RoleAccessController extends NestDatumController {
+export class RoleAccessController extends TcpController {
 	constructor(
-		public transportService: TransportService,
-		public service: RoleAccessService,
+		protected transportService: TransportService,
+		protected entityService: RoleAccessService,
 	) {
-		super(transportService, service);
+		super();
 	}
 
-	validateCreate(options: object = {}) {
+	async validateCreate(options) {
 		if (!utilsCheckStrId(options['roleId'])) {
 			throw new WarningException(`Property "roleId" is not valid.`);
 		}
 		if (!utilsCheckStrId(options['accessId'])) {
 			throw new WarningException(`Property "accessId" is not valid.`);
 		}
-		return this.validateUpdate(options);
+		return await this.validateUpdate(options);
 	}
 
-	validateUpdate(options: object = {}): object {
-		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
-			throw new WarningException(`User is undefined or token is not valid.`);
-		}
-		const user = getUser(options['accessToken']);
-
-		if (!user) {
-			throw new WarningException(`User is undefined or token is not valid.`);
-		}
-
+	async validateUpdate(options) {
 		return {
-			userId: user['id'],
-			...(options['id'] && utilsCheckStrId(options['id'])) 
-				? { id: options['id'] } 
-				: {},
+			...await super.validateUpdate(options),
 			...(options['roleId'] && utilsCheckStrId(options['roleId'])) 
 				? { roleId: options['roleId'] } 
 				: {},
@@ -89,18 +62,6 @@ export class RoleAccessController extends NestDatumController {
 
 	@EventPattern('roleAccess.create')
 	async create(payload) {
-		try {
-			const output = await this.service.create(this.validateCreate(payload));
-			
-			this.transportService.decrementLoadingIndicator();
-
-			return output;
-		}
-		catch (err) {
-			this.log(err);
-			this.transportService.decrementLoadingIndicator();
-
-			return err;
-		}
+		return await super.create(payload);
 	}
 }

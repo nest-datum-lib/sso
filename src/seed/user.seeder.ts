@@ -6,7 +6,7 @@ import {
 } from 'typeorm';
 import { Promise as Bluebird } from 'bluebird';
 import { encryptPassword } from '@nest-datum/jwt';
-import { User } from 'src/api/user/user.entity';
+import { User } from '../api/user/user.entity';
 
 export class UserSeeder {
 	constructor(

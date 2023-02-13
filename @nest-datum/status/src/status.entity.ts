@@ -11,6 +11,7 @@ export class Status {
 	public id: string;
 
 	@Column({ default: '' })
+	@Index()
 	public userId: string;
 
 	@Column()
