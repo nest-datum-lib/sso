@@ -6,17 +6,16 @@ import {
 } from 'typeorm';
 import { Promise as Bluebird } from 'bluebird';
 import { v4 as uuidv4 } from 'uuid';
-import { Setting } from '../api/setting/setting.entity';
+import { AccessStatus } from '../api/access-status/access-status.entity';
 import {
-	SETTING_APP_ID,
 	USER_DEFAULT_ID,
-	DATA_TYPE_TEXT_ID,
+	ACCESS_STATUS_ACTIVE_ID,
 } from './consts';
 
-export class SettingSeeder {
+export class AccessStatusSeeder {
 	constructor(
 		private readonly connection: Connection,
-		@InjectRepository(Setting) private readonly settingRepository: Repository<Setting>,
+		@InjectRepository(AccessStatus) private readonly accessStatusRepository: Repository<AccessStatus>,
 	) {
 	}
 
@@ -27,21 +26,19 @@ export class SettingSeeder {
 			// new transaction
 			await queryRunner.startTransaction();
 			await Bluebird.each([{
-				id: SETTING_APP_ID,
+				id: ACCESS_STATUS_ACTIVE_ID,
 				userId: USER_DEFAULT_ID,
-				name: 'App id',
-				description: 'App id.',
-				dataTypeId: DATA_TYPE_TEXT_ID,
-				value: process.env.APP_ID,
+				name: 'Active',
+				description: 'Role is active.',
 				isNotDelete: true,
 			}], async (data) => {
 				try {
-					await this.settingRepository.insert(data);
+					await this.accessStatusRepository.insert(data);
 				}
 				catch (err) {
 					await queryRunner.rollbackTransaction();
 
-					console.error(`ERROR: setting 2: ${err.message}`);
+					console.error(`ERROR: AccessStatus 2: ${err.message}`);
 				}
 			});
 			await queryRunner.commitTransaction();
@@ -49,7 +46,7 @@ export class SettingSeeder {
 		catch (err) {
 			await queryRunner.rollbackTransaction();
 
-			console.error(`ERROR: setting 1: ${err.message}`);
+			console.error(`ERROR: AccessStatus 1: ${err.message}`);
 		}
 		finally {
 			await queryRunner.release();

@@ -7,6 +7,11 @@ import {
 import { Promise as Bluebird } from 'bluebird';
 import { encryptPassword } from '@nest-datum/jwt';
 import { User } from '../api/user/user.entity';
+import {
+	USER_ADMIN_ID,
+	ROLE_ADMIN_ID,
+	USER_STATUS_ACTIVE_ID,
+} from './consts';
 
 export class UserSeeder {
 	constructor(
@@ -22,9 +27,9 @@ export class UserSeeder {
 			// new transaction
 			await queryRunner.startTransaction();
 			await Bluebird.each([{
-				id: 'sso-user-admin',
-				roleId: 'sso-role-admin',
-				userStatusId: 'sso-user-status-active',
+				id: USER_ADMIN_ID,
+				roleId: ROLE_ADMIN_ID,
+				userStatusId: USER_STATUS_ACTIVE_ID,
 				email: 'ihor.bielchenko@gmail.com',
 				login: 'admin',
 				password: await encryptPassword('XIUnv@#jgfo_r-32i0e(@12oj-f34!'),
