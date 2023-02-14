@@ -156,12 +156,15 @@ export class TransportService extends RedisService {
 		const settings = this.replicaService.settings();
 		const appId = settings['app_id'];
 		const appName = settings['app_name'];
-		let key;
+		
+		await this.redisService.set(this.replicaService.prefix(`${appName}|${appId}|app_id`), appId);
+		await this.redisService.set(this.replicaService.prefix(`${appId}|app_name`), appName);
+		await this.redisService.set(this.replicaService.prefix(`${appId}|app_host`), settings['app_host']);
+		await this.redisService.set(this.replicaService.prefix(`${appId}|app_port`), settings['app_port']);
+		await this.redisService.set(this.replicaService.prefix(`${appId}|user_id`), settings['user_id']);
+		await this.redisService.set(this.replicaService.prefix(`${appId}|user_login`), settings['user_login']);
+		await this.redisService.set(this.replicaService.prefix(`${appId}|user_email`), settings['user_email']);
 
-		for (key in settings) {
-			await this.redisService.set(this.replicaService.prefix(`${appName}|${appId}|${key}`), settings[key]);
-			await this.redisService.set(this.replicaService.prefix(`${appId}|${key}`), settings[key]);
-		}
 		return settings;
 	}
 
