@@ -17,6 +17,7 @@ import {
 	strDescription as utilsCheckStrDescription,
 	strRegex as utilsCheckStrRegex,
 	strDate as utilsCheckStrDate,
+	strFilled as utilsCheckStrFilled,
 } from '@nest-datum-utils/check';
 import { 
 	checkToken,
@@ -34,7 +35,7 @@ export class UserController extends TcpController {
 	}
 
 	async validateCreate(options) {
-		if (!utilsCheckStrName(options['login'])) {
+		if (!utilsCheckStrFilled(options['login'])) {
 			throw new WarningException(`Property "login" is not valid.`);
 		}
 		if (!utilsCheckStrEmail(options['email'])) {
@@ -56,7 +57,7 @@ export class UserController extends TcpController {
 		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
 			throw new WarningException(`User is undefined or token is not valid.`);
 		}
-		if (options['login'] && !utilsCheckStrName(options['login'])) {
+		if (options['login'] && !utilsCheckStrFilled(options['login'])) {
 			throw new WarningException(`Property "login" is not valid.`);
 		}
 		if (options['email'] && !utilsCheckStrEmail(options['email'])) {
@@ -90,7 +91,7 @@ export class UserController extends TcpController {
 			...utilsCheckStr(options['emailVerifyKey']) 
 				? { emailVerifyKey: options['emailVerifyKey'] } 
 				: { emailVerifyKey: '' },
-			...(options['login'] && utilsCheckStrName(options['login'])) 
+			...(options['login'] && utilsCheckStrFilled(options['login'])) 
 				? { login: options['login'] } 
 				: {},
 			...(utilsCheckExists(options['isNotDelete']) && utilsCheckBool(options['isNotDelete']))
@@ -100,7 +101,7 @@ export class UserController extends TcpController {
 	}
 
 	async validateLogin(options) {
-		if (!utilsCheckStrName(options['login'])) {
+		if (!utilsCheckStrFilled(options['login'])) {
 			throw new WarningException(`Property "login" is not valid.`);
 		}
 		if (!utilsCheckStrPassword(options['password'])) {
@@ -113,7 +114,7 @@ export class UserController extends TcpController {
 	}
 
 	async validateRegister(options) {
-		if (!utilsCheckStrName(options['login'])) {
+		if (!utilsCheckStrFilled(options['login'])) {
 			throw new WarningException(`Property "login" is not valid.`);
 		}
 		if (!utilsCheckStrName(options['firstname'])) {

@@ -11,10 +11,6 @@ const _timeouts = {
 export class LoopService {
 	private _eventHandlers = {};
 
-	eventHandlers(data) {
-		return (this._eventHandlers = data);
-	}
-
 	async set(loopName: string, delay: number = 0, callback): Promise<any> {
 		if (!_timeouts[loopName]) {
 			_timeouts[loopName] = {
@@ -45,6 +41,7 @@ export class LoopService {
 				await taskProcess(new Date);
 				i++;
 			}
+			
 			await (new Promise((resolve, reject) => setTimeout(() => resolve(true), delay)));
 			await _timeouts[loopName]['loop']();
 		};

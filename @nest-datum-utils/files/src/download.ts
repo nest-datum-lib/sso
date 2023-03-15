@@ -2,90 +2,55 @@ const https = require('https');
 const http = require('http');
 const fs = require('fs');
 
-const download = async (target: string | object, accessToken: string, checkExists = false) => {
-	let processedTarget = target;
+import {
+	strPath as utilsCheckStrPath,
+	strUrl as utilsCheckStrUrl,
+} from '@nest-datum-utils/check';
 
-	if (typeof target === 'string') {
-		try {
-			processedTarget = JSON.parse(target);
-		}
-		catch (err) {
-			processedTarget = target;
-		}
+const download = async (sourcePath: string, destinationPath: string, forceSave: boolean = false) => {
+	if (!utilsCheckStrUrl(sourcePath)) {
+		throw new Error (`Source path "${sourcePath}" is not valid.`);
 	}
-	if (!processedTarget) {
-		throw new Error('Target file is undefined.');
+	if (!utilsCheckStrPath(destinationPath)) {
+		throw new Error (`Destination path "${destinationPath}" is not valid.`);
 	}
-	if (typeof processedTarget === 'object') {
-		if (!processedTarget['name']
-			|| typeof processedTarget['name'] !== 'string') {
-			throw new Error('Target "name" file is wrong format.');
-		}
-		if (!processedTarget['path']
-			|| typeof processedTarget['path'] !== 'string') {
-			throw new Error('Target "path" file is wrong format.');
-		}
-		if (!processedTarget['systemId']
-			|| typeof processedTarget['systemId'] !== 'string') {
-			throw new Error('Target "systemId" file is wrong format.');
-		}
-		const path = `${process.env.APP_ROOT_PATH}/${processedTarget['name']}`;
-
-		if (checkExists) {
-			const isExist = await (new Promise((resolve, reject) => {
-				fs.exists(path, function (isExist) {
-					resolve(isExist);
-				});
-			}));
-
-			if (isExist) {
-				return path;
-			}
-		}
-		const url = `${process.env.SERVICE_FILES_URL}${processedTarget['path']}?accessToken=${accessToken}`;
-		const file = fs.createWriteStream(path);
-		const request = (url.indexOf('https://') === 0)
-			? https
-			: http;
-
+	if (!forceSave) {
 		await (new Promise((resolve, reject) => {
-			const fetch = request.get(url, (response) => {
-				if (response.statusCode !== 200
-					&& response.statusCode !== 201) {
-					return reject(new Error(`Request file "${url.toString()}" error`));
-				}
-				response.pipe(file);
-			});
-
-			fetch.on('error', (errRequest) => {
-				fs.unlink(path, (errUnlink) => {
-					if (errUnlink) {
-						return reject(new Error(errUnlink.message));
-					}
-					return reject(new Error(errRequest.message));
-				});
-			});
-
-			file.on('finish', () => {
-				file.close();
-
-				return resolve(true);
-			});
-
-			file.on('error', (errFile) => {
-				fs.unlink(path, (errUnlink) => {
-					if (errUnlink) {
-						return reject(new Error(errUnlink.message));
-					}
-					return reject(new Error(errFile.message));
-				});
-			});
+			fs.exists(destinationPath, (isExist) => isExist
+				? reject(new Error(`File "${destinationPath}" already exists.`))
+				: resolve(true));
 		}));
-		return path;
 	}
-	else {
-		return '';
-	}
+	const resource = fs.createWriteStream(destinationPath);
+	const request = (sourcePath.indexOf('https://') === 0)
+		? https
+		: http;
+
+	await (new Promise((resolve, reject) => {
+		const fetch = request.get(sourcePath, (response) => {
+			if (response.statusCode !== 200
+				&& response.statusCode !== 201) {
+				return reject(new Error(`Download file "${sourcePath}" error.`));
+			}
+			response.pipe(resource);
+		});
+
+		fetch.on('error', (reqErr) => {
+			fs.unlink(destinationPath, (fsErr) => {
+				if (fsErr) {
+					return reject(new Error(fsErr.message));
+				}
+				return reject(new Error(reqErr.message));
+			});
+		});
+
+		resource.on('finish', () => {
+			resource.close();
+
+			return resolve(true);
+		});
+	}));
+	return destinationPath;
 };
 
 export default download;

@@ -242,10 +242,14 @@ export class SqlService {
 	protected async before(payload): Promise<any> {
 	}
 
-	protected async after(initialPayload: object, processedPayload: object, data: any): Promise<any> {
+	protected async after(initialPayload: object, processedPayload: object, data: any, allowCommit = false): Promise<any> {
+		return data;
+	}
+
+	protected async commitAfter(initialPayload: object, processedPayload: object, data: any): Promise<any> {
 		await this.commitQueryRunnerManager();
 
-		return data;
+		return await this.after(initialPayload, processedPayload, data);
 	}
 
 	public async many(payload): Promise<any> {
@@ -257,7 +261,8 @@ export class SqlService {
 			return cachedData;
 		}
 		const processedPayload = await this.manyProperties(payload);
-		const many = await this.entityRepository.findAndCount(await this.findMany(processedPayload));
+		const condition = await this.findMany(processedPayload);
+		const many = await this.entityRepository.findAndCount(condition);
 		const output = {
 			rows: many[0],
 			total: many[1],
@@ -414,7 +419,7 @@ export class SqlService {
 	}
 
 	protected async updateAfter(initialPayload: object, processedPayload: object, data: any): Promise<any> {
-		return await this.after(initialPayload, processedPayload, data);
+		return await this.commitAfter(initialPayload, processedPayload, data);
 	}
 
 	protected async updateOutput(payload: object, data: any): Promise<any> {
@@ -464,7 +469,7 @@ export class SqlService {
 	}
 
 	protected async createAfter(initialPayload: object, processedPayload: object, data: any): Promise<any> {
-		return await this.after(initialPayload, processedPayload, data);
+		return await this.commitAfter(initialPayload, processedPayload, data);
 	}
 
 	protected async createOutput(payload: object, data: any): Promise<any> {
@@ -558,7 +563,7 @@ export class SqlService {
 	}
 
 	protected async dropAfter(initialPayload: object, processedPayload: object, data: any): Promise<any> {
-		return await this.after(initialPayload, processedPayload, data);
+		return await this.commitAfter(initialPayload, processedPayload, data);
 	}
 
 	protected async dropOutput(payload: object, data: any): Promise<any> {
@@ -632,7 +637,7 @@ export class SqlService {
 	}
 
 	protected async dropManyAfter(initialPayload: object, processedPayload: object, data: any): Promise<any> {
-		return await this.after(initialPayload, processedPayload, data);
+		return await this.commitAfter(initialPayload, processedPayload, data);
 	}
 
 	protected async dropManyOutput(payload: object, data: any): Promise<any> {

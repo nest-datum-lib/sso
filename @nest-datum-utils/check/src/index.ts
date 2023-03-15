@@ -9,11 +9,15 @@ import func from './func';
 import numeric from './numeric';
 import numericInt from './numeric/int';
 import obj from './obj';
+import objDate from './obj/date';
 import objQueryRunnerManager from './obj/queryRunnerManager';
 import objQueryRunner from './obj/queryRunner';
 import objFileList from './obj/fileList';
 import objFilled from './obj/filled';
 import str from './str';
+import strFilled from './str/filled';
+import strFileName from './str/fileName';
+import strPath from './str/path';
 import strQueue from './str/queue';
 import strArr from './str/arr';
 import strBool from './str/bool';
@@ -47,11 +51,15 @@ export {
 	numeric,
 	numericInt,
 	obj,
+	objDate,
 	objQueryRunnerManager,
 	objQueryRunner,
 	objFileList,
 	objFilled,
 	str,
+	strFilled,
+	strFileName,
+	strPath,
 	strQueue,
 	strArr,
 	strBool,

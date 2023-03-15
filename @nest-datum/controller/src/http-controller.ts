@@ -65,10 +65,10 @@ export class HttpController extends Controller {
 		})));
 	}
 
-	@Delete(':id')
+	@Delete()
 	async dropMany(
 		@AccessToken() accessToken: string,
-		@Param('ids') ids: string,
+		@Query('ids') ids: string,
 	) {
 		return await this.serviceHandlerWrapper(async () => await this.entityService.dropMany(await this.validateDropMany({
 			accessToken,

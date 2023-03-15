@@ -4,6 +4,7 @@ import {
 	func as utilsCheckFunc,
 	obj as utilsCheckObj,
 	arr as utilsCheckArr,
+	str as utilsCheckStr,
 	exists as utilsCheckExists,
 	bool as utilsCheckBool,
 	strId as utilsCheckStrId,
@@ -131,16 +132,17 @@ export class Controller {
 			throw new this.exceptionConstructor(`User is undefined or token is not valid.`);
 		}
 		const user = getUser(options['accessToken']);
+		let ids = options['ids'];
 
-		if (!utilsCheckStrArr(options['ids'])) {
-			throw new this.exceptionConstructor(`Property "ids" is not valid.`);
+		if (utilsCheckStr(options['ids'])) {
+			if (!utilsCheckStrArr(options['ids'])) {
+				throw new this.exceptionConstructor(`Property "ids" is not valid [1].`);
+			}
+			ids = JSON.parse(options['ids']);
 		}
-		const ids = JSON.parse(options['ids']);
-
 		if (!utilsCheckArr(ids)) {
-			throw new this.exceptionConstructor(`Property "ids" is not valid.`);
+			throw new this.exceptionConstructor(`Property "ids" is not valid [2].`);
 		}
-
 		return {
 			accessToken: options['accessToken'],
 			userId: user['id'],

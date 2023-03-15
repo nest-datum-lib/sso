@@ -73,10 +73,10 @@ export class HttpTcpController extends HttpController {
 		})));
 	}
 
-	@Delete(':id')
+	@Delete()
 	async dropMany(
 		@AccessToken() accessToken: string,
-		@Param('ids') ids: string,
+		@Query('ids') ids: string,
 	) {
 		return await this.serviceHandlerWrapper(async () => await this.transportService.send({
 			name: this.serviceName, 
