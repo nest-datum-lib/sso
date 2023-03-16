@@ -23,7 +23,9 @@ import {
 	objQueryRunner as utilsCheckObjQueryRunner,
 	numericInt as utilsCheckNumericInt,
 	strId as utilsCheckStrId,
+	strEnvKey as utilsCheckStrEnvKey,
 } from '@nest-datum-utils/check';
+import { toLat as formatToLat } from '@nest-datum-utils/format';
 import { loopAsync as utilsLoopAsync } from '@nest-datum-utils/loop';
 
 export class SqlService {
@@ -46,6 +48,7 @@ export class SqlService {
 	protected entityRepository;
 	protected entityConstructor;
 	protected entityName;
+	protected withEnvKey;
 	protected entityWithTwoStepRemoval = true;
 	protected enableTransactions = true;
 	protected listSortByDefault = { createdAt: 'DESC' };
@@ -56,6 +59,7 @@ export class SqlService {
 			id: true,
 			createdAt: true,
 			updatedAt: true,
+			...(this.withEnvKey === true) ? { envKey: true } : {},
 		});
 	}
 
@@ -404,6 +408,9 @@ export class SqlService {
 		delete payload['refreshToken'];
 		delete payload['newId'];
 
+		if (!this.withEnvKey || !utilsCheckStrEnvKey(payload['envKey'])) {
+			delete payload['envKey'];
+		}
 		return payload;
 	}
 
@@ -454,6 +461,16 @@ export class SqlService {
 		delete payload['accessToken'];
 		delete payload['refreshToken'];
 
+		if (this.withEnvKey === true) {
+			payload['envKey'] = (utilsCheckStrEnvKey(payload['envKey']) ? payload['envKey'] : formatToLat(payload['name']))
+				.trim()
+				.replace(/[\n\t]/g, '')
+				.replace(/[^a-zA-Z0-9]/g, '_')
+				.toUpperCase();
+		}
+		else {
+			delete payload['envKey'];
+		}
 		return payload;
 	}
 

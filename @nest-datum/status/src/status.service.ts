@@ -2,6 +2,7 @@ import { Repository } from 'typeorm';
 import { SqlService } from '@nest-datum/sql';
 
 export class StatusService extends SqlService {
+	protected withEnvKey = true;
 	protected entityWithTwoStepRemoval = true;
 
 	protected manyGetColumns(customColumns: object = {}) {

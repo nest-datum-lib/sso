@@ -4,19 +4,14 @@ import {
 	Repository,
 	Connection, 
 } from 'typeorm';
-import { OptionService } from '@nest-datum/option';
+import { AccessOptionService as AccessOptionServiceBase } from '@nest-datum/access';
 import { CacheService } from '@nest-datum/cache';
 import { AccessAccessAccessOption } from '../access-access-access-option/access-access-access-option.entity';
 import { AccessAccessOption } from '../access-access-option/access-access-option.entity';
 import { AccessOption } from './access-option.entity';
 
 @Injectable()
-export class AccessOptionService extends OptionService {
-	protected entityName = 'accessOption';
-	protected entityServicedName = 'access';
-	protected entityId = 'accessId';
-	protected entityOptionId = 'accessOptionId';
-	protected entityOptionRelationId = 'accessAccessOptionId';
+export class AccessOptionService extends AccessOptionServiceBase {
 	protected entityConstructor = AccessOption;
 	protected entityOptionConstructor = AccessAccessOption;
 	protected entityOptionRelationConstructor = AccessAccessAccessOption;

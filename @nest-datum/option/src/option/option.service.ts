@@ -1,3 +1,4 @@
+import { In } from 'typeorm';
 import { SqlService } from '@nest-datum/sql';
 import { objQueryRunner as utilsCheckObjQueryRunner } from '@nest-datum-utils/check';
 
@@ -16,6 +17,7 @@ export class OptionService extends SqlService {
 	protected entityOptionId;
 	protected entityOptionRelationId;
 	protected entityWithTwoStepRemoval = true;
+	protected withEnvKey = true;
 
 	// constructor(
 	// 	protected entityRepository,
@@ -85,19 +87,44 @@ export class OptionService extends SqlService {
 			this.cacheService.clear([ this.entityServicedName, 'many' ]);
 			this.cacheService.clear([ this.entityServicedName, 'one' ]);
 
-			(utilsCheckObjQueryRunner(this.queryRunner) 
-				&& this.enableTransactions === true)
-				? await this.queryRunner.manager.delete(this.entityOptionRelationConstructor, {
-					[this.entityId]: payload['id'],
-				})
-				: await this.entityOptionRelationRepository.delete({
-					[this.entityId]: payload['id'],
-				});
-
 			const processedPayload = await this.contentProperties(payload);
 			let i = 0,
 				ii = 0,
-				output = [];
+				output = [],
+				ids = new Set,
+				parentIds = new Set;
+
+			while (i < processedPayload['data'].length) {
+				if (processedPayload['data'][i]) {
+					ii = 0;
+
+					const option = processedPayload['data'][i];
+
+					while (ii < option.length) {
+						ids.add(option[ii]['id']);
+						parentIds.add(option[ii]['parentId']);
+						ii++;
+					}
+				}
+				i++;
+			}
+			const idsArr = Array.from(ids);
+			const parentIdsArr = Array.from(parentIds);
+
+			const conditionIds = idsArr.map((id, index) => `id = '${id}'${(idsArr.length - 1 > index) ? ' OR ' : ''}`).join('');
+			const conditionParentIds = parentIdsArr.map((id, index) => `parentId = '${id}'${(parentIdsArr.length - 1 > index) ? ' OR ' : ''}`).join('');
+
+			const condition = (parentIdsArr.length > 0)
+				? `(${conditionIds}) AND (${conditionParentIds})`
+				: `${this.entityId} = '${payload['id']}'`;
+			
+			(utilsCheckObjQueryRunner(this.queryRunner) 
+				&& this.enableTransactions === true)
+				? await this.queryRunner.manager.query(`DELETE FROM ${this.entityOptionRelationRepository.metadata.tableName} WHERE ${condition}`)
+				: await this.entityOptionRelationRepository.query(`DELETE FROM ${this.entityOptionRelationRepository.metadata.tableName} WHERE ${condition}`);
+
+			i = 0;
+			ii = 0;
 
 			while (i < processedPayload['data'].length) {
 				ii = 0;
@@ -108,9 +135,13 @@ export class OptionService extends SqlService {
 					const {
 						entityId,
 						entityOptionId,
+						withNewId,
 						...optionData
 					} = option[ii];
 
+					if (withNewId === true) {
+						delete optionData['id'];
+					}
 					output.push(await this.contentProcess({
 						...optionData,
 						[this.entityId]: entityId,
@@ -121,6 +152,7 @@ export class OptionService extends SqlService {
 				i++;
 			}
 			return await this.contentOutput(payload, await this.contentAfter(payload, processedPayload, output));
+			return [];
 		}
 		catch (err) {
 			await this.rollbackQueryRunnerManager();

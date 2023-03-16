@@ -38,6 +38,7 @@ import strUrl from './str/url';
 import strHost from './str/host';
 import strDataType from './str/dataType';
 import strDataTypeBool from './str/dataType/bool';
+import strEnvKey from './str/envKey';
 
 export {
 	exists,
@@ -80,4 +81,5 @@ export {
 	strHost,
 	strDataType,
 	strDataTypeBool,
+	strEnvKey,
 };

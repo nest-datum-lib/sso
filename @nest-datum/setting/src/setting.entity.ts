@@ -18,6 +18,9 @@ export class Setting {
 	@Index()
 	public dataTypeId: string;
 
+	@Column({ default: '' })
+	public envKey: string;
+
 	@Column()
 	@Index({ unique: true })
 	public name: string;

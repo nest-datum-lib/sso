@@ -4,16 +4,13 @@ import {
 	Repository,
 	Connection, 
 } from 'typeorm';
-import { OptionOptionService } from '@nest-datum/option';
+import { RoleAccessService as RoleAccessServiceBase } from '@nest-datum/access';
 import { CacheService } from '@nest-datum/cache';
 import { RoleAccess } from './role-access.entity';
 
 @Injectable()
-export class RoleAccessService extends OptionOptionService {
-	protected entityName = 'roleRoleOption';
+export class RoleAccessService extends RoleAccessServiceBase {
 	protected entityConstructor = RoleAccess;
-	protected entityOptionId = 'accessId';
-	protected entityId = 'roleId';
 
 	constructor(
 		@InjectRepository(RoleAccess) protected entityRepository: Repository<RoleAccess>,

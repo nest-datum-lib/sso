@@ -14,6 +14,9 @@ export class Status {
 	@Index()
 	public userId: string;
 
+	@Column({ default: '' })
+	public envKey: string;
+
 	@Column()
 	@Index({ unique: true })
 	public name: string;

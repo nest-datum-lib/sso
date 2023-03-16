@@ -12,9 +12,10 @@ import { Role } from './role.entity';
 @Injectable()
 export class RoleService extends OptionEntityService {
 	protected entityName = 'role';
+	protected entityOptionId = 'roleOptionId';
+	protected entityId = 'roleId';
 	protected entityConstructor = Role;
 	protected entityOptionConstructor = RoleRoleOption;
-	protected entityId = 'roleId';
 
 	constructor(
 		@InjectRepository(Role) protected entityRepository: Repository<Role>,

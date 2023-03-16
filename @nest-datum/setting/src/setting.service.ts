@@ -4,6 +4,7 @@ import { SqlService } from '@nest-datum/sql';
 export class SettingService extends SqlService {
 	protected entityName = 'setting';
 	protected entityWithTwoStepRemoval = true;
+	protected withEnvKey = true;
 
 	protected manyGetColumns(customColumns: object = {}) {
 		return ({
