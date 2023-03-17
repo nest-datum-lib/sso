@@ -32,6 +32,7 @@ export class UserService extends OptionEntityService {
 	protected entityConstructor = User;
 	protected entityOptionConstructor = UserUserOption;
 	protected entityId = 'userId';
+	protected entityOptionId = 'userOptionId';
 
 	constructor(
 		@InjectRepository(User) protected entityRepository: Repository<User>,

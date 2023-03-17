@@ -388,7 +388,10 @@ export class SqlService {
 					? { id: newId }
 					: {},
 			});
-			const output = await this.updateProcess(processedPayload);
+
+			delete processedPayload['newId'];
+
+			const output = await this.updateProcess({ ...processedPayload });
 
 			return await this.updateOutput(processedPayload, await this.updateAfter(payload, processedPayload, output));
 		}
@@ -411,7 +414,7 @@ export class SqlService {
 		if (!this.withEnvKey || !utilsCheckStrEnvKey(payload['envKey'])) {
 			delete payload['envKey'];
 		}
-		return payload;
+		return { ...payload };
 	}
 
 	protected async updateBefore(payload): Promise<any> {
