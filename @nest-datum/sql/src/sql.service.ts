@@ -391,7 +391,7 @@ export class SqlService {
 
 			delete processedPayload['newId'];
 
-			const output = await this.updateProcess({ ...processedPayload });
+			const output = await this.updateProcess(payload['id'], { ...processedPayload });
 
 			return await this.updateOutput(processedPayload, await this.updateAfter(payload, processedPayload, output));
 		}
@@ -421,11 +421,11 @@ export class SqlService {
 		return await this.before(payload);
 	}
 
-	protected async updateProcess(payload: object): Promise<any> {
+	protected async updateProcess(id: string, payload: object): Promise<any> {
 		return (utilsCheckObjQueryRunner(this.queryRunner) 
 				&& this.enableTransactions === true)
-			? await this.queryRunner.manager.update(this.entityConstructor, payload['id'], payload)
-			: await this.entityRepository.update({ id: payload['id'] }, payload);
+			? await this.queryRunner.manager.update(this.entityConstructor,id, payload)
+			: await this.entityRepository.update({ id }, payload);
 	}
 
 	protected async updateAfter(initialPayload: object, processedPayload: object, data: any): Promise<any> {
