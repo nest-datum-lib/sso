@@ -1,22 +1,14 @@
 import { 
-	Entity, 
-	Column,
-	PrimaryGeneratedColumn,
+	Entity,
+	Column, 
 	ManyToOne,
-	CreateDateColumn,
-	UpdateDateColumn,
 } from 'typeorm';
+import { AccessAccessAccessOption as AccessAccessAccessOptionBase } from '@nest-datum/access';
 import { AccessAccessOption } from '../access-access-option/access-access-option.entity';
 import { Access } from '../access/access.entity';
 
 @Entity()
-export class AccessAccessAccessOption {
-	@PrimaryGeneratedColumn('uuid')
-	public id: string;
-
-	@Column({ default: '' })
-	public parentId: string;
-
+export class AccessAccessAccessOption extends AccessAccessAccessOptionBase {
 	@Column()
 	public accessAccessOptionId: string;
 
@@ -30,22 +22,4 @@ export class AccessAccessAccessOption {
 
 	@ManyToOne(() => Access, (access) => access.accessAccessAccessOptions)
 	public access: Access;
-
-	@Column('text')
-	public content: string;
-
-	@CreateDateColumn({ 
-		type: 'timestamp', 
-		precision: null,
-		default: () => 'CURRENT_TIMESTAMP', 
-	})
-	public createdAt: Date;
-
-	@UpdateDateColumn({ 
-		type: 'timestamp', 
-		precision: null,
-		default: () => 'CURRENT_TIMESTAMP',
-		onUpdate: 'CURRENT_TIMESTAMP', 
-	})
-	public updatedAt: Date;
 }

@@ -4,14 +4,15 @@ import {
 	Column,
 	CreateDateColumn,
 	UpdateDateColumn,
-	ManyToOne,
+	Index,
 	OneToMany,
 } from 'typeorm';
-import { RoleAccess } from '../role-access/role-access.entity';
-import { RoleStatus } from '../role-status/role-status.entity';
+import {
+	IsEmail,
+} from 'class-validator';
 import { RoleRoleRoleOption } from '../role-role-role-option/role-role-role-option.entity';
 import { RoleRoleOption } from '../role-role-option/role-role-option.entity';
-import { User } from '../user/user.entity';
+import { RoleAccess } from '../role-access/role-access.entity';
 
 @Entity()
 export class Role {
@@ -19,25 +20,28 @@ export class Role {
 	public id: string;
 
 	@Column({ default: '' })
+	@Index()
 	public userId: string;
 
 	@Column({ default: '' })
 	public roleStatusId: string;
 
-	@ManyToOne(() => RoleStatus, (roleStatus) => roleStatus.roles)
-	public roleStatus: RoleStatus;
+	@Column({ default: '' })
+	public envKey: string;
 
 	@Column()
+	@Index({ unique: true })
 	public name: string;
 
 	@Column({ default: '' })
+	@Index()
 	public description: string;
 
 	@Column('boolean', { default: false })
 	public isDeleted: boolean = false;
 
 	@Column('boolean', { default: false })
-	public isNotDelete: boolean;
+	public isNotDelete: boolean = false;
 
 	@CreateDateColumn({ 
 		type: 'timestamp', 
@@ -59,9 +63,6 @@ export class Role {
 
 	@OneToMany(() => RoleRoleRoleOption, (roleRoleRoleOption) => roleRoleRoleOption.role)
 	public roleRoleRoleOptions: RoleRoleRoleOption[];
-
-	@OneToMany(() => User, (user) => user.role)
-	public users: User[];
 
 	@OneToMany(() => RoleAccess, (roleAccess) => roleAccess.role)
 	public roleAccesses: RoleAccess[];

@@ -11,8 +11,6 @@ import {
 	IsEmail,
 } from 'class-validator';
 import { UserUserOption } from '../user-user-option/user-user-option.entity';
-import { UserStatus } from '../user-status/user-status.entity';
-import { Role } from '../role/role.entity';
 
 @Entity()
 export class User {
@@ -22,14 +20,8 @@ export class User {
 	@Column({ default: '' })
 	public roleId: string;
 
-	@ManyToOne(() => Role, (role) => role.users)
-	public role: Role;
-
 	@Column({ default: '' })
 	public userStatusId: string;
-
-	@ManyToOne(() => UserStatus, (userStatus) => userStatus.users)
-	public userStatus: UserStatus;
 
 	@Column({ unique: true })
 	@IsEmail()
@@ -42,7 +34,7 @@ export class User {
 	@Column()
 	public password: string;
 
-	@Column()
+	@Column({ default: '' })
 	public emailVerifyKey: string;
 
 	@Column({ 

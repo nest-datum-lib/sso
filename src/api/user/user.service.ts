@@ -1,71 +1,92 @@
-import { v4 as uuidv4 } from 'uuid';
-import getCurrentLine from 'get-current-line';
-import { 
-	Inject,
-	Injectable, 
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { 
 	Repository,
 	Connection, 
 } from 'typeorm';
-import { SqlService } from 'nest-datum/sql/src';
-import { CacheService } from 'nest-datum/cache/src';
-import { BalancerService } from 'nest-datum/balancer/src';
-import { 
-	ErrorException,
-	WarningException, 
-	NotFoundException,
-} from 'nest-datum/exceptions/src';
 import {
-	generateVerifyKey,
+	arrFilled as utilsCheckArrFilled,
+	objFilled as utilsCheckObjFilled,
+} from '@nest-datum-utils/check';
+import {
+	FailureException,
+	MethodNotAllowedException,
+	NotFoundException,
+} from '@nest-datum-common/exceptions';
+import {
 	encryptPassword,
-	checkPassword,
+	generateVerifyKey,
 	generateTokens,
+	checkPassword,
 	generateAccessToken,
-} from 'nest-datum/jwt/src';
-import { User } from './user.entity';
+} from '@nest-datum-common/jwt';
+import { TransportService } from '@nest-datum/transport';
+import { MainService } from '@nest-datum/main';
+import { CacheService } from '@nest-datum/cache';
 import { UserUserOption } from '../user-user-option/user-user-option.entity';
+import { User } from './user.entity';
 
 @Injectable()
-export class UserService extends SqlService {
+export class UserService extends MainService {
+	protected readonly withTwoStepRemoval: boolean = true;
+	protected readonly withEnvKey: boolean = false;
+	protected readonly repositoryConstructor = User;
+	protected readonly repositoryBindOptionConstructor = UserUserOption;
+	protected readonly mainRelationColumnName: string = 'userId';
+	protected readonly optionRelationColumnName: string = 'userOptionId';
+
 	constructor(
-		@InjectRepository(User) private readonly userRepository: Repository<User>,
-		@InjectRepository(UserUserOption) private readonly userUserOptionRepository: Repository<UserUserOption>,
-		private readonly connection: Connection,
-		private readonly cacheService: CacheService,
-		private readonly balancerService: BalancerService,
+		@InjectRepository(User) protected readonly repository: Repository<User>,
+		@InjectRepository(UserUserOption) protected repositoryBindOption: Repository<UserUserOption>,
+		protected readonly transport: TransportService,
+		protected readonly connection: Connection,
+		protected readonly repositoryCache: CacheService,
 	) {
 		super();
 	}
 
-	protected selectDefaultMany = {
-		id: true,
-		roleId: true,
-		userStatusId: true,
-		login: true,
-		email: true,
-		isDeleted: true,
-		isNotDelete: true,
-		emailVerifyKey: true,
-		emailVerifiedAt: true,
-		createdAt: true,
-		updatedAt: true,
-	};
+	protected manyGetColumns(customColumns: object = {}) {
+		return ({
+			...super.manyGetColumns(customColumns),
+			roleId: true,
+			userStatusId: true,
+			login: true,
+			email: true,
+			isDeleted: true,
+			isNotDelete: true,
+			emailVerifyKey: true,
+			emailVerifiedAt: true,
+		});
+	}
 
-	protected queryDefaultMany = {
-		id: true,
-		login: true,
-		email: true,
-	};
+	protected oneGetColumns(customColumns: object = {}): object {
+		return ({
+			...super.oneGetColumns(customColumns),
+			roleId: true,
+			userStatusId: true,
+			login: true,
+			email: true,
+			isDeleted: true,
+			isNotDelete: true,
+			emailVerifyKey: true,
+			emailVerifiedAt: true,
+		});
+	}
+
+	protected manyGetQueryColumns(customColumns: object = {}) {
+		return ({
+			login: true,
+			email: true,
+		});
+	}
 
 	async register(payload): Promise<any> {
-		const queryRunner = await this.connection.createQueryRunner(); 
+		await this.createQueryRunnerManager();
 
 		try {
-			await queryRunner.startTransaction();
-			
-			this.cacheService.clear([ 'user', 'many' ]);
+			await this.startQueryRunnerManager();
+
+			this.repositoryCache.drop({ key: [ this.prefix(), 'many', '*' ] });
 
 			const firstname = payload['firstname'];
 			const lastname = payload['lastname'];
@@ -78,37 +99,41 @@ export class UserService extends SqlService {
 				password: await encryptPassword(payload['password']),
 				emailVerifyKey: await generateVerifyKey(payload['email']),
 			};
-			const output = await queryRunner.manager.save(Object.assign(new User(), data));
+			const output = await this.queryRunner.manager.save(Object.assign(new User(), data));
 
-			await queryRunner.manager.save(Object.assign(new UserUserOption(), {
+			await this.queryRunner.manager.save(Object.assign(new UserUserOption(), {
 				userId: output['id'],
-				userOptionId: 'sso-user-option-firstname',
+				userOptionId: 'happ-sso-user-option-firstname',
 				content: firstname,
 			}));
-			await queryRunner.manager.save(Object.assign(new UserUserOption(), {
+			await this.queryRunner.manager.save(Object.assign(new UserUserOption(), {
 				userId: output['id'],
-				userOptionId: 'sso-user-option-lastname',
+				userOptionId: 'happ-sso-user-option-lastname',
 				content: lastname,
 			}));
 
-			await this.balancerService.send({ 
-				name: 'mail',
-				cmd: 'letter.send',
+			console.log('000');
+
+			await this.transport.send({ 
+				name: process.env.SERVICE_MAIL,
+				cmd: 'report.create',
 			}, {
-				accessToken: generateAccessToken({
-					id: 'sso-user-admin',
-					roleId: 'sso-role-admin',
-					email: process.env.USER_ROOT_EMAIL,
-				}, Date.now()),
-				letterId: 'mail-letter-register', 
-				body: {
+				letterId: 'happ-mail-letter-base-registration', 
+				email: data['email'],
+				action: `Register new user "${data['email']}"`,
+				reportStatusId: 'happ-mail-report-status-send',
+				content: JSON.stringify({
 					...data,
 					firstname,
 					lastname,
-				},
+				}),
+				accessToken: generateAccessToken({
+					id: process.env.USER_ID,
+					roleId: process.env.USER_ADMIN_ROLE,
+					email: process.env.USER_EMAIL,
+				}, Date.now()),
 			});
-
-			await queryRunner.commitTransaction();
+			await this.commitQueryRunnerManager();
 
 			return {
 				id: output['id'],
@@ -116,395 +141,161 @@ export class UserService extends SqlService {
 			};
 		}
 		catch (err) {
-			await queryRunner.rollbackTransaction();
-			await queryRunner.release();
+			await this.rollbackQueryRunnerManager();
 
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+			throw new FailureException(err.message);
 		}
 		finally {
-			await queryRunner.release();
+			await this.dropQueryRunnerManager();
 		}
-	};
+	}
 
 	async verify(payload): Promise<any> {
-		try {
-			this.cacheService.clear([ 'user', 'many' ]);
+		const user = await this.repository.findOne({
+			where: {
+				emailVerifyKey: payload['verifyKey'],
+			},
+		});
 
-			const user = await this.userRepository.findOne({
-				where: {
-					email: payload['email'],
-				},
-			});
-			
-			if (!user) {
-				throw new NotFoundException(`User with email "${payload['email']}" not found.`, getCurrentLine(), payload);
-			}
-			if (user['emailVerifiedAt']) {
-				throw new WarningException(`Current account already verified.`, getCurrentLine(), payload);
-			}
-			if (user['emailVerifyKey'] !== payload['verifyKey']) {
-				throw new WarningException(`Key not validated.`, getCurrentLine(), payload);
-			}
-			if ((Date.now() - user['createdAt'].getTime()) > 86400000) {
-				throw new WarningException(`Key expired.`, getCurrentLine(), payload);
-			}
-			await this.userRepository.save({ 
-				...user, 
-				emailVerifyKey: '',
-				emailVerifiedAt: new Date(),
-			});
+		this.repositoryCache.drop({ key: [ this.prefix(), 'many', '*' ] });
+		this.repositoryCache.drop({ key: [ this.prefix(), 'one', { id: user['id'] } ] });
 
-			return true;
+		if (!user) {
+			throw new NotFoundException(`User with email "${payload['email']}" not found.`);
 		}
-		catch (err) {
-			throw new ErrorException(err.message, getCurrentLine(), payload);
+		if (user['emailVerifiedAt']) {
+			throw new MethodNotAllowedException(`Current account already verified.`);
 		}
-	};
+		if ((Date.now() - user['createdAt'].getTime()) > 86400000) {
+			throw new MethodNotAllowedException(`Key expired.`);
+		}
+		await this.repository.save({ 
+			...user, 
+			emailVerifyKey: '',
+			emailVerifiedAt: new Date(),
+		});
+
+		return true;
+	}
 
 	async login(payload): Promise<any> {
-		try {
-			const user = await this.userRepository.findOne({
-				where: [
-					{ email: payload['login'] },
-					{ login: payload['login'] },
-				],
-				relations: {
-					userUserOptions: {
-						userOption: true,
-					},
+		const user = await this.repository.findOne({
+			where: [
+				{ email: payload['login'] },
+				{ login: payload['login'] },
+			],
+			relations: {
+				userUserOptions: {
+					userOption: true,
 				},
-			});
+			},
+		});
 
-			if (!user) {
-				throw new NotFoundException(`User with login "${payload['login']}" not found.`, getCurrentLine(), payload);
-			}
-			if (await checkPassword(payload['password'], user['password'])) {
-				return await generateTokens(user);
-			}
-			throw new WarningException(`Wrong password specified.`, getCurrentLine(), payload);
+		if (!user) {
+			throw new NotFoundException(`User with login "${payload['login']}" not found.`);
 		}
-		catch (err) {
-			throw new ErrorException(err.message, getCurrentLine(), payload);
-		}
-	};
-
-	async recovery(payload): Promise<any> {
-		const queryRunner = await this.connection.createQueryRunner();
-
-		try {
-			await queryRunner.startTransaction();
-
-			const user = await this.userRepository.findOne({
-				where: {
-					email: payload['email'],
-				},
-			});
-
-			if (!user) {
-				throw new NotFoundException(`User with login "${payload['login']}" not found.`, getCurrentLine(), payload);
-			}
-			if (!user['emailVerifiedAt']) {
-				throw new WarningException(`The current user has not activated an account.`, getCurrentLine(), payload);
-			}
-			const output = { 
-				...user, 
-				emailVerifyKey: await generateVerifyKey(payload['email']),
-			};
-
-			await queryRunner.manager.save(Object.assign(new User(), {
-				...output,
-			}));
-
-			await this.balancerService.send({ 
-				name: 'mail',
-				cmd: 'letter.send',
-			}, {
-				accessToken: generateAccessToken({
-					id: 'sso-user-admin',
-					roleId: 'sso-role-admin',
-					email: process.env.USER_ROOT_EMAIL,
-				}, Date.now()),
-				letterId: 'mail-letter-recovery', 
-				body: {
-					...output,
-				},
-			});
-			await queryRunner.commitTransaction();
-
-			return true;
-		}
-		catch (err) {
-			await queryRunner.rollbackTransaction();
-			await queryRunner.release();
-
-			throw new ErrorException(err.message, getCurrentLine(), payload);
-		}
-		finally {
-			await queryRunner.release();
-		}
-	};
-
-	async reset(payload): Promise<any> {
-		const queryRunner = await this.connection.createQueryRunner(); 
-
-		try {
-			await queryRunner.startTransaction();
-
-			const user = await this.userRepository.findOne({
-				where: {
-					email: payload['email'],
-				},
-			});
-
-			if (!user) {
-				throw new NotFoundException(`User with login "${payload['login']}" not found.`, getCurrentLine(), payload);
-			}
-			if (!user['emailVerifiedAt']) {
-				throw new WarningException(`Current account already verified.`, getCurrentLine(), payload);
-			}
-			if (user['emailVerifyKey'] !== payload['verifyKey']) {
-				throw new WarningException(`Key not validated.`, getCurrentLine(), payload);
-			}
-			await queryRunner.manager.save(Object.assign(new User(), {
-				...user,
-				password: await encryptPassword(payload['password']),
-				emailVerifyKey: '',
-			}));
-
-			await queryRunner.commitTransaction();
-
-			return true;
-		}
-		catch (err) {
-			await queryRunner.rollbackTransaction();
-			await queryRunner.release();
-
-			throw new ErrorException(err.message, getCurrentLine(), payload);
-		}
-		finally {
-			await queryRunner.release();
-		}
-	};
-
-	async refresh(payload): Promise<any> {
-		try {
-			const user = await this.userRepository.findOne({
-				where: {
-					id: payload['id'],
-				},
-				relations: {
-					userUserOptions: {
-						userOption: true,
-					},
-				},
-			});
-
-			if (!user) {
-				throw new NotFoundException(`User with email "${payload['email']}" not found.`, getCurrentLine(), payload);
-			}
+		if (await checkPassword(payload['password'], user['password'])) {
 			return await generateTokens(user);
 		}
-		catch (err) {
-			throw new ErrorException(err.message, getCurrentLine(), payload);
-		}
-	};
-
-	async many({ user, ...payload }): Promise<any> {
-		try {
-			const cachedData = await this.cacheService.get([ 'user', 'many', payload ]);
-
-			if (cachedData) {
-				return cachedData;
-			}
-			const output = await this.userRepository.findAndCount(await this.findMany(payload));
-
-			await this.cacheService.set([ 'user', 'many', payload ], output);
-			
-			return output;
-		}
-		catch (err) {
-			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
-		}
-		return [ [], 0 ];
+		throw new MethodNotAllowedException(`Wrong password specified.`);
 	}
 
-	async one({ user, ...payload }): Promise<any> {
-		try {
-			const cachedData = await this.cacheService.get([ 'user', 'one', payload ]);
+	async recovery(payload): Promise<any> {
+		const user = await this.repository.findOne({
+			where: {
+				email: payload['email'],
+			},
+		});
 
-			if (cachedData) {
-				return cachedData;
-			}
-			const output = await this.userRepository.findOne(await this.findOne(payload));
-		
-			if (output) {
-				await this.cacheService.set([ 'user', 'one', payload ], output);
-			}
-			if (!output) {
-				return new NotFoundException('Entity is undefined', getCurrentLine(), { user, ...payload });
-			}
-			return output;
+		if (!user) {
+			throw new NotFoundException(`User with login "${payload['login']}" not found.`);
 		}
-		catch (err) {
-			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
+		if (!user['emailVerifiedAt']) {
+			throw new MethodNotAllowedException(`The current user has not activated an account.`);
 		}
+		const output = { 
+			...user, 
+			emailVerifyKey: await generateVerifyKey(payload['email']),
+		};
+
+		await this.repository.save({
+			...user,
+			...output,
+		});
+		await this.transport.send({ 
+			name: process.env.SERVICE_MAIL,
+			cmd: 'report.create',
+		}, {
+			letterId: 'happ-mail-letter-base-recovery', 
+			email: payload['email'],
+			action: `Recovery access for "${payload['email']}"`,
+			reportStatusId: 'happ-mail-report-status-send',
+			content: JSON.stringify({
+				...output,
+			}),
+			accessToken: generateAccessToken({
+				id: process.env.USER_ID,
+				roleId: process.env.USER_ADMIN_ROLE,
+				email: process.env.USER_EMAIL,
+			}, Date.now()),
+		});
+
+		return true;
 	}
 
-	async drop({ user, ...payload }): Promise<any> {
-		const queryRunner = await this.connection.createQueryRunner(); 
+	async reset(payload): Promise<any> {
+		const user = await this.repository.findOne({
+			where: {
+				email: payload['email'],
+			},
+		});
 
-		try {
-			await queryRunner.startTransaction();
-			
-			this.cacheService.clear([ 'user', 'many' ]);
-			this.cacheService.clear([ 'user', 'one', payload ]);
-
-			await this.dropByIsDeleted(this.userRepository, payload['id'], async (entity) => {
-				await this.userUserOptionRepository.delete({ userId: entity['id'] });
-			});
-
-			await queryRunner.commitTransaction();
-
-			return true;
+		if (!user) {
+			throw new NotFoundException(`User with login "${payload['login']}" not found.`);
 		}
-		catch (err) {
-			await queryRunner.rollbackTransaction();
-			await queryRunner.release();
-
-			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
+		if (!user['emailVerifiedAt']) {
+			throw new MethodNotAllowedException(`Current account already verified.`);
 		}
-		finally {
-			await queryRunner.release();
+		if (user['emailVerifyKey'] !== payload['verifyKey']) {
+			throw new MethodNotAllowedException(`Key not validated.`);
 		}
+		await this.repository.save({
+			...user,
+			password: await encryptPassword(payload['password']),
+			emailVerifyKey: '',
+		});
+		return true;
 	}
 
-	async dropMany({ user, ...payload }): Promise<any> {
-		const queryRunner = await this.connection.createQueryRunner(); 
+	async refresh(payload): Promise<any> {
+		const user = await this.repository.findOne({
+			where: {
+				id: payload['id'],
+			},
+			// relations: {
+			// 	userUserOptions: {
+			// 		userOption: true,
+			// 	},
+			// },
+		});
 
-		try {
-			await queryRunner.startTransaction();
-			
-			this.cacheService.clear([ 'user', 'many' ]);
-			this.cacheService.clear([ 'user', 'one', payload ]);
-
-			let i = 0;
-
-			while (i < payload['ids'].length) {
-				await this.dropByIsDeleted(this.userRepository, payload['ids'][i], async (entity) => {
-					await this.userUserOptionRepository.delete({ userId: entity['id'] });
-				});
-				i++;
-			}
-			await queryRunner.commitTransaction();
-
-			return true;
+		if (!user) {
+			throw new NotFoundException(`User is undefined.`);
 		}
-		catch (err) {
-			await queryRunner.rollbackTransaction();
-			await queryRunner.release();
-
-			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
-		}
-		finally {
-			await queryRunner.release();
-		}
+		return await generateTokens(user);
 	}
 
-	async create({ user, ...payload }): Promise<any> {
-		const queryRunner = await this.connection.createQueryRunner(); 
-
-		try {
-			await queryRunner.startTransaction();
-			
-			this.cacheService.clear([ 'user', 'many' ]);
-
-			const output = await this.userRepository.save(payload);
-
-			await queryRunner.commitTransaction();
-
-			return output;
+	protected async createProperties(payload: object): Promise<any> {
+		if (payload['password']) {
+			payload['password'] = await encryptPassword(payload['password']);
 		}
-		catch (err) {
-			await queryRunner.rollbackTransaction();
-			await queryRunner.release();
-
-			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
-		}
-		finally {
-			await queryRunner.release();
-		}
+		return payload;
 	}
 
-	async createOptions({ user, id, data }): Promise<any> {
-		const queryRunner = await this.connection.createQueryRunner(); 
-
-		try {
-			await queryRunner.startTransaction();
-			
-			this.cacheService.clear([ 'user', 'many' ]);
-
-			await this.userUserOptionRepository.delete({
-				userId: id,
-			});
-
-			let i = 0,
-				ii = 0;
-
-			while (i < data.length) {
-				ii = 0;
-
-				const option = data[i];
-
-				while (ii < option.length) {
-					const newId = uuidv4();
-					const output = await this.userUserOptionRepository.save({
-						...option[ii],
-						userId: option[ii]['entityId'],
-						userOptionId: option[ii]['entityOptionId'],
-						id: newId,
-					});
-					ii++;
-				}
-				i++;
-			}
-			await queryRunner.commitTransaction();
-			
-			return true;
+	protected async updateProperties(payload: object): Promise<any> {
+		if (payload['password']) {
+			payload['password'] = await encryptPassword(payload['password']);
 		}
-		catch (err) {
-			await queryRunner.rollbackTransaction();
-			await queryRunner.release();
-
-			throw new ErrorException(err.message, getCurrentLine(), { user, id, data });
-		}
-		finally {
-			await queryRunner.release();
-		}
-	}
-
-	async update({ user, ...payload }): Promise<any> {
-		const queryRunner = await this.connection.createQueryRunner(); 
-
-		try {
-			await queryRunner.startTransaction();
-			
-			this.cacheService.clear([ 'user', 'many' ]);
-			this.cacheService.clear([ 'user', 'one' ]);
-			
-			await this.updateWithId(this.userRepository, payload);
-			
-			await queryRunner.commitTransaction();
-			
-			return true;
-		}
-		catch (err) {
-			await queryRunner.rollbackTransaction();
-			await queryRunner.release();
-
-			throw new ErrorException(err.message, getCurrentLine(), { user, ...payload });
-		}
-		finally {
-			await queryRunner.release();
-		}
+		return payload;
 	}
 }

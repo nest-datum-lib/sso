@@ -1,22 +1,14 @@
 import { 
-	Entity, 
-	Column,
-	PrimaryGeneratedColumn,
+	Entity,
+	Column, 
 	ManyToOne,
-	CreateDateColumn,
-	UpdateDateColumn,
 } from 'typeorm';
+import { Many } from '@nest-datum/many';
 import { RoleRoleOption } from '../role-role-option/role-role-option.entity';
 import { Role } from '../role/role.entity';
 
 @Entity()
-export class RoleRoleRoleOption {
-	@PrimaryGeneratedColumn('uuid')
-	public id: string;
-
-	@Column({ default: '' })
-	public parentId: string;
-
+export class RoleRoleRoleOption extends Many {
 	@Column()
 	public roleRoleOptionId: string;
 
@@ -30,22 +22,4 @@ export class RoleRoleRoleOption {
 
 	@ManyToOne(() => Role, (role) => role.roleRoleRoleOptions)
 	public role: Role;
-
-	@Column('text')
-	public content: string;
-
-	@CreateDateColumn({ 
-		type: 'timestamp', 
-		precision: null,
-		default: () => 'CURRENT_TIMESTAMP', 
-	})
-	public createdAt: Date;
-
-	@UpdateDateColumn({ 
-		type: 'timestamp', 
-		precision: null,
-		default: () => 'CURRENT_TIMESTAMP',
-		onUpdate: 'CURRENT_TIMESTAMP', 
-	})
-	public updatedAt: Date;
 }
