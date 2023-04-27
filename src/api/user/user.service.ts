@@ -272,11 +272,11 @@ export class UserService extends MainService {
 			where: {
 				id: payload['id'],
 			},
-			// relations: {
-			// 	userUserOptions: {
-			// 		userOption: true,
-			// 	},
-			// },
+			relations: {
+				userUserOptions: {
+					userOption: true,
+				},
+			},
 		});
 
 		if (!user) {
