@@ -13,7 +13,7 @@ export class FileService extends LocalService {
 		while (i < processedPayload['files'].length) {
 			const buffer = Buffer.from(processedPayload['files'][i]['buffer']);
 			let mimetypeSplit = payload['files'][i].mimetype.split('/'),
-				fileName = processedPayload['files'][i]['originalname'],
+				fileName = processedPayload['forceName'] ?? processedPayload['files'][i]['originalname'],
 				fileNameSplit = fileName.split('.'),
 				dbPath = `${processedPayload['path']}/${fileName}`,
 				destinationPath = this.path(dbPath),
@@ -25,7 +25,6 @@ export class FileService extends LocalService {
 				if (!processedPayload['force']) {
 					throw new MethodNotAllowedException(`Folder "${destinationPath}" already exists.`);
 				}
-				fileName = this.uniqueName(processedPayload['files'][i]['originalname']);
 				fileNameSplit = fileName.split('.');
 				dbPath = `${processedPayload['path']}/${fileName}`;
 				destinationPath = this.path(dbPath);

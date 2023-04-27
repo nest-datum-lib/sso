@@ -37,7 +37,22 @@ export class ManyTcpController extends TcpController {
 		};
 	}
 
+	async validateUpdateContent(options) : Promise<any> {
+		if (!utilsCheckStrId(options['id'])) {
+			throw new MethodNotAllowedException(`Property "id" is nt valid.`);
+		}
+		
+		return {
+			id: options['id'],
+			content: String(options['content'] ?? ''),
+		};
+	}
+
 	async content(payload) {
 		return await this.serviceHandlerWrapper(async () => await this.service.content(await this.validateContent(payload)));
+	}
+
+	async updateContent(payload) {
+		return await this.serviceHandlerWrapper(async () => await this.service.updateContent(await this.validateUpdateContent(payload)));
 	}
 }

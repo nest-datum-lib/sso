@@ -75,6 +75,17 @@ export class MainHttpTcpController extends HttpTcpController {
 		};
 	}
 
+	async validateUpdateContent(options) : Promise<any> {
+		if (!utilsCheckStrId(options['id'])) {
+			throw new MethodNotAllowedException(`Property "id" is nt valid.`);
+		}
+		
+		return {
+			id: options['id'],
+			content: String(options['content'] ?? ''),
+		};
+	}
+
 	@Get('option')
 	async optionMany(
 		@AccessToken() accessToken: string,
@@ -142,16 +153,6 @@ export class MainHttpTcpController extends HttpTcpController {
 		const bodyKeys = Object.keys(body);
 		const entityId = body[bodyKeys[0]];
 
-		console.log('??????', {
-			accessToken,
-			entityOptionId,
-			entityId,
-		}, await this.validateOption({
-			accessToken,
-			entityOptionId,
-			entityId,
-		}));
-
 		return await this.serviceHandlerWrapper(async () => await this.transport.send({
 			name: this.serviceName, 
 			cmd: `${this.entityManyName}.create`,
@@ -175,6 +176,22 @@ export class MainHttpTcpController extends HttpTcpController {
 			accessToken,
 			id,
 			data,
+		})));
+	}
+
+	@Patch(':id/option')
+	async updateContent(
+		@AccessToken() accessToken: string,
+		@Param('id') id: string,
+		@Body('content') content: string,
+	) {
+		return await this.serviceHandlerWrapper(async () => await this.transport.send({
+			name: this.serviceName, 
+			cmd: `${this.entityName}.updateContent`,
+		}, await this.validateUpdateContent({
+			accessToken,
+			id,
+			content,
 		})));
 	}
 }

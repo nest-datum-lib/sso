@@ -27,7 +27,7 @@ export class MainHttpController extends HttpController {
 	protected readonly mainRelationColumnName: string;
 	protected readonly optionRelationColumnName: string;
 
-	async validateOption(options) {
+	async validateOption(options): Promise<any> {
 		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
 			throw new UnauthorizedException(`User is undefined or token is not valid.`)
 		}
@@ -47,7 +47,7 @@ export class MainHttpController extends HttpController {
 		};
 	}
 
-	async validateOptions(options) {
+	async validateOptions(options): Promise<any> {
 		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
 			throw new UnauthorizedException(`User is undefined or token is not valid.`)
 		}
@@ -69,6 +69,17 @@ export class MainHttpController extends HttpController {
 			userId: user['id'],
 			id: options['id'],
 			data: options['data'],
+		};
+	}
+
+	async validateUpdateContent(options) : Promise<any> {
+		if (!utilsCheckStrId(options['id'])) {
+			throw new MethodNotAllowedException(`Property "id" is nt valid.`);
+		}
+
+		return {
+			id: options['id'],
+			content: String(options['content'] ?? ''),
 		};
 	}
 
@@ -147,6 +158,19 @@ export class MainHttpController extends HttpController {
 			accessToken,
 			id,
 			data,
+		})));
+	}
+
+	@Patch(':id/option')
+	async updateContent(
+		@AccessToken() accessToken: string,
+		@Param('id') id: string,
+		@Body('content') content: string,
+	) {
+		return await this.serviceHandlerWrapper(async () => await this.serviceOptionContent.update(await this.validateUpdateContent({
+			accessToken,
+			id,
+			content,
 		})));
 	}
 }

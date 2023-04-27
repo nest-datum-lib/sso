@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { MethodNotAllowedException } from '@nest-datum-common/exceptions';
+import { strId as utilsCheckStrId } from '@nest-datum-utils/check';
 import { FuseService } from '@nest-datum/fuse';
 import { objQueryRunner as utilsCheckObjQueryRunner } from '@nest-datum-utils/check';
 
@@ -124,5 +126,48 @@ export class ManyService extends FuseService {
 
 	protected async contentOutput(payload: object, data: any): Promise<object> {
 		return data;
+	}
+
+	public async updateContent(payload: object = {}): Promise<object> {
+		await this.updateContentBefore(payload);
+
+		const processedPayload = await this.updateContentProperties(payload);
+		const output = await this.updateContentProcess(payload['id'], processedPayload, payload);
+
+		return await this.updateContentOutput(processedPayload, await this.updateContentAfter(payload, processedPayload, output));
+	}
+
+	protected async updateContentBefore(payload: object): Promise<any> {
+		return await super.createBefore(payload);
+	}
+
+	protected async updateContentProperties(payload: object): Promise<object> {
+		if (payload['newId'] && !utilsCheckStrId(payload['newId'])) {
+			throw new MethodNotAllowedException(`Property "newId" is not valid.`);
+		}
+		return await super.updateProperties({ ...payload });
+	}
+
+	protected async updateContentProcess(id: string, processedPayload: object, payload: object): Promise<object> {
+		if (processedPayload['newId']) {
+			processedPayload['id'] = processedPayload['newId'];
+
+			delete processedPayload['newId'];
+		}
+		if (this.withCache === true) {
+			this.repositoryCache.drop({ key: [ this.prefix(), 'many', '*' ] });
+			this.repositoryCache.drop({ key: [ this.prefix(), 'one', { id } ] });
+		}
+		return (utilsCheckObjQueryRunner(this.queryRunner) && this.enableTransactions === true)
+			? await this.queryRunner.manager.update(this.repositoryContentOptionConstructor, id, processedPayload)
+			: await this.repositoryContentOption.update({ id }, processedPayload);
+	}
+
+	protected async updateContentAfter(initialPayload: object, processedPayload: object, data: any): Promise<any> {
+		return await super.after(initialPayload, processedPayload, data);
+	}
+
+	protected async updateContentOutput(payload: object, data: any): Promise<object> {
+		return await super.updateOutput(payload, data);
 	}
 }

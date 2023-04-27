@@ -39,4 +39,9 @@ export class AccessOptionTcpController extends OptionTcpController {
 	async content(payload) {
 		return await super.content(payload);
 	}
+
+	@EventPattern('access.updateContent')
+	async updateContent(payload) {
+		return await super.updateContent(payload);
+	}
 }
