@@ -48,9 +48,4 @@ export class RoleOptionTcpController extends OptionTcpController {
 	async content(payload) {
 		return await super.content(payload);
 	}
-
-	@EventPattern('role.updateContent')
-	async updateContent(payload) {
-		return await super.updateContent(payload);
-	}
 }

@@ -6,6 +6,7 @@ import {
 	Param,
 	UnauthorizedException,
 	ForbiddenException,
+	MethodNotAllowedException,
 } from '@nestjs/common';
 import { TransportService } from '@nest-datum/transport';
 import { MainHttpTcpController } from '@nest-datum/main';
@@ -60,44 +61,45 @@ export class UserHttpTcpController extends MainHttpTcpController {
 	}
 
 	async validateUpdate(options) {
-		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
-			throw new ForbiddenException(`User is undefined or token is not valid.`);
-		}
-		if (options['login'] && !utilsCheckStrFilled(options['login'])) {
-			throw new ForbiddenException(`Property "login" is not valid.`);
-		}
-		if (options['email'] && !utilsCheckStrEmail(options['email'])) {
-			throw new ForbiddenException(`Property "email" is not valid.`);
-		}
-		if (options['password'] && !utilsCheckStrPassword(options['password'])) {
-			throw new ForbiddenException(`Property "email" is not valid.`);
-		}
-		if (options['roleId'] && !utilsCheckStrId(options['roleId'])) {
-			throw new ForbiddenException(`Property "roleId" is not valid.`);
-		}
-		if (options['userStatusId'] && !utilsCheckStrId(options['userStatusId'])) {
-			throw new ForbiddenException(`Property "userStatusId" is not valid.`);
-		}
-		return {
-			...await super.validateUpdate(options),
-			...(options['userStatusId'] && utilsCheckStrId(options['userStatusId'])) 
-				? { userStatusId: options['userStatusId'] } 
-				: {},
-			...(options['roleId'] && utilsCheckStrId(options['roleId'])) 
-				? { roleId: options['roleId'] } 
-				: {},
-			...(options['email'] && utilsCheckStrEmail(options['email'])) 
-				? { email: options['email'] } 
-				: {},
-			...(options['password'] && utilsCheckStrPassword(options['password'])) 
-				? { password: options['password'] } 
-				: {},
+		const output = {
 			...utilsCheckStr(options['emailVerifyKey']) 
 				? { emailVerifyKey: options['emailVerifyKey'] } 
 				: { emailVerifyKey: '' },
-			...(options['login'] && utilsCheckStrFilled(options['login'])) 
-				? { login: options['login'] } 
-				: {},
+		};
+
+		if (utilsCheckExists(options['roleId'])) {
+			if (!utilsCheckStrId(options['roleId'])) {
+				throw new MethodNotAllowedException(`Property "roleId" is not valid.`);
+			}
+			output['roleId'] = options['roleId'];
+		}
+		if (utilsCheckExists(options['userStatusId'])) {
+			if (!utilsCheckStrId(options['userStatusId'])) {
+				throw new MethodNotAllowedException(`Property "userStatusId" is not valid.`);
+			}
+			output['userStatusId'] = options['userStatusId'];
+		}
+		if (utilsCheckExists(options['login'])) {
+			if (!utilsCheckStrFilled(options['login'])) {
+				throw new MethodNotAllowedException(`Property "login" is not valid.`);
+			}
+			output['login'] = options['login'];
+		}
+		if (utilsCheckExists(options['email'])) {
+			if (!utilsCheckStrEmail(options['email'])) {
+				throw new MethodNotAllowedException(`Property "email" is not valid.`);
+			}
+			output['email'] = options['email'];
+		}
+		if (utilsCheckExists(options['password'])) {
+			if (!utilsCheckStrPassword(options['password'])) {
+				throw new MethodNotAllowedException(`Property "password" is not valid.`);
+			}
+			output['password'] = options['password'];
+		}
+		return {
+			...await super.validateUpdate(options),
+			...output,
 		};
 	}
 

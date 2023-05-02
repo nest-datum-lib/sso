@@ -111,9 +111,11 @@ export class UserService extends MainService {
 				userOptionId: 'happ-sso-user-option-lastname',
 				content: lastname,
 			}));
-
-			console.log('000');
-
+			await this.queryRunner.manager.save(Object.assign(new UserUserOption(), {
+				userId: output['id'],
+				userOptionId: 'happ-sso-user-option-avatar',
+				content: '',
+			}));
 			await this.transport.send({ 
 				name: process.env.SERVICE_MAIL,
 				cmd: 'report.create',

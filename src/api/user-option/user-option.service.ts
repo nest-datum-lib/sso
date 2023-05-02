@@ -13,12 +13,15 @@ import { UserOption } from './user-option.entity';
 export class UserOptionService extends OptionService {
 	protected readonly mainRelationColumnName: string = 'userId';
 	protected readonly optionRelationColumnName: string = 'userOptionId';
+	protected readonly optionContentColumnName: string = 'userOptionId';
 	protected readonly repositoryConstructor = UserOption;
 	protected readonly repositoryOptionConstructor = UserUserOption;
+	protected readonly repositoryContentOptionConstructor = UserUserOption;
 
 	constructor(
 		@InjectRepository(UserOption) protected readonly repository: Repository<UserOption>,
 		@InjectRepository(UserUserOption) public readonly repositoryOption: Repository<UserUserOption>,
+		@InjectRepository(UserUserOption) public readonly repositoryContentOption: Repository<UserUserOption>,
 		protected readonly connection: Connection,
 		protected readonly repositoryCache: CacheService,
 	) {

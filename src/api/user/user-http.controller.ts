@@ -24,6 +24,7 @@ import {
 	strPassword as utilsCheckStrPassword,
 	str as utilsCheckStr,
 	arr as utilsCheckArr,
+	objFilled as utilsCheckObjFilled,
 } from '@nest-datum-utils/check';
 import { UserUserOptionService } from '../user-user-option/user-user-option.service';
 import { UserService } from './user.service';
@@ -60,70 +61,76 @@ export class UserHttpController extends HttpController {
 	}
 
 	async validateUpdate(options) {
-		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
-			throw new ForbiddenException(`User is undefined or token is not valid.`);
-		}
-		if (options['login'] && !utilsCheckStrFilled(options['login'])) {
-			throw new ForbiddenException(`Property "login" is not valid.`);
-		}
-		if (options['email'] && !utilsCheckStrEmail(options['email'])) {
-			throw new ForbiddenException(`Property "email" is not valid.`);
-		}
-		if (options['password'] && !utilsCheckStrPassword(options['password'])) {
-			throw new ForbiddenException(`Property "email" is not valid.`);
-		}
-		if (options['roleId'] && !utilsCheckStrId(options['roleId'])) {
-			throw new ForbiddenException(`Property "roleId" is not valid.`);
-		}
-		if (options['userStatusId'] && !utilsCheckStrId(options['userStatusId'])) {
-			throw new ForbiddenException(`Property "userStatusId" is not valid.`);
-		}
-		return {
-			...await super.validateUpdate(options),
-			...(options['userStatusId'] && utilsCheckStrId(options['userStatusId'])) 
-				? { userStatusId: options['userStatusId'] } 
-				: {},
-			...(options['roleId'] && utilsCheckStrId(options['roleId'])) 
-				? { roleId: options['roleId'] } 
-				: {},
-			...(options['email'] && utilsCheckStrEmail(options['email'])) 
-				? { email: options['email'] } 
-				: {},
-			...(options['password'] && utilsCheckStrPassword(options['password'])) 
-				? { password: options['password'] } 
-				: {},
+		const output = {
 			...utilsCheckStr(options['emailVerifyKey']) 
 				? { emailVerifyKey: options['emailVerifyKey'] } 
 				: { emailVerifyKey: '' },
-			...(options['login'] && utilsCheckStrFilled(options['login'])) 
-				? { login: options['login'] } 
-				: {},
+		};
+
+		if (utilsCheckExists(options['roleId'])) {
+			if (!utilsCheckStrId(options['roleId'])) {
+				throw new MethodNotAllowedException(`Property "roleId" is not valid.`);
+			}
+			output['roleId'] = options['roleId'];
+		}
+		if (utilsCheckExists(options['userStatusId'])) {
+			if (!utilsCheckStrId(options['userStatusId'])) {
+				throw new MethodNotAllowedException(`Property "userStatusId" is not valid.`);
+			}
+			output['userStatusId'] = options['userStatusId'];
+		}
+		if (utilsCheckExists(options['login'])) {
+			if (!utilsCheckStrFilled(options['login'])) {
+				throw new MethodNotAllowedException(`Property "login" is not valid.`);
+			}
+			output['login'] = options['login'];
+		}
+		if (utilsCheckExists(options['email'])) {
+			if (!utilsCheckStrEmail(options['email'])) {
+				throw new MethodNotAllowedException(`Property "email" is not valid.`);
+			}
+			output['email'] = options['email'];
+		}
+		if (utilsCheckExists(options['password'])) {
+			if (!utilsCheckStrPassword(options['password'])) {
+				throw new MethodNotAllowedException(`Property "password" is not valid.`);
+			}
+			output['password'] = options['password'];
+		}
+		return {
+			...await super.validateUpdate(options),
+			...output,
 		};
 	}
 
-	async validateOptions(options) {
+	async validateOptions(options): Promise<any> {
+		if (!utilsCheckStrId(options['id'])) {
+			throw new MethodNotAllowedException(`Property "id" is nt valid.`);
+		}
 		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
 			throw new UnauthorizedException(`User is undefined or token is not valid.`)
 		}
 		const user = getUser(options['accessToken']);
-
-		if (!utilsCheckStrId(options['id'])) {
-			throw new MethodNotAllowedException(`Property "id" is nt valid.`);
-		}
-		try {
-			options['data'] = JSON.parse(options['data']);
-		}
-		catch (err) {
-		}
-		if (!utilsCheckArr(options['data'])) {
-			throw new MethodNotAllowedException(`Property "data" is nt valid.`);
-		}
-		return {
+		const output = {
 			accessToken: options['accessToken'],
 			userId: user['id'],
 			id: options['id'],
-			data: options['data'],
 		};
+
+		try {
+			output['data'] = JSON.parse(options['data']);
+		}
+		catch (err) {
+		}
+		if (utilsCheckObjFilled(options['data']) 
+			&& utilsCheckStrId(options['data'][this.optionRelationColumnName ?? 'entityOptionId'])) {
+			output[this.optionRelationColumnName ?? 'entityOptionId'] = options['data'][this.optionRelationColumnName ?? 'entityOptionId'];
+			output['content'] = String(options['data'] ?? '');
+		}
+		else if (!utilsCheckArr(options['data'])) {
+			throw new MethodNotAllowedException(`Property "data" is nt valid.`);
+		}
+		return output;
 	}
 
 	async validateLogin(options) {
@@ -208,17 +215,6 @@ export class UserHttpController extends HttpController {
 		}
 		return {
 			verifyKey: options['verifyKey'],
-		};
-	}
-
-	async validateUpdateContent(options) : Promise<any> {
-		if (!utilsCheckStrId(options['id'])) {
-			throw new MethodNotAllowedException(`Property "id" is nt valid.`);
-		}
-
-		return {
-			id: options['id'],
-			content: String(options['content'] ?? ''),
 		};
 	}
 
@@ -356,19 +352,6 @@ export class UserHttpController extends HttpController {
 			accessToken,
 			id,
 			data,
-		})));
-	}
-
-	@Patch(':id/option')
-	async updateContent(
-		@AccessToken() accessToken: string,
-		@Param('id') id: string,
-		@Body('content') content: string,
-	) {
-		return await this.serviceHandlerWrapper(async () => await this.serviceOptionContent.update(await this.validateUpdateContent({
-			accessToken,
-			id,
-			content,
 		})));
 	}
 }

@@ -40,8 +40,8 @@ export class AccessOptionTcpController extends OptionTcpController {
 		return await super.content(payload);
 	}
 
-	@EventPattern('access.updateContent')
-	async updateContent(payload) {
-		return await super.updateContent(payload);
+	@EventPattern('access.contentUpdate')
+	async contentUpdate(payload) {
+		return await super.contentUpdate(payload);
 	}
 }

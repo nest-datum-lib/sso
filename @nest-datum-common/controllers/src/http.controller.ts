@@ -184,7 +184,6 @@ export class HttpController extends Controller {
 			}
 			output['isDeleted'] = options['isDeleted'];
 		}
-		
 		return { ...output, userId: user['id'] };
 	}
 

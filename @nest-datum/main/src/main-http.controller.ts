@@ -15,6 +15,7 @@ import { AccessToken } from '@nest-datum-common/decorators';
 import { 
 	strId as utilsCheckStrId,
 	arr as utilsCheckArr,
+	objFilled as utilsCheckObjFilled,
 } from '@nest-datum-utils/check';
 import { 
 	checkToken,
@@ -48,35 +49,45 @@ export class MainHttpController extends HttpController {
 	}
 
 	async validateOptions(options): Promise<any> {
+		if (!utilsCheckStrId(options['id'])) {
+			throw new MethodNotAllowedException(`Property "id" is nt valid.`);
+		}
 		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
 			throw new UnauthorizedException(`User is undefined or token is not valid.`)
 		}
 		const user = getUser(options['accessToken']);
-
-		if (!utilsCheckStrId(options['id'])) {
-			throw new MethodNotAllowedException(`Property "id" is nt valid.`);
-		}
-		try {
-			options['data'] = JSON.parse(options['data']);
-		}
-		catch (err) {
-		}
-		if (!utilsCheckArr(options['data'])) {
-			throw new MethodNotAllowedException(`Property "data" is nt valid.`);
-		}
-		return {
+		const output = {
 			accessToken: options['accessToken'],
 			userId: user['id'],
-			id: options['id'],
-			data: options['data'],
 		};
+
+		if (utilsCheckObjFilled(options['data']) 
+			&& utilsCheckStrId(options['data'][this.optionRelationColumnName ?? 'entityOptionId'])) {
+			output[this.optionRelationColumnName ?? 'entityOptionId'] = options['data'][this.optionRelationColumnName ?? 'entityOptionId'];
+			output[this.mainRelationColumnName ?? 'entityId'] = options['id'];
+			output['content'] = String(options['data'] ?? '');
+		}
+		else {
+			try {
+				output['data'] = JSON.parse(options['data']);
+				output['id'] = options['id'];
+			}
+			catch (err) {
+			}
+			if (!utilsCheckArr(options['data'])) {
+				throw new MethodNotAllowedException(`Property "data" is nt valid.`);
+			}
+		}
+		return output;
 	}
 
-	async validateUpdateContent(options) : Promise<any> {
+	async validateContentUpdate(options): Promise<any> {
+		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
+			throw new UnauthorizedException(`User is undefined or token is not valid.`)
+		}
 		if (!utilsCheckStrId(options['id'])) {
 			throw new MethodNotAllowedException(`Property "id" is nt valid.`);
 		}
-
 		return {
 			id: options['id'],
 			content: String(options['content'] ?? ''),
@@ -162,12 +173,12 @@ export class MainHttpController extends HttpController {
 	}
 
 	@Patch(':id/option')
-	async updateContent(
+	async udpateOption(
 		@AccessToken() accessToken: string,
 		@Param('id') id: string,
-		@Body('content') content: string,
+		@Body('content') content,
 	) {
-		return await this.serviceHandlerWrapper(async () => await this.serviceOptionContent.update(await this.validateUpdateContent({
+		return await this.serviceHandlerWrapper(async () => await this.serviceOptionRelation.contentUpdate(await this.validateContentUpdate({
 			accessToken,
 			id,
 			content,

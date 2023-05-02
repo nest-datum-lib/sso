@@ -37,11 +37,13 @@ export class ManyTcpController extends TcpController {
 		};
 	}
 
-	async validateUpdateContent(options) : Promise<any> {
+	async validateContentUpdate(options): Promise<any> {
+		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
+			throw new UnauthorizedException(`User is undefined or token is not valid.`)
+		}
 		if (!utilsCheckStrId(options['id'])) {
 			throw new MethodNotAllowedException(`Property "id" is nt valid.`);
 		}
-		
 		return {
 			id: options['id'],
 			content: String(options['content'] ?? ''),
@@ -52,7 +54,7 @@ export class ManyTcpController extends TcpController {
 		return await this.serviceHandlerWrapper(async () => await this.service.content(await this.validateContent(payload)));
 	}
 
-	async updateContent(payload) {
-		return await this.serviceHandlerWrapper(async () => await this.service.updateContent(await this.validateUpdateContent(payload)));
+	async contentUpdate(payload) {
+		return await this.serviceHandlerWrapper(async () => await this.service.contentUpdate(await this.validateContentUpdate(payload)));
 	}
 }
