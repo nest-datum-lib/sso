@@ -93,8 +93,24 @@ export class ModelService {
 			if (!utilsCheckStrEnvKey(payload['envKey']) && utilsCheckStrName(payload['name'])) {
 				payload['envKey'] = payload['name'];
 			}
-			if (payload['envKey'].indexOf(this.prefix()) !== 0) {
-				payload['envKey'] = `${this.prefix()}_${payload['envKey']}`;
+			const currentServiceName = this.constructor.name
+				.split(/(?=[A-Z])/)
+				.slice(0, -1)
+				.join('_');
+
+			if (payload['envKey'].indexOf(`${process.env.PROJECT_ID}_${process.env.APP_NAME}_${currentServiceName}`) <= 0) {
+				payload['envKey'] = `${process.env.PROJECT_ID}_${process.env.APP_NAME}_${currentServiceName}_${payload['envKey']
+					.replace(new RegExp(process.env.PROJECT_ID, 'g'), '')
+					.replace(new RegExp(process.env.APP_NAME, 'g'), '')
+					.replace(new RegExp(currentServiceName, 'g'), '')}`;
+			}
+			else if (payload['envKey'].indexOf(`${process.env.PROJECT_ID}_${process.env.APP_NAME}`) <= 0) {
+				payload['envKey'] = `${process.env.PROJECT_ID}_${process.env.APP_NAME}_${payload['envKey']
+					.replace(new RegExp(process.env.PROJECT_ID, 'g'), '')
+					.replace(new RegExp(process.env.APP_NAME, 'g'), '')}`;
+			}
+			else if (payload['envKey'].indexOf(process.env.PROJECT_ID) <= 0) {
+				payload['envKey'] = `${process.env.PROJECT_ID}_${payload['envKey'].replace(new RegExp(process.env.PROJECT_ID, 'g'), '')}`;
 			}
 			payload['envKey'] = formatStrToEnv(payload['envKey']);
 		}
