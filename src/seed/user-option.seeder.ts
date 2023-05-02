@@ -45,7 +45,7 @@ export class UserOptionSeeder {
 				envKey: 'HAPP_SSO_USER_OPTION_AVATAR',
 				name: 'Avatar',
 				description: 'User avatar.',
-				dataTypeId: 'happ-data-type-avatar',
+				dataTypeId: 'happ-data-type-select-avatar',
 				isNotDelete: true,
 			}], async (data) => {
 				try {

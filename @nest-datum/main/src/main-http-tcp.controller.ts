@@ -50,34 +50,30 @@ export class MainHttpTcpController extends HttpTcpController {
 		};
 	}
 
-	async validateOptions(options): Promise<any> {
-		if (!utilsCheckStrId(options['id'])) {
-			throw new MethodNotAllowedException(`Property "id" is nt valid.`);
-		}
+	async validateOptions(options) {
 		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
 			throw new UnauthorizedException(`User is undefined or token is not valid.`)
 		}
 		const user = getUser(options['accessToken']);
-		const output = {
-			accessToken: options['accessToken'],
-			userId: user['id'],
-			id: options['id'],
-		};
 
+		if (!utilsCheckStrId(options['id'])) {
+			throw new MethodNotAllowedException(`Property "id" is nt valid.`);
+		}
 		try {
-			output['data'] = JSON.parse(options['data']);
+			options['data'] = JSON.parse(options['data']);
 		}
 		catch (err) {
 		}
-		if (utilsCheckObjFilled(options['data']) 
-			&& utilsCheckStrId(options['data'][this.optionRelationColumnName ?? 'entityOptionId'])) {
-			output[this.optionRelationColumnName ?? 'entityOptionId'] = options['data'][this.optionRelationColumnName ?? 'entityOptionId'];
-			output['content'] = String(options['data'] ?? '');
-		}
-		else if (!utilsCheckArr(options['data'])) {
+		if (!utilsCheckArr(options['data'])) {
 			throw new MethodNotAllowedException(`Property "data" is nt valid.`);
 		}
-		return output;
+
+		return {
+			accessToken: options['accessToken'],
+			userId: user['id'],
+			id: options['id'],
+			data: options['data'],
+		};
 	}
 
 	async validateContentUpdate(options): Promise<any> {
