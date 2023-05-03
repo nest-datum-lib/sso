@@ -48,4 +48,9 @@ export class UserOptionTcpController extends OptionTcpController {
 	async content(payload) {
 		return await super.content(payload);
 	}
+
+	@EventPattern('user.contentUpdate')
+	async contentUpdate(payload) {
+		return await super.contentUpdate(payload);
+	}
 }
