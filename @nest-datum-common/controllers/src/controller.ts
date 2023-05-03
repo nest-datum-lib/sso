@@ -192,7 +192,7 @@ export class Controller {
 				: (await this.serviceHandlerWrapperDefault());
 
 			if (output instanceof Exception) {
-				return output;
+				throw new output['httpExceptionConstructor'](output.message);
 			}
 			else if (output instanceof Error) {
 				throw new FailureException(output.message);
@@ -202,12 +202,6 @@ export class Controller {
 		catch (err) {
 			if (this.serviceLog) {
 				this.serviceLog.create(err);
-			}
-			if (err instanceof Exception) {
-				return {
-					message: err['message'],
-					errorCode: err['errorCode'],
-				};
 			}
 			throw err;
 		}
