@@ -16,6 +16,7 @@ import {
 	NotificationException,
 	NotFoundException,
 	UnauthorizedException,
+	MethodNotAllowedException,
 } from '@nest-datum-common/exceptions';
 import {
 	exists as utilsCheckExists,
@@ -242,6 +243,8 @@ export class TransportService extends RedisService {
 			else if (utilsCheckObj(connectionInstanceResponse) 
 				&& utilsCheckNumericInt(connectionInstanceResponse['errorCode'])) {
 				switch (connectionInstanceResponse['errorCode']) {
+					case 405:
+						throw new MethodNotAllowedException(connectionInstanceResponse['message']);
 					case 404:
 						throw new NotFoundException(connectionInstanceResponse['message']);
 					case 403:
