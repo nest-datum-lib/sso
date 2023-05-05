@@ -8,6 +8,9 @@ import { RoleRoleOptionService } from './role-role-option.service';
 
 @Controller()
 export class RoleRoleOptionTcpController extends BindTcpController {
+	protected readonly mainRelationColumnName: string = 'roleId';
+	protected readonly optionRelationColumnName: string = 'roleOptionId';
+
 	constructor(
 		protected service: RoleRoleOptionService,
 	) {

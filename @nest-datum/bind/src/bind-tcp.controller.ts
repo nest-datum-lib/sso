@@ -10,23 +10,27 @@ import {
 import { strId as utilsCheckStrId } from '@nest-datum-utils/check';
 
 export class BindTcpController extends TcpController {
+	protected readonly mainRelationColumnName: string;
+	protected readonly optionRelationColumnName: string;
+
 	async validateCreate(options) {
 		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
-			throw new UnauthorizedException(`User is undefined or token is not valid.`)
+			throw new UnauthorizedException(`User is undefined or token is not valid.`);
 		}
 		const user = getUser(options['accessToken']);
 
-		if (!utilsCheckStrId(options['entityId'])) {
-			throw new MethodNotAllowedException(`Property "entityId" is not valid.`);
+		if (!utilsCheckStrId(options[this.mainRelationColumnName])) {
+			throw new MethodNotAllowedException(`Property "${this.mainRelationColumnName}" is not valid.`);
 		}
-		if (!utilsCheckStrId(options['entityOptionId'])) {
-			throw new MethodNotAllowedException(`Property "entityOptionId" is not valid.`);
+		if (!utilsCheckStrId(options[this.optionRelationColumnName])) {
+			throw new MethodNotAllowedException(`Property "${this.optionRelationColumnName}" is not valid.`);
 		}
 
 		return {
+			accessToken: options['accessToken'],
 			userId: user['id'],
-			entityId: options['entityId'],
-			entityOptionId: options['entityOptionId'],
+			[this.mainRelationColumnName]: options[this.mainRelationColumnName],
+			[this.optionRelationColumnName]: options[this.optionRelationColumnName],
 		};
 	}
 }

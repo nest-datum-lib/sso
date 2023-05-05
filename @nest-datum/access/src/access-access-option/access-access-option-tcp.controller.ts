@@ -5,6 +5,9 @@ import {
 import { BindTcpController } from '@nest-datum/bind';
 
 export class AccessAccessOptionTcpController extends BindTcpController {
+	protected readonly mainRelationColumnName: string = 'accessId';
+	protected readonly optionRelationColumnName: string = 'accessOptionId';
+	
 	@MessagePattern({ cmd: 'accessOptionRelation.many' })
 	async many(payload) {
 		return await super.many(payload);
