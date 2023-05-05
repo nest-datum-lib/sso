@@ -85,7 +85,10 @@ export class TcpController extends Controller {
 			}
 			console.error(err);
 
-			return err;
+			return {
+				errorCode: err['errorCode'],
+				message: err['message'],
+			};
 		}
 	}
 }
