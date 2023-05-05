@@ -66,6 +66,8 @@ export class User {
 	})
 	public updatedAt: Date;
 
-	@OneToMany(() => UserUserOption, (userUserOption) => userUserOption.user)
+	@OneToMany(() => UserUserOption, (userUserOption) => userUserOption.user, {
+		cascade: true,
+	})
 	public userUserOptions: UserUserOption[];
 }

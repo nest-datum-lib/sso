@@ -7,6 +7,8 @@ import { AccessAccessOption } from '../access-access-option/access-access-option
 
 @Entity()
 export class AccessOption extends AccessOptionBase {
-	@OneToMany(() => AccessAccessOption, (accessAccessOption) => accessAccessOption.accessOption)
+	@OneToMany(() => AccessAccessOption, (accessAccessOption) => accessAccessOption.accessOption, {
+		cascade: true,
+	})
 	public accessAccessOptions: AccessAccessOption[];
 }

@@ -21,13 +21,19 @@ export class UserUserOption {
 	@Column()
 	public userOptionId: string;
 
-	@ManyToOne(() => UserOption, (userOption) => userOption.userUserOptions)
+	@ManyToOne(() => UserOption, (userOption) => userOption.userUserOptions, {
+		onDelete: 'CASCADE',
+		onUpdate: 'CASCADE',
+	})
 	public userOption: UserOption;
 
 	@Column()
 	public userId: string;
 
-	@ManyToOne(() => User, (user) => user.userUserOptions)
+	@ManyToOne(() => User, (user) => user.userUserOptions, {
+		onDelete: 'CASCADE',
+		onUpdate: 'CASCADE',
+	})
 	public user: User;
 
 	@Column('text')

@@ -58,12 +58,18 @@ export class Role {
 	})
 	public updatedAt: Date;
 
-	@OneToMany(() => RoleRoleOption, (roleRoleOption) => roleRoleOption.role)
+	@OneToMany(() => RoleRoleOption, (roleRoleOption) => roleRoleOption.role, {
+		cascade: true,
+	})
 	public roleRoleOptions: RoleRoleOption[];
 
-	@OneToMany(() => RoleRoleRoleOption, (roleRoleRoleOption) => roleRoleRoleOption.role)
+	@OneToMany(() => RoleRoleRoleOption, (roleRoleRoleOption) => roleRoleRoleOption.role, {
+		cascade: true,
+	})
 	public roleRoleRoleOptions: RoleRoleRoleOption[];
 
-	@OneToMany(() => RoleAccess, (roleAccess) => roleAccess.role)
+	@OneToMany(() => RoleAccess, (roleAccess) => roleAccess.role, {
+		cascade: true,
+	})
 	public roleAccesses: RoleAccess[];
 }

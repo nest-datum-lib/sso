@@ -13,13 +13,17 @@ export class RoleRoleRoleOption extends Many {
 	public roleRoleOptionId: string;
 
 	@ManyToOne(() => RoleRoleOption, (roleRoleOption) => roleRoleOption.roleRoleRoleOptions, {
-		onDelete: 'CASCADE'
+		onDelete: 'CASCADE',
+		onUpdate: 'CASCADE',
 	})
 	public roleRoleOption: RoleRoleOption;
 
 	@Column()
 	public roleId: string;
 
-	@ManyToOne(() => Role, (role) => role.roleRoleRoleOptions)
+	@ManyToOne(() => Role, (role) => role.roleRoleRoleOptions, {
+		onDelete: 'CASCADE',
+		onUpdate: 'CASCADE',
+	})
 	public role: Role;
 }

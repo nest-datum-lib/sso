@@ -426,10 +426,10 @@ export class SqlService extends ModelService {
 	}
 
 	protected async dropManyProperties(payload): Promise<object> {
-		if (!utilsCheckStrArr(payload['ids'])) {
-			throw new MethodNotAllowedException(`Property "id" is not valid.`);
+		if (!utilsCheckArr(payload['ids'])) {
+			throw new MethodNotAllowedException(`Property "ids" is not valid.`);
 		}
-		return { ...payload, ids: utilsFormatStrToObj(payload['ids']) };
+		return payload['ids'];
 	}
 
 	protected async dropManyProcess(processedPayload: Array<string>, payload: object): Promise<any> {

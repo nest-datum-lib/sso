@@ -1,7 +1,34 @@
+import { 
+	Exception,
+	FailureException, 
+	UnauthorizedException,
+	MethodNotAllowedException,
+} from '@nest-datum-common/exceptions';
+import { 
+	checkToken,
+	getUser, 
+} from '@nest-datum-common/jwt';
+import { arrFilled as utilsCheckArrFilled } from '@nest-datum-utils/check';
 import { Controller } from './controller';
 
 export class TcpController extends Controller {
 	protected readonly service;
+
+	async validateDropMany(options: object = {}) {
+		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
+			throw new UnauthorizedException(`User is undefined or token is not valid.`);
+		}
+		const user = getUser(options['accessToken']);
+		
+		if (!utilsCheckArrFilled(options['ids'])) {
+			throw new MethodNotAllowedException(`Property "ids" is not valid [1].`);
+		}
+		return {
+			accessToken: options['accessToken'],
+			userId: user['id'],
+			ids: options['ids'],
+		};
+	}
 
 	async many(payload) {
 		return await this.serviceHandlerWrapper(async () => {
@@ -29,5 +56,36 @@ export class TcpController extends Controller {
 
 	async update(payload) {
 		return await this.serviceHandlerWrapper(async () => await this.service.update(await this.validateUpdate(payload)));
+	}
+
+	async serviceHandlerWrapper(callback = () => {}) {
+		try {
+			const output: any = callback
+				? (await callback())
+				: (await this.serviceHandlerWrapperDefault());
+
+			if (output instanceof Exception) {
+				console.error(output);
+
+				return new output['httpExceptionConstructor'](output.message);
+			}
+			else if (output instanceof Error) {
+				console.error(output);
+
+				return new FailureException(output.message);
+			}
+			return output;
+		}
+		catch (err) {
+			if (this.serviceLog) {
+				this.serviceLog.create(err);
+			}
+			if (!(err instanceof Exception)) {
+				throw new FailureException(err.message);
+			}
+			console.error(err);
+
+			return err;
+		}
 	}
 }

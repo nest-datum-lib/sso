@@ -235,7 +235,7 @@ export class TransportService extends RedisService {
 					.pipe(map(response => response)));
 			}
 			catch (err) {
-				throw new NotFoundException(err.message);
+				throw new FailureException(err.message);
 			}
 			if (!utilsCheckExists(connectionInstanceResponse)) {
 				throw new NotFoundException(`Resource not found.`);

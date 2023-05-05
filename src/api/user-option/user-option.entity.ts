@@ -7,6 +7,8 @@ import { UserUserOption } from '../user-user-option/user-user-option.entity';
 
 @Entity()
 export class UserOption extends Option {
-	@OneToMany(() => UserUserOption, (userUserOption) => userUserOption.userOption)
+	@OneToMany(() => UserUserOption, (userUserOption) => userUserOption.userOption, {
+		cascade: true,
+	})
 	public userUserOptions: UserUserOption[];
 }

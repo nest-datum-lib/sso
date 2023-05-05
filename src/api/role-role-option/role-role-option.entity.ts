@@ -14,15 +14,23 @@ export class RoleRoleOption extends Bind {
 	@Column()
 	public roleOptionId: string;
 
-	@ManyToOne(() => RoleOption, (roleOption) => roleOption.roleRoleOptions)
+	@ManyToOne(() => RoleOption, (roleOption) => roleOption.roleRoleOptions, {
+		onDelete: 'CASCADE',
+		onUpdate: 'CASCADE',
+	})
 	public roleOption: RoleOption;
 
 	@Column()
 	public roleId: string;
 
-	@ManyToOne(() => Role, (role) => role.roleRoleOptions)
+	@ManyToOne(() => Role, (role) => role.roleRoleOptions, {
+		onDelete: 'CASCADE',
+		onUpdate: 'CASCADE',
+	})
 	public role: Role;
 
-	@OneToMany(() => RoleRoleRoleOption, (roleRoleRoleOption) => roleRoleRoleOption.roleRoleOption)
+	@OneToMany(() => RoleRoleRoleOption, (roleRoleRoleOption) => roleRoleRoleOption.roleRoleOption, {
+		cascade: true,
+	})
 	public roleRoleRoleOptions: RoleRoleRoleOption[];
 }

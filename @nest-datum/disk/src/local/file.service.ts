@@ -13,7 +13,7 @@ export class FileService extends LocalService {
 		while (i < processedPayload['files'].length) {
 			const buffer = Buffer.from(processedPayload['files'][i]['buffer']);
 			let mimetypeSplit = payload['files'][i].mimetype.split('/'),
-				fileName = processedPayload['forceName'] ?? processedPayload['files'][i]['originalname'],
+				fileName = processedPayload['forceName'] ?? Buffer.from(processedPayload['files'][i]['originalname'], 'latin1').toString('utf-8'),
 				fileNameSplit = fileName.split('.'),
 				dbPath = `${processedPayload['path']}/${fileName}`,
 				destinationPath = this.path(dbPath),
