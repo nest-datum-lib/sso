@@ -25,6 +25,8 @@ export class RoleHttpTcpController extends MainHttpTcpController {
 	protected readonly serviceName: string = process.env.SERVICE_SSO;
 	protected readonly entityName: string = 'role';
 	protected readonly entityManyName: string = 'roleOptionRelation';
+	protected readonly mainRelationColumnName: string = 'roleId';
+	protected readonly optionRelationColumnName: string = 'roleOptionId';
 
 	constructor(
 		protected transport: TransportService,

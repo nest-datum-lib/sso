@@ -34,6 +34,8 @@ export class UserHttpTcpController extends MainHttpTcpController {
 	protected readonly serviceName: string = process.env.SERVICE_SSO;
 	protected readonly entityName: string = 'user';
 	protected readonly entityManyName: string = 'userOptionRelation';
+	protected readonly mainRelationColumnName: string = 'userId';
+	protected readonly optionRelationColumnName: string = 'userOptionId';
 
 	constructor(
 		protected transport: TransportService,

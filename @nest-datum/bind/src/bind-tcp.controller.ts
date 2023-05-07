@@ -1,8 +1,5 @@
 import { TcpController } from '@nest-datum-common/controllers';
-import { 
-	MethodNotAllowedException,
-	UnauthorizedException, 
-} from '@nest-datum-common/exceptions';
+import { MethodNotAllowedException } from '@nest-datum-common/exceptions';
 import { 
 	checkToken,
 	getUser, 
@@ -14,11 +11,6 @@ export class BindTcpController extends TcpController {
 	protected readonly optionRelationColumnName: string;
 
 	async validateCreate(options) {
-		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
-			throw new UnauthorizedException(`User is undefined or token is not valid.`);
-		}
-		const user = getUser(options['accessToken']);
-
 		if (!utilsCheckStrId(options[this.mainRelationColumnName])) {
 			throw new MethodNotAllowedException(`Property "${this.mainRelationColumnName}" is not valid.`);
 		}
@@ -27,10 +19,19 @@ export class BindTcpController extends TcpController {
 		}
 
 		return {
-			accessToken: options['accessToken'],
-			userId: user['id'],
 			[this.mainRelationColumnName]: options[this.mainRelationColumnName],
 			[this.optionRelationColumnName]: options[this.optionRelationColumnName],
+			...await super.validateCreate(options),
 		};
+	}
+
+	async validateUpdate(options) {
+		if (!utilsCheckStrId(options[this.mainRelationColumnName])) {
+			throw new MethodNotAllowedException(`Property "${this.mainRelationColumnName}" is not valid.`);
+		}
+		if (!utilsCheckStrId(options[this.optionRelationColumnName])) {
+			throw new MethodNotAllowedException(`Property "${this.optionRelationColumnName}" is not valid.`);
+		}
+		return await super.validateUpdate(options);
 	}
 }
