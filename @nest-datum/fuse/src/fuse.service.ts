@@ -41,8 +41,8 @@ export class FuseService extends PrimaryService {
 			: String(processedPayload);
 
 		if (this.withCache === true) {
-			this.repositoryCache.drop({ key: [ this.prefix(), 'many', '*' ] });
-			this.repositoryCache.drop({ key: [ this.prefix(), 'one', { id } ] });
+			this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'many', '*' ] });
+			this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'one', { id } ] });
 		}
 		if (!this.withTwoStepRemoval) {
 			return await this.dropProcessForever(id);
@@ -69,15 +69,15 @@ export class FuseService extends PrimaryService {
 	protected async dropManyProcess(processedPayload: Array<string>, payload: object): Promise<any> {
 		if (!this.withTwoStepRemoval) {
 			if (this.withCache === true) {
-				this.repositoryCache.drop({ key: [ this.prefix(), 'many', '*' ] });
-				this.repositoryCache.drop({ key: [ this.prefix(), 'one', '*' ] });
+				this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'many', '*' ] });
+				this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'one', '*' ] });
 			}
 			return await this.dropManyProcessForever(processedPayload);
 		}
 		return await utilsLoopAsync(processedPayload, (async (id) => {
 			if (this.withCache === true) {
-				this.repositoryCache.drop({ key: [ this.prefix(), 'many', '*' ] });
-				this.repositoryCache.drop({ key: [ this.prefix(), 'one', { id } ] });
+				this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'many', '*' ] });
+				this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'one', { id } ] });
 			}
 			const entity = await this.repository.findOne({
 				select: {

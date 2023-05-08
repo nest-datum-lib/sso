@@ -20,8 +20,8 @@ export class ManyService extends FuseService {
 	protected readonly connection;
 
 	protected async dropProcessForever(id): Promise<any> {
-		this.repositoryCache.drop({ key: [ this.prefix(), 'many', '*' ] });
-		this.repositoryCache.drop({ key: [ this.prefix(), 'one', { id } ] });
+		this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'many', '*' ] });
+		this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'one', { id } ] });
 
 		if (utilsCheckObjQueryRunner(this.queryRunner) && this.enableTransactions === true) {
 			await this.queryRunner.manager.delete(this.repositoryOptionConstructor, { [this.optionRelationColumnName]: id });
@@ -156,8 +156,8 @@ export class ManyService extends FuseService {
 			delete processedPayload['newId'];
 		}
 		if (this.withCache === true) {
-			this.repositoryCache.drop({ key: [ this.prefix(), 'many', '*' ] });
-			this.repositoryCache.drop({ key: [ this.prefix(), 'one', { id } ] });
+			this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'many', '*' ] });
+			this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'one', { id } ] });
 		}
 		return (utilsCheckObjQueryRunner(this.queryRunner) && this.enableTransactions === true)
 			? await this.queryRunner.manager.update(this.repositoryContentOptionConstructor, id, processedPayload)

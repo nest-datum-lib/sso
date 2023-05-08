@@ -55,13 +55,13 @@ export class BindService extends FuseService {
 	}
 
 	protected async createBefore(payload): Promise<any> {
-		this.repositoryCache.drop({ key: [ this.prefix(), 'many', '*' ] });
+		this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'many', '*' ] });
 
 		return await super.createBefore(payload);
 	}
 
 	protected async updateBefore(payload): Promise<any> {
-		this.repositoryCache.drop({ key: [ this.prefix(), 'many', '*' ] });
+		this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'many', '*' ] });
 
 		return await super.updateBefore(payload);
 	}

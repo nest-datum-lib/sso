@@ -86,7 +86,7 @@ export class UserService extends MainService {
 		try {
 			await this.startQueryRunnerManager();
 
-			this.repositoryCache.drop({ key: [ this.prefix(), 'many', '*' ] });
+			this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'many', '*' ] });
 
 			const firstname = payload['firstname'];
 			const lastname = payload['lastname'];
@@ -162,8 +162,8 @@ export class UserService extends MainService {
 		if (!user) {
 			throw new NotFoundException(`User with email "${payload['email']}" not found.`);
 		}
-		this.repositoryCache.drop({ key: [ this.prefix(), 'many', '*' ] });
-		this.repositoryCache.drop({ key: [ this.prefix(), 'one', { id: user['id'] } ] });
+		this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'many', '*' ] });
+		this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'one', { id: user['id'] } ] });
 		
 		if (user['emailVerifiedAt']) {
 			throw new MethodNotAllowedException(`Current account already verified.`);

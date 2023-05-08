@@ -11,7 +11,7 @@ export class ModelService {
 	protected name: string;
 
 	protected prefix(keyName?: string): string {
-		return `${process.env.USER_ID}|${process.env.PROJECT_ID}|${process.env.APP_NAME}|${(this.name = (this.name ?? this.constructor.name))}${keyName ? ('|'+ keyName) : ''}`;
+		return `${process.env.USER_ID}|${process.env.PROJECT_ID}|${(this.name = (this.name ?? this.constructor.name))}${keyName ? ('|'+ keyName) : ''}`;
 	}
 
 	protected async before(payload): Promise<any> {

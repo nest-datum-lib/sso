@@ -249,7 +249,7 @@ export class SqlService extends ModelService {
 
 	protected async manyProcess(processedPayload: object, payload: object): Promise<Array<Array<any> | number>> {
 		if (this.withCache === true) {
-			const cachedData = await this.repositoryCache.one({ key: [ this.prefix(), 'many', processedPayload ] });
+			const cachedData = await this.repositoryCache.one({ key: [ this.prefix(process.env.APP_NAME), 'many', processedPayload ] });
 
 			if (cachedData) {
 				return cachedData;
@@ -259,7 +259,7 @@ export class SqlService extends ModelService {
 		const output = await this.repository.findAndCount(condition);
 
 		if (this.withCache === true) {
-			await this.repositoryCache.create({ key: [ this.prefix(), 'many', processedPayload ], output });
+			await this.repositoryCache.create({ key: [ this.prefix(process.env.APP_NAME), 'many', processedPayload ], output });
 		}
 		return output;
 	}
@@ -273,7 +273,7 @@ export class SqlService extends ModelService {
 
 	protected async oneProcess(processedPayload: object, payload: object): Promise<any> {
 		if (this.withCache === true) {
-			const cachedData = await this.repositoryCache.one({ key: [ this.prefix(), 'one', { id: processedPayload['id'] } ] });
+			const cachedData = await this.repositoryCache.one({ key: [ this.prefix(process.env.APP_NAME), 'one', { id: processedPayload['id'] } ] });
 
 			if (cachedData) {
 				return cachedData;
@@ -282,7 +282,7 @@ export class SqlService extends ModelService {
 		const output = await this.repository.findOne(await this.findOne(processedPayload));
 
 		if (output && this.withCache === true) {
-			await this.repositoryCache.create({ key: [ this.prefix(), 'one', { id: processedPayload['id'] } ], output });
+			await this.repositoryCache.create({ key: [ this.prefix(process.env.APP_NAME), 'one', { id: processedPayload['id'] } ], output });
 		}
 		if (!output) {
 			return new NotFoundException('Entity is undefined.');
@@ -330,7 +330,7 @@ export class SqlService extends ModelService {
 	protected async createProcess(processedPayload: object, payload: object): Promise<object> {
 		try {
 			if (this.withCache === true) {
-				this.repositoryCache.drop({ key: [ this.prefix(), 'many', '*' ] });
+				this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'many', '*' ] });
 			}
 			return (utilsCheckObjQueryRunner(this.queryRunner) && this.enableTransactions === true)
 				? await this.queryRunner.manager.save(Object.assign(new this.repositoryConstructor(), processedPayload))
@@ -383,8 +383,8 @@ export class SqlService extends ModelService {
 			delete processedPayload['newId'];
 		}
 		if (this.withCache === true) {
-			this.repositoryCache.drop({ key: [ this.prefix(), 'many', '*' ] });
-			this.repositoryCache.drop({ key: [ this.prefix(), 'one', { id } ] });
+			this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'many', '*' ] });
+			this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'one', { id } ] });
 		}
 		return (utilsCheckObjQueryRunner(this.queryRunner) && this.enableTransactions === true)
 			? await this.queryRunner.manager.update(this.repositoryConstructor, id, processedPayload)
@@ -409,8 +409,8 @@ export class SqlService extends ModelService {
 			: String(processedPayload);
 
 		if (this.withCache === true) {
-			this.repositoryCache.drop({ key: [ this.prefix(), 'many', '*' ] });
-			this.repositoryCache.drop({ key: [ this.prefix(), 'one', { id } ] });
+			this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'many', '*' ] });
+			this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'one', { id } ] });
 		}
 		return (utilsCheckObjQueryRunner(this.queryRunner) && this.enableTransactions === true)
 			? await this.queryRunner.manager.delete(this.repositoryConstructor, id)
@@ -434,12 +434,12 @@ export class SqlService extends ModelService {
 
 	protected async dropManyProcess(processedPayload: Array<string>, payload: object): Promise<any> {
 		if (this.withCache === true) {
-			this.repositoryCache.drop({ key: [ this.prefix(), 'many', '*' ] });
+			this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'many', '*' ] });
 
 			let i = 0;
 
 			while (i < processedPayload['ids'].length) {
-				this.repositoryCache.drop({ key: [ this.prefix(), 'one', { id: processedPayload['ids'][i] } ] });
+				this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'one', { id: processedPayload['ids'][i] } ] });
 				i++;
 			}
 		}
