@@ -153,15 +153,11 @@ export class UserService extends MainService {
 	}
 
 	async verify(payload): Promise<any> {
-		console.log('payload', payload);
-
 		const user = await this.repository.findOne({
 			where: {
 				emailVerifyKey: payload['verifyKey'],
 			},
 		});
-
-		console.log('user', user);
 
 		if (!user) {
 			throw new NotFoundException(`User not found.`);
