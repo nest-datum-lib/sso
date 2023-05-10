@@ -153,14 +153,18 @@ export class UserService extends MainService {
 	}
 
 	async verify(payload): Promise<any> {
+		console.log('payload', payload);
+
 		const user = await this.repository.findOne({
 			where: {
 				emailVerifyKey: payload['verifyKey'],
 			},
 		});
 
+		console.log('user', user);
+
 		if (!user) {
-			throw new NotFoundException(`User with email "${payload['email']}" not found.`);
+			throw new NotFoundException(`User not found.`);
 		}
 		this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'many', '*' ] });
 		this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'one', { id: user['id'] } ] });
