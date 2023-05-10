@@ -116,6 +116,36 @@ export class UserService extends MainService {
 				userOptionId: 'happ-sso-user-option-avatar',
 				content: '',
 			}));
+			await this.queryRunner.manager.save(Object.assign(new UserUserOption(), {
+				userId: output['id'],
+				userOptionId: 'happ-sso-user-option-facebook',
+				content: '',
+			}));
+			await this.queryRunner.manager.save(Object.assign(new UserUserOption(), {
+				userId: output['id'],
+				userOptionId: 'happ-sso-user-option-linkedin',
+				content: '',
+			}));
+			await this.queryRunner.manager.save(Object.assign(new UserUserOption(), {
+				userId: output['id'],
+				userOptionId: 'happ-sso-user-option-site',
+				content: '',
+			}));
+			await this.queryRunner.manager.save(Object.assign(new UserUserOption(), {
+				userId: output['id'],
+				userOptionId: 'happ-sso-user-option-phone',
+				content: '',
+			}));
+			await this.queryRunner.manager.save(Object.assign(new UserUserOption(), {
+				userId: output['id'],
+				userOptionId: 'happ-sso-user-option-position',
+				content: '',
+			}));
+			await this.queryRunner.manager.save(Object.assign(new UserUserOption(), {
+				userId: output['id'],
+				userOptionId: 'happ-sso-user-option-location',
+				content: '',
+			}));
 			await this.transport.send({ 
 				name: process.env.SERVICE_MAIL,
 				cmd: 'report.create',
