@@ -84,6 +84,7 @@ export class MainHttpTcpController extends HttpTcpController {
 			throw new MethodNotAllowedException(`Property "id" is nt valid.`);
 		}
 		return {
+			accessToken: options['accessToken'],
 			id: options['id'],
 			content: String(options['content'] ?? ''),
 		};
