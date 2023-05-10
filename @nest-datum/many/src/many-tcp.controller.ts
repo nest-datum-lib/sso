@@ -38,6 +38,8 @@ export class ManyTcpController extends TcpController {
 	}
 
 	async validateContentUpdate(options): Promise<any> {
+		console.log('options', options);
+
 		if (!checkToken(options['accessToken'], process.env.JWT_SECRET_ACCESS_KEY)) {
 			throw new UnauthorizedException(`User is undefined or token is not valid.`)
 		}
