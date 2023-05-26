@@ -270,7 +270,7 @@ export class SqlService extends ModelService {
 					\`value\`,
 					\`createdAt\`,
 					\`updatedAt\`
-				FROM \`field_content\` 
+				FROM \`${this.repository.metadata.tableName}\` 
 				${filterKeys.length > 0
 					? `WHERE ${filterKeys.map((key) => utilsCheckArrFilled(processedPayload['filter'][key])
 						? `(${processedPayload['filter'][key].map((item) => `\`${key}\` = "${item}"`).join('OR')})`
