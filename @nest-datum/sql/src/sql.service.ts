@@ -271,7 +271,6 @@ export class SqlService extends ModelService {
 						? `(${processedPayload['filter'][key].map((item) => `\`${key}\` = "${item}"`).join('OR')})`
 						: `\`${key}\` = "${processedPayload['filter'][key]}"`).join('AND')}`
 					: ''}
-				${isUnique ? `GROUP BY \`value\`` : ''}
 				${sortKeys.length > 0
 					? `ORDER BY ${sortKeys.map((key) => `\`${key}\` ${processedPayload['sort'][key]}`).join(',')}`
 					: ''}
