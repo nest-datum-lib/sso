@@ -255,6 +255,43 @@ export class SqlService extends ModelService {
 				return cachedData;
 			}
 		}
+		const isUnique = (processedPayload['filter'] || {})['isUnique'];
+
+		delete (processedPayload['filter'] || {})['isUnique'];
+
+		if (isUnique) {
+			const filterKeys = Object.keys(processedPayload['filter'] || {});
+			const sortKeys = Object.keys(processedPayload['sort'] || {});
+			const requestData = await this.connection.query(`SELECT
+					\`id\`,
+					\`userId\`,
+					\`fieldId\`,
+					\`contentId\`,
+					\`value\`,
+					\`createdAt\`,
+					\`updatedAt\`
+				FROM \`field_content\` 
+				${filterKeys.length > 0
+					? `WHERE ${filterKeys.map((key) => utilsCheckArrFilled(processedPayload['filter'][key])
+						? `(${processedPayload['filter'][key].map((item) => `\`${key}\` = "${item}"`).join('OR')})`
+						: `\`${key}\` = "${processedPayload['filter'][key]}"`).join('AND')}`
+					: ''}
+				${isUnique ? `GROUP BY \`value\`` : ''}
+				${sortKeys.length > 0
+					? `ORDER BY ${sortKeys.map((key) => `\`${key}\` ${processedPayload['sort'][key]}`).join(',')}`
+					: ''}
+				${processedPayload['page']
+					? `LIMIT ${processedPayload['page'] - 1}${processedPayload['limit']
+						? ``
+						: ',20'}`
+					: ''}${processedPayload['limit']
+						? (processedPayload['page']
+							? `,${processedPayload['limit']}`
+							: `LIMIT ${processedPayload['limit']}`)
+						: ''};`);
+			
+			return [ requestData, requestData.length ];
+		}
 		const condition = await this.findMany(processedPayload);
 		const output = await this.repository.findAndCount(condition);
 
