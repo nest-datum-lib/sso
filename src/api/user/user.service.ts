@@ -416,7 +416,10 @@ export class UserService extends MainService {
 				FROM \`user\` 
 				LEFT JOIN \`user_user_option\`
 				ON \`user\`.\`id\` = \`user_user_option\`.\`userId\`
-				WHERE \`user_user_option\`.\`userOptionId\` = "${processedPayload['filter']['userUserOptions']['userOptionId']}"
+				WHERE 
+					\`user_user_option\`.\`userOptionId\` = "${processedPayload['filter']['userUserOptions']['userOptionId']}"
+					AND
+					\`user_user_option\`.\`content\` != ""
 				GROUP BY \`user_user_option\`.\`content\`
 				${sortKeys.length > 0
 					? `ORDER BY ${sortKeys.map((key) => `\`${key}\` ${processedPayload['sort'][key]}`).join(',')}`
