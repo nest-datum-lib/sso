@@ -358,6 +358,47 @@ export class UserService extends MainService {
 			const sortKeys = Object.keys(processedPayload['sort'] || {});
 			const columns = this.manyGetColumns();
 			const columnsKeys = Object.keys(this.manyGetColumns());
+
+			console.log('#############', `SELECT
+					\`user\`.\`id\` AS \`userId\`,
+					\`user\`.\`roleId\` AS \`userRoleId\`,
+					\`user\`.\`userStatusId\` AS \`userUserStatusId\`,
+					\`user\`.\`email\` AS \`userEmail\`,
+					\`user\`.\`login\` AS \`userlogin\`,
+					\`user\`.\`isNotDelete\` AS \`userIsNotDelete\`,
+					\`user\`.\`isDeleted\` AS \`userIsDeleted\`,
+					\`user\`.\`createdAt\` AS \`userCreatedAt\`,
+					\`user\`.\`updatedAt\` AS \`userUpdatedAt\`,
+					\`user_user_option\`.\`id\` AS \`userUserOptionId\`,
+					\`user_user_option\`.\`parentId\` AS \`userUserOptionParentId\`,
+					\`user_user_option\`.\`userOptionId\` AS \`userUserOptionUserOptionId\`,
+					\`user_user_option\`.\`userId\` AS \`userUserOptionUserId\`,
+					\`user_user_option\`.\`content\` AS \`userUserOptionContent\`,
+					\`user_user_option\`.\`isDeleted\` AS \`userUserOptionIsDeleted\`,
+					\`user_user_option\`.\`createdAt\` AS \`userUserOptionCreatedAt\`,
+					\`user_user_option\`.\`updatedAt\` AS \`userUserOptionUpdatedAt\`
+				FROM \`user\` 
+				LEFT JOIN \`user_user_option\`
+				ON \`user\`.\`id\` = \`user_user_option\`.\`userId\`
+				${filterKeys.length > 0
+					? `WHERE ${filterKeys.map((key) => utilsCheckArrFilled(processedPayload['filter'][key])
+						? `(${processedPayload['filter'][key].map((item) => `\`${key}\` = "${item}"`).join('OR')})`
+						: `\`${key}\` = "${processedPayload['filter'][key]}"`).join('AND')}`
+					: ''}
+				GROUP BY \`user_user_option\`.\`content\`
+				${sortKeys.length > 0
+					? `ORDER BY ${sortKeys.map((key) => `\`${key}\` ${processedPayload['sort'][key]}`).join(',')}`
+					: ''}
+				${processedPayload['page']
+					? `LIMIT ${processedPayload['page'] - 1}${processedPayload['limit']
+						? ``
+						: ',20'}`
+					: ''}${processedPayload['limit']
+						? (processedPayload['page']
+							? `,${processedPayload['limit']}`
+							: `LIMIT ${processedPayload['limit']}`)
+						: ''};`);
+
 			const requestData = await this.connection.query(`SELECT
 					\`user\`.\`id\` AS \`userId\`,
 					\`user\`.\`roleId\` AS \`userRoleId\`,
