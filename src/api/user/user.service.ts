@@ -7,6 +7,7 @@ import {
 import {
 	arrFilled as utilsCheckArrFilled,
 	objFilled as utilsCheckObjFilled,
+	strIdExists as utilsCheckStrIdExists,
 } from '@nest-datum-utils/check';
 import {
 	FailureException,
@@ -350,27 +351,40 @@ export class UserService extends MainService {
 		console.log('>>>>>>>>>', processedPayload['filter']);
 
 		if (isUnique
-			&& processedPayload['filter']
-			&& processedPayload['filter']['userUserOptions']) {
+			&& utilsCheckObjFilled(processedPayload['filter'])
+			&& utilsCheckObjFilled(processedPayload['filter']['userUserOptions'])
+			&& utilsCheckStrIdExists(processedPayload['filter']['userUserOptions']['userOptionId'])) {
 			const filterKeys = Object.keys(processedPayload['filter'] || {});
 			const sortKeys = Object.keys(processedPayload['sort'] || {});
 			const columns = this.manyGetColumns();
 			const columnsKeys = Object.keys(this.manyGetColumns());
 			const requestData = await this.connection.query(`SELECT
-					${columnsKeys.map((columnKey) => `\`${columnKey}\``).join(',')}
+					\`user\`.\`id\` AS \`userId\`,
+					\`user\`.\`roleId\` AS \`userRoleId\`,
+					\`user\`.\`userStatusId\` AS \`userUserStatusId\`,
+					\`user\`.\`email\` AS \`userEmail\`,
+					\`user\`.\`login\` AS \`userlogin\`,
+					\`user\`.\`isNotDelete\` AS \`userIsNotDelete\`,
+					\`user\`.\`isDeleted\` AS \`userIsDeleted\`,
+					\`user\`.\`createdAt\` AS \`userCreatedAt\`,
+					\`user\`.\`updatedAt\` AS \`userUpdatedAt\`,
+					\`userUserOption\`.\`id\` AS \`userUserOptionId\`,
+					\`userUserOption\`.\`parentId\` AS \`userUserOptionParentId\`,
+					\`userUserOption\`.\`userOptionId\` AS \`userUserOptionUserOptionId\`,
+					\`userUserOption\`.\`userId\` AS \`userUserOptionUserId\`,
+					\`userUserOption\`.\`content\` AS \`userUserOptionContent\`,
+					\`userUserOption\`.\`isDeleted\` AS \`userUserOptionIsDeleted\`,
+					\`userUserOption\`.\`createdAt\` AS \`userUserOptionCreatedAt\`,
+					\`userUserOption\`.\`updatedAt\` AS \`userUserOptionUpdatedAt\`
 				FROM \`${this.repository.metadata.tableName}\` 
+				LEFT JOIN \`userUserOption\`
+				ON \`user\`.\`id\` = \`userUserOption\`.\`userId\`
 				${filterKeys.length > 0
 					? `WHERE ${filterKeys.map((key) => utilsCheckArrFilled(processedPayload['filter'][key])
 						? `(${processedPayload['filter'][key].map((item) => `\`${key}\` = "${item}"`).join('OR')})`
 						: `\`${key}\` = "${processedPayload['filter'][key]}"`).join('AND')}`
 					: ''}
-				${isUnique 
-					? (columns['value']
-						? `GROUP BY \`value\`` 
-						: (columns['content']
-							? `GROUP BY \`content\``
-							: ''))
-					: ''}
+				GROUP BY \`userUserOption\`.\`content\`
 				${sortKeys.length > 0
 					? `ORDER BY ${sortKeys.map((key) => `\`${key}\` ${processedPayload['sort'][key]}`).join(',')}`
 					: ''}
