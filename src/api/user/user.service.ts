@@ -353,7 +353,7 @@ export class UserService extends MainService {
 		if (isUnique
 			&& utilsCheckObjFilled(processedPayload['filter'])
 			&& utilsCheckObjFilled(processedPayload['filter']['userUserOptions'])
-			&& utilsCheckStrIdExists(processedPayload['filter']['userUserOptions']['userUserOptionUserOptionId'])) {
+			&& utilsCheckStrIdExists(processedPayload['filter']['userUserOptions']['userOptionId'])) {
 			const filterKeys = Object.keys(processedPayload['filter'] || {});
 			const sortKeys = Object.keys(processedPayload['sort'] || {});
 			const columns = this.manyGetColumns();
@@ -371,7 +371,7 @@ export class UserService extends MainService {
 					\`user\`.\`updatedAt\` AS \`userUpdatedAt\`,
 					\`user_user_option\`.\`id\` AS \`userUserOptionId\`,
 					\`user_user_option\`.\`parentId\` AS \`userUserOptionParentId\`,
-					\`user_user_option\`.\`userOptionId\` AS \`userUserOptionUserOptionId\`,
+					\`user_user_option\`.\`userOptionId\` AS \`userOptionId\`,
 					\`user_user_option\`.\`userId\` AS \`userUserOptionUserId\`,
 					\`user_user_option\`.\`content\` AS \`userUserOptionContent\`,
 					\`user_user_option\`.\`isDeleted\` AS \`userUserOptionIsDeleted\`,
@@ -380,11 +380,7 @@ export class UserService extends MainService {
 				FROM \`user\` 
 				LEFT JOIN \`user_user_option\`
 				ON \`user\`.\`id\` = \`user_user_option\`.\`userId\`
-				${filterKeys.length > 0
-					? `WHERE ${filterKeys.map((key) => utilsCheckArrFilled(processedPayload['filter'][key])
-						? `(${processedPayload['filter'][key].map((item) => `\`${key}\` = "${item}"`).join('OR')})`
-						: `\`${key}\` = "${processedPayload['filter'][key]}"`).join('AND')}`
-					: ''}
+				WHERE \`user_user_option\`.\`userOptionId\` = "${processedPayload['filter']['userUserOptions']['userOptionId']}"
 				GROUP BY \`user_user_option\`.\`content\`
 				${sortKeys.length > 0
 					? `ORDER BY ${sortKeys.map((key) => `\`${key}\` ${processedPayload['sort'][key]}`).join(',')}`
@@ -420,11 +416,7 @@ export class UserService extends MainService {
 				FROM \`user\` 
 				LEFT JOIN \`user_user_option\`
 				ON \`user\`.\`id\` = \`user_user_option\`.\`userId\`
-				${filterKeys.length > 0
-					? `WHERE ${filterKeys.map((key) => utilsCheckArrFilled(processedPayload['filter'][key])
-						? `(${processedPayload['filter'][key].map((item) => `\`${key}\` = "${item}"`).join('OR')})`
-						: `\`${key}\` = "${processedPayload['filter'][key]}"`).join('AND')}`
-					: ''}
+				WHERE \`user_user_option\`.\`userOptionId\` = "${processedPayload['filter']['userUserOptions']['userOptionId']}"
 				GROUP BY \`user_user_option\`.\`content\`
 				${sortKeys.length > 0
 					? `ORDER BY ${sortKeys.map((key) => `\`${key}\` ${processedPayload['sort'][key]}`).join(',')}`
