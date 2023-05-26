@@ -148,7 +148,7 @@ export class UserService extends MainService {
 			await this.queryRunner.manager.save(Object.assign(new UserUserOption(), {
 				userId: output['id'],
 				userOptionId: 'happ-sso-user-option-location',
-				content: String(location ?? ''),,
+				content: String(location ?? ''),
 			}));
 			await this.transport.send({ 
 				name: process.env.SERVICE_MAIL,
