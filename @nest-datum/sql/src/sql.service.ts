@@ -262,14 +262,22 @@ export class SqlService extends ModelService {
 		if (isUnique) {
 			const filterKeys = Object.keys(processedPayload['filter'] || {});
 			const sortKeys = Object.keys(processedPayload['sort'] || {});
-			const columnKeys = Object.keys(this.manyGetColumns());
+			const columns = this.manyGetColumns();
+			const columnsKeys = Object.keys(this.manyGetColumns());
 			const requestData = await this.connection.query(`SELECT
-					${columnKeys.map((columnKey) => `\`${columnKey}\``).join(',')}
+					${columnsKeys.map((columnKey) => `\`${columnKey}\``).join(',')}
 				FROM \`${this.repository.metadata.tableName}\` 
 				${filterKeys.length > 0
 					? `WHERE ${filterKeys.map((key) => utilsCheckArrFilled(processedPayload['filter'][key])
 						? `(${processedPayload['filter'][key].map((item) => `\`${key}\` = "${item}"`).join('OR')})`
 						: `\`${key}\` = "${processedPayload['filter'][key]}"`).join('AND')}`
+					: ''}
+				${isUnique 
+					? (columns['value']
+						? `GROUP BY \`value\`` 
+						: (columns['content']
+							? `GROUP BY \`content\``
+							: ''))
 					: ''}
 				${sortKeys.length > 0
 					? `ORDER BY ${sortKeys.map((key) => `\`${key}\` ${processedPayload['sort'][key]}`).join(',')}`
