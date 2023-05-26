@@ -411,8 +411,8 @@ export class UserService extends MainService {
 					\`user_user_option\`.\`userId\` AS \`userUserOptionUserId\`,
 					\`user_user_option\`.\`content\` AS \`userUserOptionContent\`,
 					\`user_user_option\`.\`isDeleted\` AS \`userUserOptionIsDeleted\`,
-					\`user_user_option\`.\`createdAt\` AS \`userUserOptionCreatedAt\`,
-					\`user_user_option\`.\`updatedAt\` AS \`userUserOptionUpdatedAt\`
+					\`user_user_option\`.\`createdAt\` AS \`createdAt\`,
+					\`user_user_option\`.\`updatedAt\` AS \`updatedAt\`
 				FROM \`user\` 
 				LEFT JOIN \`user_user_option\`
 				ON \`user\`.\`id\` = \`user_user_option\`.\`userId\`
