@@ -90,9 +90,13 @@ export class UserService extends MainService {
 
 			const firstname = payload['firstname'];
 			const lastname = payload['lastname'];
+			const position = payload['position'];
+			const location = payload['location'];
 
 			delete payload['firstname'];
 			delete payload['lastname'];
+			delete payload['position'];
+			delete payload['location'];
 
 			const data = {
 				...payload,
@@ -139,12 +143,12 @@ export class UserService extends MainService {
 			await this.queryRunner.manager.save(Object.assign(new UserUserOption(), {
 				userId: output['id'],
 				userOptionId: 'happ-sso-user-option-position',
-				content: '',
+				content: String(position ?? ''),
 			}));
 			await this.queryRunner.manager.save(Object.assign(new UserUserOption(), {
 				userId: output['id'],
 				userOptionId: 'happ-sso-user-option-location',
-				content: '',
+				content: String(location ?? ''),,
 			}));
 			await this.transport.send({ 
 				name: process.env.SERVICE_MAIL,
