@@ -348,8 +348,6 @@ export class UserService extends MainService {
 
 		delete (processedPayload['filter'] || {})['isUnique'];
 
-		console.log('>>>>>>>>>', processedPayload['filter']);
-
 		if (isUnique
 			&& utilsCheckObjFilled(processedPayload['filter'])
 			&& utilsCheckObjFilled(processedPayload['filter']['userUserOptions'])
