@@ -87,6 +87,18 @@ export class UserService extends MainService {
 		try {
 			await this.startQueryRunnerManager();
 
+			const userExists = await this.repository.findOne({
+				select: {
+					email: true,
+				},
+				where: {
+					email: payload['email'],
+				},
+			});
+
+			if (userExists) {
+				throw new MethodNotAllowedException(`Account with current data already exists.`);
+			}
 			this.repositoryCache.drop({ key: [ this.prefix(process.env.APP_NAME), 'many', '*' ] });
 
 			const firstname = payload['firstname'];
