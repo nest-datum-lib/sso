@@ -59,11 +59,15 @@ export class UserHttpTcpController extends MainHttpTcpController {
 		if (!utilsCheckStrId(options['userStatusId'])) {
 			throw new ForbiddenException(`Property "userStatusId" is not valid.`);
 		}
-		if (!utilsCheckStrFilled(options['position'])) {
-			throw new ForbiddenException(`Property "position" is not valid.`);
+		if (utilsCheckExists(options['position'])) {
+			if (!utilsCheckStrFilled(options['position'])) {
+				throw new MethodNotAllowedException(`Property "position" is not valid.`);
+			}
 		}
-		if (!utilsCheckStrFilled(options['location'])) {
-			throw new ForbiddenException(`Property "location" is not valid.`);
+		if (utilsCheckExists(options['location'])) {
+			if (!utilsCheckStrFilled(options['location'])) {
+				throw new MethodNotAllowedException(`Property "location" is not valid.`);
+			}
 		}
 		return await this.validateUpdate(options);
 	}
