@@ -353,7 +353,7 @@ export class UserService extends MainService {
 		if (isUnique
 			&& utilsCheckObjFilled(processedPayload['filter'])
 			&& utilsCheckObjFilled(processedPayload['filter']['userUserOptions'])
-			&& utilsCheckStrIdExists(processedPayload['filter']['userUserOptions']['userOptionId'])) {
+			&& utilsCheckStrIdExists(processedPayload['filter']['userUserOptions']['userUserOptionUserOptionId'])) {
 			const filterKeys = Object.keys(processedPayload['filter'] || {});
 			const sortKeys = Object.keys(processedPayload['sort'] || {});
 			const columns = this.manyGetColumns();
