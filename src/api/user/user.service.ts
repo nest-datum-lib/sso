@@ -368,23 +368,23 @@ export class UserService extends MainService {
 					\`user\`.\`isDeleted\` AS \`userIsDeleted\`,
 					\`user\`.\`createdAt\` AS \`userCreatedAt\`,
 					\`user\`.\`updatedAt\` AS \`userUpdatedAt\`,
-					\`userUserOption\`.\`id\` AS \`userUserOptionId\`,
-					\`userUserOption\`.\`parentId\` AS \`userUserOptionParentId\`,
-					\`userUserOption\`.\`userOptionId\` AS \`userUserOptionUserOptionId\`,
-					\`userUserOption\`.\`userId\` AS \`userUserOptionUserId\`,
-					\`userUserOption\`.\`content\` AS \`userUserOptionContent\`,
-					\`userUserOption\`.\`isDeleted\` AS \`userUserOptionIsDeleted\`,
-					\`userUserOption\`.\`createdAt\` AS \`userUserOptionCreatedAt\`,
-					\`userUserOption\`.\`updatedAt\` AS \`userUserOptionUpdatedAt\`
+					\`user_user_option\`.\`id\` AS \`userUserOptionId\`,
+					\`user_user_option\`.\`parentId\` AS \`userUserOptionParentId\`,
+					\`user_user_option\`.\`userOptionId\` AS \`userUserOptionUserOptionId\`,
+					\`user_user_option\`.\`userId\` AS \`userUserOptionUserId\`,
+					\`user_user_option\`.\`content\` AS \`userUserOptionContent\`,
+					\`user_user_option\`.\`isDeleted\` AS \`userUserOptionIsDeleted\`,
+					\`user_user_option\`.\`createdAt\` AS \`userUserOptionCreatedAt\`,
+					\`user_user_option\`.\`updatedAt\` AS \`userUserOptionUpdatedAt\`
 				FROM \`user\` 
 				LEFT JOIN \`user_user_option\`
-				ON \`user\`.\`id\` = \`userUserOption\`.\`userId\`
+				ON \`user\`.\`id\` = \`user_user_option\`.\`userId\`
 				${filterKeys.length > 0
 					? `WHERE ${filterKeys.map((key) => utilsCheckArrFilled(processedPayload['filter'][key])
 						? `(${processedPayload['filter'][key].map((item) => `\`${key}\` = "${item}"`).join('OR')})`
 						: `\`${key}\` = "${processedPayload['filter'][key]}"`).join('AND')}`
 					: ''}
-				GROUP BY \`userUserOption\`.\`content\`
+				GROUP BY \`user_user_option\`.\`content\`
 				${sortKeys.length > 0
 					? `ORDER BY ${sortKeys.map((key) => `\`${key}\` ${processedPayload['sort'][key]}`).join(',')}`
 					: ''}
