@@ -376,8 +376,8 @@ export class UserService extends MainService {
 					\`userUserOption\`.\`isDeleted\` AS \`userUserOptionIsDeleted\`,
 					\`userUserOption\`.\`createdAt\` AS \`userUserOptionCreatedAt\`,
 					\`userUserOption\`.\`updatedAt\` AS \`userUserOptionUpdatedAt\`
-				FROM \`${this.repository.metadata.tableName}\` 
-				LEFT JOIN \`userUserOption\`
+				FROM \`user\` 
+				LEFT JOIN \`user_user_option\`
 				ON \`user\`.\`id\` = \`userUserOption\`.\`userId\`
 				${filterKeys.length > 0
 					? `WHERE ${filterKeys.map((key) => utilsCheckArrFilled(processedPayload['filter'][key])
