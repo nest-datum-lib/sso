@@ -334,4 +334,64 @@ export class UserService extends MainService {
 		}
 		return payload;
 	}
+
+	protected async manyProcess(processedPayload: object, payload: object): Promise<Array<Array<any> | number>> {
+		if (this.withCache === true) {
+			const cachedData = await this.repositoryCache.one({ key: [ this.prefix(process.env.APP_NAME), 'many', processedPayload ] });
+
+			if (cachedData) {
+				return cachedData;
+			}
+		}
+		const isUnique = (processedPayload['filter'] || {})['isUnique'];
+
+		delete (processedPayload['filter'] || {})['isUnique'];
+
+		console.log('>>>>>>>>>', processedPayload['filter']);
+
+		if (isUnique
+			&& processedPayload['filter']
+			&& processedPayload['filter']['userUserOptions']) {
+			const filterKeys = Object.keys(processedPayload['filter'] || {});
+			const sortKeys = Object.keys(processedPayload['sort'] || {});
+			const columns = this.manyGetColumns();
+			const columnsKeys = Object.keys(this.manyGetColumns());
+			const requestData = await this.connection.query(`SELECT
+					${columnsKeys.map((columnKey) => `\`${columnKey}\``).join(',')}
+				FROM \`${this.repository.metadata.tableName}\` 
+				${filterKeys.length > 0
+					? `WHERE ${filterKeys.map((key) => utilsCheckArrFilled(processedPayload['filter'][key])
+						? `(${processedPayload['filter'][key].map((item) => `\`${key}\` = "${item}"`).join('OR')})`
+						: `\`${key}\` = "${processedPayload['filter'][key]}"`).join('AND')}`
+					: ''}
+				${isUnique 
+					? (columns['value']
+						? `GROUP BY \`value\`` 
+						: (columns['content']
+							? `GROUP BY \`content\``
+							: ''))
+					: ''}
+				${sortKeys.length > 0
+					? `ORDER BY ${sortKeys.map((key) => `\`${key}\` ${processedPayload['sort'][key]}`).join(',')}`
+					: ''}
+				${processedPayload['page']
+					? `LIMIT ${processedPayload['page'] - 1}${processedPayload['limit']
+						? ``
+						: ',20'}`
+					: ''}${processedPayload['limit']
+						? (processedPayload['page']
+							? `,${processedPayload['limit']}`
+							: `LIMIT ${processedPayload['limit']}`)
+						: ''};`);
+			
+			return [ requestData, requestData.length ];
+		}
+		const condition = await this.findMany(processedPayload);
+		const output = await this.repository.findAndCount(condition);
+
+		if (this.withCache === true) {
+			await this.repositoryCache.create({ key: [ this.prefix(process.env.APP_NAME), 'many', processedPayload ], output });
+		}
+		return output;
+	}
 }
