@@ -262,14 +262,9 @@ export class SqlService extends ModelService {
 		if (isUnique) {
 			const filterKeys = Object.keys(processedPayload['filter'] || {});
 			const sortKeys = Object.keys(processedPayload['sort'] || {});
+			const columnKeys = Object.keys(this.manyGetColumns());
 			const requestData = await this.connection.query(`SELECT
-					\`id\`,
-					\`userId\`,
-					\`fieldId\`,
-					\`contentId\`,
-					\`value\`,
-					\`createdAt\`,
-					\`updatedAt\`
+					${columnKeys.map((columnKey) => `\`${columnKey}\``).join(',')}
 				FROM \`${this.repository.metadata.tableName}\` 
 				${filterKeys.length > 0
 					? `WHERE ${filterKeys.map((key) => utilsCheckArrFilled(processedPayload['filter'][key])
