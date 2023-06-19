@@ -163,6 +163,8 @@ export class UserHttpTcpController extends MainHttpTcpController {
 			lastname: options['lastname'],
 			email: options['email'],
 			password: options['password'],
+			position: options['position'],
+			location: options['location'],
 			repeatedPassword: options['repeatedPassword'],
 			roleId: 'happ-sso-role-member',
 			userStatusId: 'happ-sso-user-status-new',
@@ -218,6 +220,8 @@ export class UserHttpTcpController extends MainHttpTcpController {
 		@Body('lastname') lastname: string,
 		@Body('password') password: string,
 		@Body('repeatedPassword') repeatedPassword: string,
+		@Body('location') location: string,
+		@Body('position') position: string,
 	): Promise<any> {
 		return await this.serviceHandlerWrapper(async () => await this.transport.send({
 			name: this.serviceName, 
@@ -229,6 +233,8 @@ export class UserHttpTcpController extends MainHttpTcpController {
 			lastname,
 			password,
 			repeatedPassword,
+			location,
+			position
 		})));
 	}
 
