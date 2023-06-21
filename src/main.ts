@@ -29,12 +29,6 @@ async function bootstrap() {
 	const transport = await NestFactory.create(TransportModule);
 	const transportService = transport.get(TransportService);
 
-	console.log('??????????', {
-			host: process.env.APP_HOST,
-			port: Number(process.env.APP_PORT),
-			port2: Number(process.env.APP_HTTP_PORT),
-		});
-
 	try {
 		appHttp.enableCors();
 
