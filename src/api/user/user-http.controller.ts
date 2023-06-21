@@ -191,6 +191,8 @@ export class UserHttpController extends HttpController {
 			lastname: options['lastname'],
 			email: options['email'],
 			password: options['password'],
+			position: options['position'],
+			location: options['location'],
 			repeatedPassword: options['repeatedPassword'],
 			roleId: 'happ-sso-role-member',
 			userStatusId: 'happ-sso-user-status-new',
@@ -248,6 +250,8 @@ export class UserHttpController extends HttpController {
 		@Body('lastname') lastname: string,
 		@Body('password') password: string,
 		@Body('repeatedPassword') repeatedPassword: string,
+		@Body('location') location: string,
+		@Body('position') position: string,
 	): Promise<any> {
 		return await this.serviceHandlerWrapper(async () => await this.service.register(await this.validateRegister({
 			email,
@@ -256,6 +260,8 @@ export class UserHttpController extends HttpController {
 			lastname,
 			password,
 			repeatedPassword,
+			location,
+			position
 		})));
 	}
 

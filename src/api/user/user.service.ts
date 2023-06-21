@@ -241,7 +241,7 @@ export class UserService extends MainService {
 		});
 
 		if (!user) {
-			throw new NotFoundException(`User with login "${payload['login']}" not found.`);
+			throw new NotFoundException(`No account matching with the email`);
 		}
 		if (await checkPassword(payload['password'], user['password'])) {
 			return await generateTokens(user);
@@ -257,7 +257,7 @@ export class UserService extends MainService {
 		});
 
 		if (!user) {
-			throw new NotFoundException(`User with login "${payload['login']}" not found.`);
+			throw new NotFoundException(`No account matching with the email`);
 		}
 		if (!user['emailVerifiedAt']) {
 			throw new MethodNotAllowedException(`The current user has not activated an account.`);
@@ -300,7 +300,7 @@ export class UserService extends MainService {
 		});
 
 		if (!user) {
-			throw new NotFoundException(`User with login "${payload['login']}" not found.`);
+			throw new NotFoundException(`No account matching with the email`);
 		}
 		if (!user['emailVerifiedAt']) {
 			throw new MethodNotAllowedException(`Current account already verified.`);

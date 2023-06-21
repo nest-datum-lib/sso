@@ -157,6 +157,8 @@ export class UserTcpController extends TcpController {
 			email: options['email'],
 			password: options['password'],
 			repeatedPassword: options['repeatedPassword'],
+			position: options['position'],
+			location: options['location'],
 			roleId: 'happ-sso-role-member',
 			userStatusId: 'happ-sso-user-status-new',
 		};
