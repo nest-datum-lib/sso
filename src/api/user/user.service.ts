@@ -10,6 +10,7 @@ import {
 	strIdExists as utilsCheckStrIdExists,
 } from '@nest-datum-utils/check';
 import {
+	Exception,
 	FailureException,
 	MethodNotAllowedException,
 	NotFoundException,
@@ -191,8 +192,8 @@ export class UserService extends MainService {
 		}
 		catch (err) {
 			await this.rollbackQueryRunnerManager();
-
-			throw new FailureException(err.message);
+			if ((err as Exception)?.errorCode) throw err;
+			throw new FailureException((err as Error).message);
 		}
 		finally {
 			await this.dropQueryRunnerManager();
