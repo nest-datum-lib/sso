@@ -220,7 +220,8 @@ export class UserService extends MainService {
 			throw new MethodNotAllowedException(`Key expired.`);
 		}
 		await this.repository.save({ 
-			...user, 
+			...user,
+			userStatusId: 'happ-sso-user-status-active',
 			emailVerifyKey: '',
 			emailVerifiedAt: new Date(),
 		});
