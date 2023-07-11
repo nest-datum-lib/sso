@@ -1,4 +1,5 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import strToBool from "./strToBool";
 
 const sqlConfig = () => {
 	const configArr: Array<any> =  Object.keys(process.env || {})
@@ -37,7 +38,7 @@ const sqlConfig = () => {
 				database: process.env.SQL_DATABASE || process.env.SQL_MASTER_DATABASE,
 			},
 		autoLoadEntities: true,
-		synchronize: true,
+		synchronize: strToBool(process.env.IS_SQL_SYNC),
 	};
 
 	return output;
