@@ -4,7 +4,6 @@ def AGENT_NODE="master" // node/slave name where to run this job.
 
 // DO NOT CHANGE!
 def WORKSPACE_PATH="$JENKINS_HOME/jobs/$JOB_NAME/workspace"
-def TARGET_REPO_DESTINATION_PATH="$WORKSPACE_PATH/$JOB_NAME"
 def TARGET_REPO_URL_PATH="git@github.com:nest-datum-lib/$SERVICE_NAME\\.git"
 def SERVICE_HOME="/home/$JOB_NAME"
 def SERVICE_ROOT="$SERVICE_HOME/$SERVICE_NAME"
@@ -22,26 +21,10 @@ pipeline {
     agent { label "$AGENT_NODE" }
 
     stages {
-        // stage('Sync Repo') {
-        //     steps {
-        //         script {
-        //             echo "target is $TARGET_REPO_DESTINATION_PATH"
-        //             if (fileExists("$TARGET_REPO_DESTINATION_PATH/\\.git")) {
-        //                 echo "$JOB_NAME is already cloned, skipping clone."
-        //             } else {
-        //                 sh "sudo -u $TARGET_USER git clone $TARGET_REPO_URL_PATH $TARGET_REPO_DESTINATION_PATH"
-        //             }
-        //         }
-        //         dir("$TARGET_REPO_DESTINATION_PATH") {
-        //             sh "sudo -u $TARGET_USER git checkout $BRANCH"
-        //             sh "sudo -u $TARGET_USER git pull origin $BRANCH"
-        //         }
-        //     }
-        // }
 
         stage('Init & Build project') {
             steps {
-                dir("$TARGET_REPO_DESTINATION_PATH") {
+                dir("$WORKSPACE_PATH") {
                     sh "npm install"
                     sh "npm run build"
                     sh "sudo chmod o+rw $SERVICE_HOME/$SERVICE_NAME/.env"
@@ -55,7 +38,7 @@ pipeline {
                     sh "sudo chmod -R o+rw ./*"
                     sh "rm -r ./* || true"
                 }
-                dir("$TARGET_REPO_DESTINATION_PATH/dist") {
+                dir("$WORKSPACE_PATH/dist") {
                     sh "cp -r ./* $TARGET_DIST_DEPLOY_PATH"
                     sh "sudo chown -R $JOB_NAME:$JOB_NAME $TARGET_DIST_DEPLOY_PATH/*"
                 }
