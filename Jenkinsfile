@@ -8,13 +8,6 @@ def SERVICE_HOME="/home/$JOB_NAME"
 def SERVICE_ROOT="$SERVICE_HOME/$SERVICE_NAME"
 def TARGET_DIST_DEPLOY_PATH="$SERVICE_ROOT/dist"
 def LOGS_FOLDER="$SERVICE_HOME/.pm2/logs"
-def TARGET_USER="jenkins"
-
-script {
-    if ("$AGENT_NODE" != "master") {
-        TARGET_USER="$JOB_NAME"
-    }
-}
 
 pipeline {
     agent { label "$AGENT_NODE" }
