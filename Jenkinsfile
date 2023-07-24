@@ -4,7 +4,6 @@ def AGENT_NODE="master" // node/slave name where to run this job.
 
 // DO NOT CHANGE!
 def WORKSPACE_PATH="$JENKINS_HOME/jobs/$JOB_NAME/workspace"
-def TARGET_REPO_URL_PATH="git@github.com:nest-datum-lib/$SERVICE_NAME\\.git"
 def SERVICE_HOME="/home/$JOB_NAME"
 def SERVICE_ROOT="$SERVICE_HOME/$SERVICE_NAME"
 def TARGET_DIST_DEPLOY_PATH="$SERVICE_ROOT/dist"
@@ -41,7 +40,7 @@ pipeline {
                     sh "cp -r ./* $TARGET_DIST_DEPLOY_PATH"
                     sh "sudo chown -R $JOB_NAME:$JOB_NAME $TARGET_DIST_DEPLOY_PATH/*"
                 }
-                
+
                 script {
                     try {
                         sh "sudo -u $JOB_NAME pm2 delete $JOB_NAME"
