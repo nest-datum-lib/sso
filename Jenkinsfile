@@ -34,14 +34,14 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                dir("$TARGET_DIST_DEPLOY_PATH") {
-                    sh "sudo chmod -R o+rw ./*"
-                    sh "rm -r ./* || true"
-                }
+                sh "sudo chmod -R o+rw $TARGET_DIST_DEPLOY_PATH"
+                sh "rm -r $TARGET_DIST_DEPLOY_PATH/* || true"
+
                 dir("$WORKSPACE_PATH/dist") {
                     sh "cp -r ./* $TARGET_DIST_DEPLOY_PATH"
                     sh "sudo chown -R $JOB_NAME:$JOB_NAME $TARGET_DIST_DEPLOY_PATH/*"
                 }
+                
                 script {
                     try {
                         sh "sudo -u $JOB_NAME pm2 delete $JOB_NAME"
