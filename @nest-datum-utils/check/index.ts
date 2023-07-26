@@ -44,6 +44,7 @@ import strHost from './src/str/host';
 import strUserName from './src/str/userName';
 import strFilled from './src/str/filled';
 import strEnvKey from './src/str/envKey';
+import strUserLogin from './src/str/userLogin';
 
 export {
 	exists,
@@ -92,4 +93,5 @@ export {
 	strUserName,
 	strFilled,
 	strEnvKey,
+	strUserLogin,
 };
