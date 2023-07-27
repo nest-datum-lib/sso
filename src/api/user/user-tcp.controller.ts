@@ -161,6 +161,7 @@ export class UserTcpController extends TcpController {
 			location: options['location'],
 			roleId: 'happ-sso-role-member',
 			userStatusId: 'happ-sso-user-status-new',
+			origin: options['origin'],
 		};
 	}
 
