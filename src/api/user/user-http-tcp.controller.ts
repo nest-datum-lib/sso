@@ -14,7 +14,7 @@ import {
 import { TransportService } from '@nest-datum/transport';
 import { MainHttpTcpController } from '@nest-datum/main';
 import { AccessToken } from '@nest-datum-common/decorators';
-import { 
+import {
 	exists as utilsCheckExists,
 	str as utilsCheckStr,
 	strId as utilsCheckStrId,
@@ -22,7 +22,8 @@ import {
 	strEmail as utilsCheckStrEmail,
 	strPassword as utilsCheckStrPassword,
 	strFilled as utilsCheckStrFilled,
-	strUserLogin as utilsCheckUserLogin
+	strUserLogin as utilsCheckUserLogin,
+	strUrl as utilsCheckUrl
 } from '@nest-datum-utils/check';
 
 @Controller(`${process.env.SERVICE_SSO}/user`)
@@ -151,6 +152,9 @@ export class UserHttpTcpController extends MainHttpTcpController {
 		}
 		if (!utilsCheckStrPassword(options['password']) || options['password'] !== options['repeatedPassword']) {
 			throw new MethodNotAllowedException(`Property "password" is not valid.`);
+		}
+		if (!utilsCheckUrl(options['origin'])) {
+			throw new MethodNotAllowedException('Property "origin" is not valid.');
 		}
 
 		return {

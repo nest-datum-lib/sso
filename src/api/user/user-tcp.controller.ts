@@ -8,19 +8,15 @@ import {
 	MethodNotAllowedException, 
 } from '@nest-datum-common/exceptions';
 import { TcpController } from '@nest-datum-common/controllers';
-import { TransportService } from '@nest-datum/transport';
-import { 
-	bool as utilsCheckBool,
+import {
 	exists as utilsCheckExists,
 	str as utilsCheckStr,
 	strId as utilsCheckStrId,
 	strName as utilsCheckStrName,
 	strEmail as utilsCheckStrEmail,
 	strPassword as utilsCheckStrPassword,
-	strDescription as utilsCheckStrDescription,
-	strRegex as utilsCheckStrRegex,
-	strDate as utilsCheckStrDate,
 	strFilled as utilsCheckStrFilled,
+	strUrl as utilsCheckUrl,
 } from '@nest-datum-utils/check';
 import { 
 	checkToken,
@@ -44,7 +40,7 @@ export class UserTcpController extends TcpController {
 			throw new ForbiddenException(`Property "email" is not valid.`);
 		}
 		if (!utilsCheckStrPassword(options['password'])) {
-			throw new ForbiddenException(`Property "email" is not valid.`);
+			throw new ForbiddenException(`Property "password" is not valid.`);
 		}
 		if (!utilsCheckStrId(options['roleId'])) {
 			throw new ForbiddenException(`Property "roleId" is not valid.`);
@@ -148,6 +144,9 @@ export class UserTcpController extends TcpController {
 		}
 		if (!utilsCheckStrPassword(options['password']) || options['password'] !== options['repeatedPassword']) {
 			throw new ForbiddenException(`Property "password" is not valid.`);
+		}
+		if (!utilsCheckUrl(options['origin'])) {
+			throw new MethodNotAllowedException('Property "origin" is not valid.');
 		}
 
 		return {

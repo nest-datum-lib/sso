@@ -4,27 +4,31 @@ import {
 	Patch,
 	Body,
 	Param,
-	ForbiddenException,
-	UnauthorizedException,
-	MethodNotAllowedException,
+	Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { 
 	checkToken,
 	getUser, 
 } from '@nest-datum-common/jwt';
+import {
+	ForbiddenException,
+	UnauthorizedException,
+	MethodNotAllowedException,
+} from '@nest-datum-common/exceptions';
 import { AccessToken } from '@nest-datum-common/decorators';
 import { HttpController } from '@nest-datum-common/controllers';
 import { 
 	exists as utilsCheckExists,
 	strId as utilsCheckStrId,
 	strName as utilsCheckStrName, 
-	strDescription as utilsCheckStrDescription,
 	strFilled as utilsCheckStrFilled,
 	strEmail as utilsCheckStrEmail,
 	strPassword as utilsCheckStrPassword,
 	str as utilsCheckStr,
 	arr as utilsCheckArr,
 	objFilled as utilsCheckObjFilled,
+	strUrl as utilsCheckUrl,
 } from '@nest-datum-utils/check';
 import { UserUserOptionService } from '../user-user-option/user-user-option.service';
 import { UserService } from './user.service';
@@ -49,7 +53,7 @@ export class UserHttpController extends HttpController {
 			throw new ForbiddenException(`Property "email" is not valid.`);
 		}
 		if (!utilsCheckStrPassword(options['password'])) {
-			throw new ForbiddenException(`Property "email" is not valid.`);
+			throw new ForbiddenException(`Property "password" is not valid.`);
 		}
 		if (!utilsCheckStrId(options['roleId'])) {
 			throw new ForbiddenException(`Property "roleId" is not valid.`);
@@ -184,6 +188,9 @@ export class UserHttpController extends HttpController {
 		if (!utilsCheckStrPassword(options['password']) || options['password'] !== options['repeatedPassword']) {
 			throw new ForbiddenException(`Property "password" is not valid.`);
 		}
+		if (!utilsCheckUrl(options['origin'])) {
+			throw new MethodNotAllowedException('Property "origin" is not valid.');
+		}
 
 		return {
 			login: options['login'],
@@ -196,6 +203,7 @@ export class UserHttpController extends HttpController {
 			repeatedPassword: options['repeatedPassword'],
 			roleId: 'happ-sso-role-member',
 			userStatusId: 'happ-sso-user-status-new',
+			origin: options['origin'],
 		};
 	}
 
@@ -252,6 +260,7 @@ export class UserHttpController extends HttpController {
 		@Body('repeatedPassword') repeatedPassword: string,
 		@Body('location') location: string,
 		@Body('position') position: string,
+		@Req() request: Request,
 	): Promise<any> {
 		return await this.serviceHandlerWrapper(async () => await this.service.register(await this.validateRegister({
 			email,
@@ -261,7 +270,8 @@ export class UserHttpController extends HttpController {
 			password,
 			repeatedPassword,
 			location,
-			position
+			position,
+			origin: request.get('origin'),
 		})));
 	}
 
